@@ -1,0 +1,6 @@
+[submodule "A-SABR"]
+	path = A-SABR
+	url = https://github.com/BastienDague/A-SABR.git
+[submodule "dtchat-egui"]
+	path = dtchat-egui
+	url = https://github.com/BastienDague/dtchat-egui.git
