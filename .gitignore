@@ -1,0 +1,12 @@
+# Fichiers de compilation LaTeX générés
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.vrb
+*.gz
