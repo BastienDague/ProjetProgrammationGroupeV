@@ -5,38 +5,72 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel} 
 
-
+\usepackage{mathptmx}
 \usepackage{geometry}
 \geometry{
     a4paper,
-    margin=2.5cm
+    margin=2cm
 }
+\usepackage[
+    colorlinks=true,        % Utiliser des couleurs au lieu des cadres
+    linkcolor=black,        % Couleur des liens internes (TDM, références)
+    urlcolor=blue,          % Couleur des liens URL
+    citecolor=green,        % Couleur des citations
+    pdftitle={Rapport du Sprint de Décembre 2026}, % Métadonnées du PDF
+]{hyperref}
 
 \setlength{\parskip}{1ex plus 1pt}
-\title{Rapport Sprint }
+\title{Rapport Sprint}
 \author{DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent}
 \date{Décembre 2025}
+
 
 \begin{document}
 
 \maketitle
 \tableofcontents
 
+
 \newpage
 
-\section{Présentation d'A-SABR}
+\section{Introduction}
+Pour le bien du rapport, il faut déjà vous expliquez le matériel de base qu'on a à notre disposition.   
+
+\subsection{A-SABR}
+
+A-SABR est un framework open-source crée en Rust pour les algorithmes de routage DTN (Delay-Tolerant Networking). Les reseaux DTN sont fait pour les connexions intermittente et planifiées, 
+par exemple les satellites qui ont une fenêtre de connexion tous les X heures ou minutes.
+
+A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le message doit partir pour avoir le chemin le plus court et le moins énergivore possible tout en évitant la saturation.
+
+\href{https://github.com/DTN-MTP/A-SABR}{Code de A-SABR}.
+
+A-SABR possède également une interface graphique codée en Rust pour se répresenter le fonctionnement d'A-SABR.
+
+\href{https://github.com/DTN-MTP/dtchat-egui}{Code de l'interface graphique}.
+
+\subsection{Hardy}
+
+Pour finir, je vais introduire ici le logiciel open-source Hardy. Il s'agit du logiciel global que l'on pourrait donner à un satellite ou tous objet devans communiqué par réseau DTN.
+Il utilise le protocole BPv7.
+
+\href{https://github.com/ricktaylor/hardy}{Code de Hardy}.
+
+
 
 \section{Compte rendu de la réunion avec l'encadrant}
 
 La réunion à eu lieu le vendredi 12 décembre au LIRMM où tous le groupe était présent.
-Mr De Jonckère nous à présenter le sujet en nous expliquant que tous n'était pas à faire que c'était a nous de choisir ce qui nous semblait faisable.
+Mr De Jonckère nous à présenter le sujet en nous expliquant que tous n'était pas à faire, que c'était a nous de choisir ce qui nous semblait faisable.
 Il nous a présenté sa librairie ainsi qu'une petite démonstration de l'interface graphique, il nous a aussi vendue Rust et nous a fait un petit cours accéléré sur celui ci.
 
-On à dès lors exclue la partie no-std car trop dépendant du matériel et qui, selon Mr De Jonckère, serait très frustrante.
+On à dès lors exclue la partie no-std du sujet car trop dépendant du matériel et qui, selon Mr De Jonckère, serait très frustrante.
+
+Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nous nous sommes fixés :
 
 \begin{itemize}
     \item \textbf{Tests et Pipelines :}
-    \item[] Mise en place de test pour la bibliothèque A-SABR ainsi que dans l'interface graphique. \\Mise en place de Pipeline sur GitHub.
+    \item[] Mise en place de test pour la bibliothèque A-SABR et l'interface graphique. \\Mise en place de Pipeline sur GitHub.
 \end{itemize} 
 
 \begin{itemize}
@@ -46,13 +80,13 @@ On à dès lors exclue la partie no-std car trop dépendant du matériel et qui,
 
 \begin{itemize}
     \item \textbf{Implémentation d'A-SABR dans Hardy :}
-    \item[] Ajout d'un volet option dans l'interface graphique pour ne plus avoir à la lancer avec une immense commande et pouvoir tous configurer depuis celle-ci.
+    \item[] Ajout d'A-SABR dans le logiciel open-source de création de noeud DTN Hardy codé lui aussi en Rust.
 \end{itemize}
 
 
 \section{Cahier des charges}
 
-\subsection{Sous-section 1}
+
 
 \section{Première architecture du projet}
 
