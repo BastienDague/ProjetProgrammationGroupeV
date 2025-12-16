@@ -23,7 +23,7 @@
 \title{Rapport Sprint}
 \author{DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent}
 \date{Décembre 2025}
-
+\usepackage{graphicx}
 
 \begin{document}
 
@@ -85,6 +85,20 @@ Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nou
 
 
 \section{Cahier des charges}
+Pour ce projet, nous travaillerons dans le domaine des Delay-Tolerant Networks (DTN). Les DTN permettent
+la communication entre des noeuds très éloignés et pas toujours connectés, comme c'est souvent le cas dans l'espace à cause
+notamment du passage d'objets spatiaux. Le travail se fera à partir de la librarie
+A-SABR développée au LIRMM qui permet de simuler des réseaux DTN. De plus, 
+une interface graphique a été crée pour faciliter l'utilisation de cette librarie.
+
+Notre but sera, dans un premier temps, de contribuer à ce projet en améliorant la testabilité de la librarie et de l'interface graphique associée
+notamment grâce à l'ajout de tests unitaires de d'intégration. 
+Dans un même temps, nous ajouterons une fonctionnalité à l'interface graphique
+afin de permettre une configuration plus simple de celle-ci.
+
+Cette librarie, étant codé en Rust, nous travaillerons donc avec ce langage.
+Pour ce qui est de l'environnement de développement, nous utiliserons GitHub pour le
+suivi et un sous-enviroennement Linux (Ubuntu) pour le développement grâce à WSL.
 
 
 
@@ -93,6 +107,35 @@ Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nou
 \section{Organisation interne du groupe}
 
 \section{Planning prévisionnel}
+Le projet se divisera en 3 phases:
+
+\begin{itemize}
+    \item Phase 1 : Apprentissage de Rust et travail sur les exercices du GitHub de Mr De Jonckère
+\end{itemize}
+\begin{itemize}
+    \item Phase 2 : Ajout d'une couverture de tests pour la librarie et l'interface graphique
+    en parallèle, implémentation de fonctions de paramétrage pour l'interface graphique
+\end{itemize}
+\begin{itemize}
+    \item Phase 3 : Implémentation de la librarie A-SABR dans le logiciel libre Hardy
+\end{itemize}
+
+La première phase sera l'une des plus essentielles car c'est celle qui nous
+permettra de nous familiariser avec le langage Rust et la librairie de Mr De Jonckère.
+Grâce à ce travail en amont, nous pourrons commencer à travailler avec des bases solides
+pour la suite du projet.
+
+Pour la seconde phase, nos priorités seront de d'être le plus exhaustif possible dans nos tests
+afin de permettre une meilleure testabilité présente et future et de permettre une utilisation
+plus comfortable de l'interface graphique en se passant de lignes de commandes complexes.
+
+Enfin, lors de la dernière phase, la compréhension de la librairie devrait être suffisante
+donc notre priorité se tournera vers l'analyse du logiciel Hardy pour ensuite 
+implémenter A-SABR de manière efficace.
+
+Planning prévu sous forme de diagramme de Gantt:
+
+\includegraphics[width=1\textwidth]{App.pdf}
 
 \section{Prototype réalisé}
 
