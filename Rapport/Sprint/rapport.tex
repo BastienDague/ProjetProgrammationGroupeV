@@ -98,13 +98,14 @@ A-SABR développée au LIRMM qui permet de simuler des réseaux DTN. De plus,
 une interface graphique a été crée pour faciliter l'utilisation de cette librarie.
 
 Notre but sera, dans un premier temps, de contribuer à ce projet en améliorant la testabilité de la librarie et de l'interface graphique associée
-notamment grâce à l'ajout de tests unitaires de d'intégration. 
+notamment grâce à l'ajout de tests unitaires de d'intégration qui sont, pour l'instant, manquants.
 Dans un même temps, nous ajouterons une fonctionnalité à l'interface graphique
-afin de permettre une configuration plus simple de celle-ci.
+afin de permettre une configuration plus simple de celle-ci et de ses paramètres.
 
-Cette librarie, étant codé en Rust, nous travaillerons donc avec ce langage.
+Cette librarie, étant codé en Rust, nous travaillerons donc avec ce langage. 
+Pour l'IDE, nous utiliserons Visual Studio Code avec l'extension Rust Analyzer.
 Pour ce qui est de l'environnement de développement, nous utiliserons GitHub pour le
-suivi et un sous-environnement Linux (Ubuntu) pour le développement grâce à WSL.
+suivi et un sous-environnement Ubuntu pour le développement grâce à WSL.
 
 
 
@@ -129,6 +130,32 @@ Comme dit dans l'introduction, une interface graphique existe pour se répresent
 \\On va surtout travailler sur le back end pour pouvoir changer de contact plan et d'algorithme à la volée depuis l'interface.
 
 \section{Organisation interne du groupe}
+Tout d'abord, la personne qui a été désignée comme chef du groupe est Bastien Dague. 
+C'est lui qui s'occupera en grande partie de la bonne communication entre l'encadrant et le groupe.
+
+
+Ensuite, pour ce qui est de la répartition des tâches, nous avons évalué au mieux 
+le travail demandé pour chaque objectif afin de répartir le travail de manière efficace.
+Ainsi, quand la première phase d'apprentissage et de prise en main de Rust sera terminée,
+nous répartirons le groupe de cette manière:
+\begin{itemize}
+    \item \textbf{Tests et Pipelines :} Yassine Jouini et Bastien Dague
+    \item \textbf{Modifications de l'interface graphique :} Samy Al-Faraj et Vincent Brochard
+    \item \textbf{Implémentation d'A-SABR dans Hardy :} Tout le groupe
+\end{itemize}
+
+Concernant les outils d'organisation, nous utiliserons GitHub pour le suivi du projet. 
+Le dépôt centralise tous les sous-projets (A-SABR, interface graphique, Hardy) sous forme de sous-modules
+qui redirigeront chacun vers des dépôts fork des travaux de Monseur De Jonckère.
+Pour éviter tout problème de conflits, notre dépôt suivra la structure GitFlow.
+Chaque membre du groupe travaillera sur sa propre branche et des merge réguliers sur la branche
+develop seront faits. L'envoi sur la branche main ne se fera qu'après s'être assuré
+de la stabilité du projet. Après cela, nous aurons la possibilité de faire
+des Pull Requests avec l'accord de notre encadrant pour contribuer aux dépôts originaux.
+
+Enfin, pour la communication interne du groupe, nous utiliserons Discord 
+pour nos discusssions. Pour le moment, la communication avec notre encadrant se fera par mail
+mais nous envisagerons de communiquer par messagerie instantanée quand le projet sera plus avancé. 
 
 \section{Planning prévisionnel}
 Le projet se divisera en 3 phases:
@@ -149,9 +176,9 @@ permettra de nous familiariser avec le langage Rust et la librairie de Mr De Jon
 Grâce à ce travail en amont, nous pourrons commencer à travailler avec des bases solides
 pour la suite du projet.
 
-Pour la seconde phase, nos priorités seront de d'être le plus exhaustif possible dans nos tests
+Pour la seconde phase, nos priorités seront d'être le plus exhaustif possible dans nos tests
 afin de permettre une meilleure testabilité présente et future et de permettre une utilisation
-plus comfortable de l'interface graphique en se passant de lignes de commandes complexes.
+plus confortable de l'interface graphique en se passant de lignes de commandes complexes.
 
 Enfin, lors de la dernière phase, la compréhension de la librairie devrait être suffisante
 donc notre priorité se tournera vers l'analyse du logiciel Hardy pour ensuite 
