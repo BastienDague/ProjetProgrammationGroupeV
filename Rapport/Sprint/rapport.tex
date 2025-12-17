@@ -35,11 +35,11 @@
 \newpage
 
 \section{Introduction}
-Pour le bien du rapport, il faut déjà vous expliquez le matériel de base qu'on a à notre disposition.   
+Pour cette première partie du rapport, nous allons expliquez certains noms et acronymes que nous utiliserons tous le long de celui ci.   
 
 \subsection{A-SABR}
 
-A-SABR est un framework open-source crée en Rust pour les algorithmes de routage DTN (Delay-Tolerant Networking). Les reseaux DTN sont fait pour les connexions intermittente et planifiées, 
+Adaptive Schedule-Aware Bundle Routing ( A-SABR ) est un framework open-source crée en Rust pour les algorithmes de routage DTN (Delay-Tolerant Networking). Les reseaux DTN sont fait pour les connexions intermittente et planifiées, 
 par exemple les satellites qui ont une fenêtre de connexion tous les X heures ou minutes.
 
 A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le message doit partir pour avoir le chemin le plus court et le moins énergivore possible tout en évitant la saturation.
@@ -47,7 +47,7 @@ A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le
 \href{https://github.com/DTN-MTP/A-SABR}{Code de A-SABR}.
 
 A-SABR possède également une interface graphique codée en Rust pour se répresenter le fonctionnement d'A-SABR.
-Elle supporte le protocole UDP, TCP et BP.
+Elle simule le protocole UDP, TCP et BP.
 
 \href{https://github.com/DTN-MTP/dtchat-egui}{Front-End de l'interface graphique}.
 
@@ -55,7 +55,7 @@ Elle supporte le protocole UDP, TCP et BP.
 
 \subsection{Hardy}
 
-Pour finir, je vais introduire ici le logiciel open-source Hardy. Il s'agit du logiciel global que l'on pourrait donner à un satellite ou tous objet devans communiqué par réseau DTN.
+Pour finir, nous introduisons ici le logiciel open-source Hardy. Il s'agit du logiciel global que l'on pourrait donner à un satellite ou tous objet devans communiqué par réseau DTN.
 Il utilise le protocole BPv7.
 
 \href{https://github.com/ricktaylor/hardy}{Code de Hardy}.
@@ -69,8 +69,7 @@ Mr De Jonckère nous à présenter le sujet en nous expliquant que tous n'était
 \\Il nous a présenté sa librairie ainsi qu'une petite démonstration de l'interface graphique, 
 nous a exposé les avantages de l'utilisation de Rust, tous en nous faisant un cours introductif, et son utilisation dans le projet.
 
-
-On a dès lors exclue la partie no-std du sujet car trop dépendant du matériel et qui, selon Mr De Jonckère, serait très frustrante.
+Nous avons dès lors exclue la partie no-std du sujet car trop dépendant du matériel.
 
 Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nous nous sommes fixés :
 
@@ -92,37 +91,33 @@ Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nou
 \newpage
 
 \section{Cahier des charges}
-Pour ce projet, nous travaillerons dans le domaine des Delay-Tolerant Networks (DTN). Les DTN permettent
-la communication entre des noeuds très éloignés et pas toujours connectés, comme c'est souvent le cas dans l'espace à cause
-notamment du passage d'objets spatiaux. Le travail se fera à partir de la librarie
-A-SABR développée au LIRMM qui permet de simuler des réseaux DTN. De plus, 
-une interface graphique a été crée pour faciliter l'utilisation de cette librarie.
+Pour ce projet, nous travaillerons dans le domaine des Delay-Tolerant Networks (DTN). 
+Les réseaux DTN permettent la communication entre des nœuds très éloignés et dont la connexion est intermittente, 
+comme c'est souvent le cas dans le domaine spatial en raison du mouvement des corps célestes. 
+Le travail s'appuiera sur la bibliothèque A-SABR, développée au LIRMM. 
+De plus, une interface graphique a été créée afin de faciliter l'utilisation de cette bibliothèque.
 
-Notre but sera, dans un premier temps, de contribuer à ce projet en améliorant la testabilité de la librarie et de l'interface graphique associée
-notamment grâce à l'ajout de tests unitaires de d'intégration qui sont, pour l'instant, manquants.
-Dans un même temps, nous ajouterons une fonctionnalité à l'interface graphique
-afin de permettre une configuration plus simple de celle-ci et de ses paramètres.
+Notre objectif sera, dans un premier temps, de contribuer à ce projet en améliorant la testabilité de la bibliothèque 
+et de son interface graphique, notamment par l'ajout de tests unitaires et d'intégration qui font actuellement défaut. 
+Parallèlement, nous ajouterons une fonctionnalité à l'interface graphique pour permettre une configuration plus simple de l'outil et de ses paramètres.
 
-Cette librarie, étant codé en Rust, nous travaillerons donc avec ce langage. 
-Pour l'IDE, nous utiliserons Visual Studio Code avec l'extension Rust Analyzer.
-Pour ce qui est de l'environnement de développement, nous utiliserons GitHub pour le
-suivi et un sous-environnement Ubuntu pour le développement grâce à WSL.
-
-
+Cette bibliothèque étant écrite en Rust, nous utiliserons ce langage pour nos développements. 
+Côté environnement de travail, nous utiliserons l'IDE Visual Studio Code avec l'extension Rust Analyzer. 
+Enfin, pour la gestion du projet, nous utiliserons GitHub, tandis que le développement s'effectuera sous Ubuntu via WSL (Windows Subsystem for Linux).
 
 \section{Première architecture du projet}
 
-Nous partons déjà d'une base de code fonctionnel, donc l'architecture du projet est déjà décidée et je vais l'expliquer ci dessous.
+Nous partons déjà d'une base de code fonctionnel, donc l'architecture du projet est déjà décidée et nous allons l'expliquer ci dessous.
 
 \subsection{A-SABR}
 
-On a un premier depot contenant tous le code d'A-SABR, Celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets et le temps de stockages pour les arêtes. 
+Nous avons un premier depot contenant tous le code d'A-SABR, Celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets, et le temps de stockages pour les arêtes. 
 \\Il utilise pour ça une adapation de l'algorithme de Dijkstra pour trouver le chemin le plus rapide et l'algorithme de Yen pour trouver les meilleurs routes sans boucles.
 \\ Une fois les test et l'interface graphique modifiée c'est cette bibliothèque qu'on tentera d'intégrer dans le logiciel Hardy.
 
 \subsubsection{Exercices}
 
-On le précise ici, mais dans le dépot A-SABR, il y a quelque exercice qui ont été mis de base pour un Hackaton et dont on va se servir pour prendre en main la librairie.
+Nous le précisons ici, mais dans le dépot A-SABR, il y a quelque exercice qui ont été mis de base pour un Hackaton et dont on va se servir pour prendre en main la librairie.
 
 
 \subsection{Dt-Chat}
@@ -148,17 +143,16 @@ nous répartirons le groupe de cette manière:
 \end{itemize}
 
 Concernant les outils d'organisation, nous utiliserons GitHub pour le suivi du projet. 
-Le dépôt centralise tous les sous-projets (A-SABR, interface graphique, Hardy) sous forme de sous-modules
-qui redirigeront chacun vers des dépôts fork des travaux de Monseur De Jonckère.
-Pour éviter tout problème de conflits, notre dépôt suivra la structure GitFlow.
-Chaque membre du groupe travaillera sur sa propre branche et des merge réguliers sur la branche
-develop seront faits. L'envoi sur la branche main ne se fera qu'après s'être assuré
-de la stabilité du projet. Après cela, nous aurons la possibilité de faire
-des Pull Requests avec l'accord de notre encadrant pour contribuer aux dépôts originaux.
+Le dépôt centralisera tous les sous-projets (A-SABR, interface graphique, Hardy) sous forme de sous-modules, 
+qui redirigeront chacun vers des dépôts forkés des travaux de Monsieur De Jonckère.
 
-Enfin, pour la communication interne du groupe, nous utiliserons Discord 
-pour nos discusssions. Pour le moment, la communication avec notre encadrant se fera par mail
-mais nous envisagerons de communiquer par messagerie instantanée quand le projet sera plus avancé. 
+Pour éviter tout problème de conflit, notre dépôt suivra la structure GitFlow. 
+Chaque membre du groupe travaillera sur sa propre branche, et des merges réguliers vers la branche develop seront effectués. 
+L'envoi sur la branche main ne se fera qu'après s'être assuré de la stabilité du projet. Par la suite, nous aurons la possibilité de soumettre des Pull Requests, avec l'accord de notre encadrant, pour contribuer aux dépôts originaux.
+
+Enfin, pour la communication interne du groupe, nous utiliserons Discord. 
+Pour le moment, les échanges avec notre encadrant se feront par e-mail, 
+mais nous envisagerons de communiquer par messagerie instantanée lorsque le projet sera plus avancé.
 
 \section{Planning prévisionnel}
 Le projet se divisera en 3 phases:
@@ -174,20 +168,17 @@ Le projet se divisera en 3 phases:
     \item \textbf{Phase 3 :} Implémentation de la librarie A-SABR dans le logiciel libre Hardy
 \end{itemize}
 
-La première phase sera l'une des plus essentielles car c'est celle qui nous
-permettra de nous familiariser avec le langage Rust et la librairie de Mr De Jonckère.
-Grâce à ce travail en amont, nous pourrons commencer à travailler avec des bases solides
-pour la suite du projet.
+La première phase sera l'une des plus essentielles, car elle nous permettra de nous familiariser avec le langage Rust 
+et la bibliothèque de M. De Jonckère. Grâce à ce travail en amont, 
+nous pourrons commencer à travailler sur des bases solides pour la suite du projet.
 
-Pour la seconde phase, nos priorités seront d'être le plus exhaustif possible dans nos tests
-afin de permettre une meilleure testabilité présente et future et de permettre une utilisation
-plus confortable de l'interface graphique en se passant de lignes de commandes complexes.
+Pour la seconde phase, notre priorité sera d'être aussi exhaustifs que possible dans nos tests, 
+afin de garantir une meilleure testabilité présente et future. Nous visons également une utilisation plus flexible de l'interface graphique en lui implémentant un volet d'options.
 
-Enfin, lors de la dernière phase, la compréhension de la librairie devrait être suffisante
-donc notre priorité se tournera vers l'analyse du logiciel Hardy pour ensuite 
-implémenter A-SABR de manière efficace.
+Enfin, lors de la dernière phase, la compréhension de la bibliothèque devrait être suffisante ; 
+notre priorité se tournera donc vers l'analyse du logiciel Hardy pour tenter l'implémentation d'A-SABR.
 
-Planning prévu sous forme de diagramme de Gantt:
+\underline{\textbf{Planning prévu sous forme de diagramme de Gantt:}}
 
 \includegraphics[width=0.8\textwidth]{PlanningGantt.pdf}
 
