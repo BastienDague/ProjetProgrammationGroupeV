@@ -46,8 +46,11 @@ A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le
 \href{https://github.com/DTN-MTP/A-SABR}{Code de A-SABR}.
 
 A-SABR possède également une interface graphique codée en Rust pour se répresenter le fonctionnement d'A-SABR.
+Elle supporte le protocole UDP, TCP et BP.
 
-\href{https://github.com/DTN-MTP/dtchat-egui}{Code de l'interface graphique}.
+\href{https://github.com/DTN-MTP/dtchat-egui}{Front-End de l'interface graphique}.
+
+\href{https://github.com/DTN-MTP/dtchat-backend}{Back-End de l'interface graphique}
 
 \subsection{Hardy}
 
@@ -60,11 +63,13 @@ Il utilise le protocole BPv7.
 
 \section{Compte rendu de la réunion avec l'encadrant}
 
-La réunion à eu lieu le vendredi 12 décembre au LIRMM où tous le groupe était présent.
+La réunion à eu lieu le vendredi 12 décembre en début d'après midi au LIRMM où tous le groupe était présent.
 Mr De Jonckère nous à présenter le sujet en nous expliquant que tous n'était pas à faire, que c'était a nous de choisir ce qui nous semblait faisable.
-Il nous a présenté sa librairie ainsi qu'une petite démonstration de l'interface graphique, il nous a aussi vendue Rust et nous a fait un petit cours accéléré sur celui ci.
+\\Il nous a présenté sa librairie ainsi qu'une petite démonstration de l'interface graphique, 
+nous a exposé les avantages de l'utilisation de Rust, tous en nous faisant un cours introductif, et son utilisation dans le projet.
 
-On à dès lors exclue la partie no-std du sujet car trop dépendant du matériel et qui, selon Mr De Jonckère, serait très frustrante.
+
+On a dès lors exclue la partie no-std du sujet car trop dépendant du matériel et qui, selon Mr De Jonckère, serait très frustrante.
 
 Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nous nous sommes fixés :
 
@@ -75,14 +80,15 @@ Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nou
 
 \begin{itemize}
     \item \textbf{Modifications de l'interface graphique :}
-    \item[] Ajout d'un volet option dans l'interface graphique pour ne plus avoir à la lancer avec une immense commande et pouvoir tous configurer depuis celle-ci.
+    \item[] Ajout d'un volet option dans l'interface graphique pour recharger l'interface avec un algorithme et un contact plan donnée.
 \end{itemize}
 
 \begin{itemize}
     \item \textbf{Implémentation d'A-SABR dans Hardy :}
-    \item[] Ajout d'A-SABR dans le logiciel open-source de création de noeud DTN Hardy codé lui aussi en Rust.
+    \item[] Ajout d'A-SABR dans le logiciel open-source de création de noeud DTN Hardy.
 \end{itemize}
 
+\newpage
 
 \section{Cahier des charges}
 Pour ce projet, nous travaillerons dans le domaine des Delay-Tolerant Networks (DTN). Les DTN permettent
@@ -98,11 +104,29 @@ afin de permettre une configuration plus simple de celle-ci.
 
 Cette librarie, étant codé en Rust, nous travaillerons donc avec ce langage.
 Pour ce qui est de l'environnement de développement, nous utiliserons GitHub pour le
-suivi et un sous-enviroennement Linux (Ubuntu) pour le développement grâce à WSL.
+suivi et un sous-environnement Linux (Ubuntu) pour le développement grâce à WSL.
 
 
 
 \section{Première architecture du projet}
+
+Nous partons déjà d'une base de code fonctionnel, donc l'architecture du projet est déjà décidée et je vais l'expliquer ci dessous.
+
+\subsection{A-SABR}
+
+On a un premier depot contenant tous le code d'A-SABR, Celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets et le temps de stockages pour les arêtes. 
+\\Il utilise pour ça une adapation de l'algorithme de Dijkstra pour trouver le chemin le plus rapide et l'algorithme de Yen pour trouver les meilleurs routes sans boucles.
+\\ Une fois les test et l'interface graphique modifiée c'est cette bibliothèque qu'on tentera d'intégrer dans le logiciel Hardy.
+
+\subsubsection{Exercices}
+
+On le précise ici, mais dans le dépot A-SABR, il y a quelque exercice qui ont été mis de base pour un Hackaton et dont on va se servir pour prendre en main la librairie.
+
+
+\subsection{Dt-Chat}
+
+Comme dit dans l'introduction, une interface graphique existe pour se répresenter visuellement comment tous cela fonctionne. Elle est découpée en un back end et un front end.
+\\On va surtout travailler sur le back end pour pouvoir changer de contact plan et d'algorithme à la volée depuis l'interface.
 
 \section{Organisation interne du groupe}
 
@@ -110,14 +134,14 @@ suivi et un sous-enviroennement Linux (Ubuntu) pour le développement grâce à 
 Le projet se divisera en 3 phases:
 
 \begin{itemize}
-    \item Phase 1 : Apprentissage de Rust et travail sur les exercices du GitHub de Mr De Jonckère
+    \item \textbf{Phase 1 :} Apprentissage de Rust et travail sur les exercices du GitHub de Mr De Jonckère
 \end{itemize}
 \begin{itemize}
-    \item Phase 2 : Ajout d'une couverture de tests pour la librarie et l'interface graphique
+    \item \textbf{Phase 2 :} Ajout d'une couverture de tests pour la librarie et l'interface graphique
     en parallèle, implémentation de fonctions de paramétrage pour l'interface graphique
 \end{itemize}
 \begin{itemize}
-    \item Phase 3 : Implémentation de la librarie A-SABR dans le logiciel libre Hardy
+    \item \textbf{Phase 3 :} Implémentation de la librarie A-SABR dans le logiciel libre Hardy
 \end{itemize}
 
 La première phase sera l'une des plus essentielles car c'est celle qui nous
