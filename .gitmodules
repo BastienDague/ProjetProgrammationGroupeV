@@ -4,3 +4,6 @@
 [submodule "dtchat-egui"]
 	path = dtchat-egui
 	url = https://github.com/BastienDague/dtchat-egui.git
+[submodule "dtchat-backend"]
+	path = dtchat-backend
+	url = https://github.com/BastienDague/dtchat-backend.git
