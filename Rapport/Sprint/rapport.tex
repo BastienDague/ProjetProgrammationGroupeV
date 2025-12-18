@@ -35,14 +35,14 @@
 \newpage
 
 \section{Introduction}
-Pour cette première partie du rapport, nous allons expliquez certains noms et acronymes que nous utiliserons tous le long de celui ci.   
+Pour cette première partie du rapport, nous allons expliquer certains noms et acronymes que nous utiliserons tout au long de celui ci.   
 
 \subsection{A-SABR}
 
-Adaptive Schedule-Aware Bundle Routing ( A-SABR ) est un framework open-source crée en Rust pour les algorithmes de routage DTN (Delay-Tolerant Networking). Les reseaux DTN sont fait pour les connexions intermittente et planifiées, 
+Adaptive Schedule-Aware Bundle Routing ( A-SABR ) est un framework open-source crée en Rust pour les algorithmes de routage DTN (Delay-Tolerant Networking). Les réseaux DTN sont faits pour les connexions intermittentes et planifiées, 
 par exemple les satellites qui ont une fenêtre de connexion tous les X heures ou minutes.
 
-A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le message doit partir pour avoir le chemin le plus court et le moins énergivore possible tout en évitant la saturation.
+A-SABR va servir pour le routage de ce réseau en déterminant à quel moment le message doit partir pour avoir le chemin le plus court et soit le moins énergivore possible tout en évitant la saturation.
 
 \href{https://github.com/DTN-MTP/A-SABR}{Code de A-SABR}.
 
@@ -55,7 +55,7 @@ Elle simule le protocole UDP, TCP et BP.
 
 \subsection{Hardy}
 
-Pour finir, nous introduisons ici le logiciel open-source Hardy. Il s'agit du logiciel global que l'on pourrait donner à un satellite ou tous objet devans communiqué par réseau DTN.
+Pour finir, nous introduisons ici le logiciel open-source Hardy. Il s'agit du logiciel global que l'on pourrait donner à un satellite ou tout objet devant communiqué par réseau DTN.
 Il utilise le protocole BPv7.
 
 \href{https://github.com/ricktaylor/hardy}{Code de Hardy}.
@@ -64,23 +64,23 @@ Il utilise le protocole BPv7.
 
 \section{Compte rendu de la réunion avec l'encadrant}
 
-La réunion à eu lieu le vendredi 12 décembre en début d'après midi au LIRMM où tous le groupe était présent.
-Mr De Jonckère nous à présenter le sujet en nous expliquant que tous n'était pas à faire, que c'était a nous de choisir ce qui nous semblait faisable.
+La réunion a eu lieu le vendredi 12 décembre en début d'après midi au LIRMM où tout le groupe était présent.
+Mr De Jonckère nous a présenté le sujet en nous expliquant que tout n'était pas à faire, que c'était à nous de choisir ce qui nous semblait faisable.
 \\Il nous a présenté sa librairie ainsi qu'une petite démonstration de l'interface graphique, 
-nous a exposé les avantages de l'utilisation de Rust, tous en nous faisant un cours introductif, et son utilisation dans le projet.
+nous a exposé les avantages de l'utilisation de Rust, tout en nous faisant un cours introductif, et son utilisation dans le projet.
 
-Nous avons dès lors exclue la partie no-std du sujet car trop dépendant du matériel.
+Nous avons dès lors exclu la partie no-std du sujet car trop dépendant du matériel.
 
 Voici donc à l'issue de la réunion les 3 objectifs dont 2 prioritaires que nous nous sommes fixés :
 
 \begin{itemize}
     \item \textbf{Tests et Pipelines :}
-    \item[] Mise en place de test pour la bibliothèque A-SABR et l'interface graphique. \\Mise en place de Pipeline sur GitHub.
+    \item[] Mise en place de tests pour la bibliothèque A-SABR et l'interface graphique. \\Mise en place de Pipeline sur GitHub.
 \end{itemize} 
 
 \begin{itemize}
     \item \textbf{Modifications de l'interface graphique :}
-    \item[] Ajout d'un volet option dans l'interface graphique pour recharger l'interface avec un algorithme et un contact plan donnée.
+    \item[] Ajout d'un volet option dans l'interface graphique pour recharger l'interface avec un algorithme et un contact plan donnés.
 \end{itemize}
 
 \begin{itemize}
@@ -111,18 +111,18 @@ Nous partons déjà d'une base de code fonctionnel, donc l'architecture du proje
 
 \subsection{A-SABR}
 
-Nous avons un premier depot contenant tous le code d'A-SABR, Celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets, et le temps de stockages pour les arêtes. 
+Nous avons un premier dépôt contenant tout le code d'A-SABR, celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets, et le temps de stockages pour les arêtes. 
 \\Il utilise pour cela une adapation de l'algorithme de Dijkstra pour trouver le chemin le plus rapide et l'algorithme de Yen pour trouver les meilleurs routes sans boucles.
-\\ Une fois les test et l'interface graphique modifiée c'est cette bibliothèque qu'on tentera d'intégrer dans le logiciel Hardy.
+\\ Une fois les tests et l'interface graphique modifiés c'est cette bibliothèque qu'on tentera d'intégrer dans le logiciel Hardy.
 
 \subsubsection{Exercices}
 
-Nous le précisons ici, mais dans le dépot A-SABR, il y a quelque exercice qui ont été mis de base pour un Hackaton et dont on va se servir pour prendre en main la librairie.
+Nous le précisons ici, mais dans le dépot A-SABR, il y a quelques exercices qui ont été mis de base pour un Hackaton et dont on va se servir pour prendre en main la librairie.
 
 
 \subsection{Dt-Chat}
 
-Comme dit dans l'introduction, une interface graphique existe pour se répresenter visuellement comment tous cela fonctionne. Elle est découpée en un back end et un front end.
+Comme dit dans l'introduction, une interface graphique existe pour se répresenter visuellement comment tout cela fonctionne. Elle est découpée en un back end et un front end.
 \\Nous allons travailler sur le back end pour qu'il accepte de se recharger avec un algorithme et/ou un contact plan différent,
 et sur le front end pour un nouvel onglet option qui contiendra une option changement de contact plan par ajout de fichier ou changement d'algorithme parmi ceux proposés.
 
@@ -192,30 +192,30 @@ notre priorité se tournera donc vers l'analyse du logiciel Hardy pour tenter l'
 
 Pour le moment il s'agit surtout de prendre en main Rust par sa documentation, et la librairie par les exercices qu'elle propose, donc nous n'avons pas de prototype réalisé.
 
-Néamoins, Vincent à proposer un petit changement sur le back end dans une branche dédiée, 
+Néamoins, Vincent à proposé un petit changement sur le back end dans une branche dédiée, 
 avec la modification d'une fonction pour qu'elle accepte un choix d'algo en plus du contact plan qu'elle accepte déjà et 
-à créer une fonction update pour recharger l'interface avec un algo et/ou un contact plan différent.\\
+a crée une fonction update pour recharger l'interface avec un algo et/ou un contact plan différent.\\
 
 \includegraphics[width=1\textwidth]{try_init.png}
 
 Ici premièrement, nous modifions la signature de \texttt{try\_init} pour qu'elle accepte en plus du contact plan habituelle,
-un algorithme passé sous forme de \texttt{\&str}, les algorithmes étant déjà notés telle qu'elle en dur dans le code.
+un algorithme passé sous forme de \texttt{\&str}, les algorithmes étant déjà notés tels quels en dur dans le code.
 
 \includegraphics[width=1\textwidth]{prediction.png}
 
-Nous corrigeons du coup l'appel de la fonction associé \texttt{try\_init} de \texttt{PredictionConfig}.\\
-\texttt{PredictionConfig} est la structure contenant l'inistialisation des paramètre lors du lancement de l'interface graphique.
+Nous corrigeons donc l'appel de la fonction associé \texttt{try\_init} de \texttt{PredictionConfig}.\\
+\texttt{PredictionConfig} est la structure contenant l'inistialisation des paramètres lors du lancement de l'interface graphique.
 
 \includegraphics[width=1\textwidth]{update.png}
 
-Pour finir, dans la structure \texttt{ChatModel}, nous créer une fonction \texttt{Update} qui sera appelé à chaque modification
-du contact plan ou de l'algorithme dans le volet Options qui sera créer dans l'interface. Il s'agit simplement de faire un match
+Pour finir, dans la structure \texttt{ChatModel}, nous créons une fonction \texttt{Update} qui sera appelée à chaque modification
+du contact plan ou de l'algorithme dans le volet Options qui sera crée dans l'interface. Il s'agit simplement de faire un match
 en rappellant \texttt{PredictionConfig::try\_init}, et si \texttt{Ok}, on reload avec les nouveaux résultats, sinon \texttt{Error}
 et on envoie l'erreur à l'interface sans crash.
 
-Vincent à écrit ses fonctions en lisant attentivement le code et en retraçant quel fonction est appelé en utilisant le contact plan.
+Vincent a écrit ses fonctions en lisant attentivement le code et en retraçant quel fonction est appelée en utilisant le contact plan.
 
-Les modifications passent un \texttt{cargo check} et un \texttt{cargo build}, il faut maintenant modifier le front pour voir si elle font
-bien ce qui est demandée.
+Les modifications passent un \texttt{cargo check} et un \texttt{cargo build}, il faut maintenant modifier le front pour voir si elles font
+bien ce qui est demandé.
 
 \end{document}
