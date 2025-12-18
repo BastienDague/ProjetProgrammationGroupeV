@@ -112,7 +112,7 @@ Nous partons déjà d'une base de code fonctionnel, donc l'architecture du proje
 \subsection{A-SABR}
 
 Nous avons un premier depot contenant tous le code d'A-SABR, Celui-ci va transformer un Contact Plan, en un graphe de contact contenant les opportunité de transmissions pour les sommets, et le temps de stockages pour les arêtes. 
-\\Il utilise pour ça une adapation de l'algorithme de Dijkstra pour trouver le chemin le plus rapide et l'algorithme de Yen pour trouver les meilleurs routes sans boucles.
+\\Il utilise pour cela une adapation de l'algorithme de Dijkstra pour trouver le chemin le plus rapide et l'algorithme de Yen pour trouver les meilleurs routes sans boucles.
 \\ Une fois les test et l'interface graphique modifiée c'est cette bibliothèque qu'on tentera d'intégrer dans le logiciel Hardy.
 
 \subsubsection{Exercices}
@@ -123,7 +123,8 @@ Nous le précisons ici, mais dans le dépot A-SABR, il y a quelque exercice qui 
 \subsection{Dt-Chat}
 
 Comme dit dans l'introduction, une interface graphique existe pour se répresenter visuellement comment tous cela fonctionne. Elle est découpée en un back end et un front end.
-\\Nous allons surtout travailler sur le back end pour pouvoir changer de contact plan et d'algorithme à la volée depuis l'interface.
+\\Nous allons travailler sur le back end pour qu'il accepte de se recharger avec un algorithme et/ou un contact plan différent,
+et sur le front end pour un nouvel onglet option qui contiendra une option changement de contact plan par ajout de fichier ou changement d'algorithme parmi ceux proposés.
 
 \newpage
 
@@ -136,9 +137,11 @@ Ensuite, pour ce qui est de la répartition des tâches, nous avons évalué au 
 le travail demandé pour chaque objectif afin de répartir le travail de manière efficace.
 Ainsi, quand la première phase d'apprentissage et de prise en main de Rust sera terminée,
 nous répartirons le groupe de cette manière:
+
 \begin{itemize}
-    \item \textbf{Tests et Pipelines :} Yassine Jouini et Bastien Dague
-    \item \textbf{Modifications de l'interface graphique :} Samy Al-Faraj et Vincent Brochard
+    \item \textbf{Tests A-SABR et Pipelines :} Bastien Dague et Samy Al-Faraj
+    \item \textbf{Modifications de l'interface graphique :} Vincent Brochard
+    \item \textbf{Tests interface graphique :} Yassine Jouini
     \item \textbf{Implémentation d'A-SABR dans Hardy :} Tout le groupe
 \end{itemize}
 
@@ -181,10 +184,38 @@ notre priorité se tournera donc vers l'analyse du logiciel Hardy pour tenter l'
 
 \underline{\textbf{Planning prévu sous forme de diagramme de Gantt:}}
 
-\includegraphics[width=0.8\textwidth]{PlanningGantt.pdf}
+\includegraphics[width=0.7\textwidth]{PlanningGantt.pdf}
+
+\newpage
 
 \section{Prototype réalisé}
 
+Pour le moment il s'agit surtout de prendre en main Rust par sa documentation, et la librairie par les exercices qu'elle propose, donc nous n'avons pas de prototype réalisé.
 
+Néamoins, Vincent à proposer un petit changement sur le back end dans une branche dédiée, 
+avec la modification de deux fonctions pour qu'elle accepte un choix d'algo et 
+à créer une fonction update pour recharger l'interface avec un algo et/ou un contact plan différent.\\
+
+\includegraphics[width=1\textwidth]{try_init.png}
+
+Ici premièrement, nous modifions la signature de \texttt{try\_init} pour qu'elle accepte en plus du contact plan habituelle,
+un algorithme passé sous forme de \texttt{\&str}, les algorithmes étant déjà notés telle qu'elle en dur dans le code.
+
+\includegraphics[width=1\textwidth]{prediction.png}
+
+Nous corrigeons du coup l'appel de la fonction associé \texttt{try\_init} de \texttt{PredictionConfig}.\\
+\texttt{PredictionConfig} est la structure contenant l'inistialisation des paramètre lors du lancement de l'interface graphique.
+
+\includegraphics[width=1\textwidth]{update.png}
+
+Pour finir, dans la structure \texttt{ChatModel}, nous créer une fonction \texttt{Update} qui sera appelé à chaque modification
+du contact plan ou de l'algorithme dans le volet Options qui sera créer dans l'interface. Il s'agit simplement de faire un match
+en rappellant \texttt{PredictionConfig::try\_init}, et si \texttt{Ok}, on reload avec les nouveaux résultats, sinon \texttt{Error}
+et on envoie l'erreur à l'interface sans crash.
+
+Vincent à écrit ses fonctions en lisant attentivement le code et en retraçant quel fonction est appelé en utilisant le contact plan.
+
+Les modifications passent un \texttt{cargo check} et un \texttt{cargo build}, il faut maintenant modifier le front pour voir si elle font
+bien ce qui est demandée.
 
 \end{document}
