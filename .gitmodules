@@ -7,3 +7,6 @@
 [submodule "dtchat-backend"]
 	path = dtchat-backend
 	url = https://github.com/BastienDague/dtchat-backend.git
+[submodule "bp-socket"]
+	path = bp-socket
+	url = git@github.com:BastienDague/bp-socket.git
