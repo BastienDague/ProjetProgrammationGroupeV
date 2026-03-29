@@ -10,6 +10,14 @@
 *.synctex.gz
 *.vrb
 *.gz
+*.acn
+*.glo
+*.ist
+*.glsdefs
+*.gls
+*.glg
+*.acr
+*.alg
 Rapport/Sprint/rapport.pdf
 ProjetProgrammationGroupeV\Rapport\Sprint\rapport.pdf
 Cargo.lock
