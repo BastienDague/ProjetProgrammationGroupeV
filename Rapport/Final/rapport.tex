@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel} 
+\usepackage{mathptmx}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{a4paper, margin=2cm}
+
+\usepackage[
+    colorlinks=true,        
+    linkcolor=black,
+    urlcolor=blue,          
+    citecolor=green,        
+    pdftitle={Rapport du Sprint de Décembre 2026}, 
+]{hyperref}
+
+\usepackage[acronym, toc]{glossaries}
+\makeglossaries
+
+\newacronym[
+    description={Architecture réseau permettant aux nœuds d'opérer selon une stratégie "store-carry-forward" pour pallier les délais interplanétaires et les interruptions causées par les dynamiques orbitales}
+]{dtn}{DTN}{Delay-Tolerant Networking}
+
+\newacronym[
+    description={Standard spécifiant l'approche recommandée pour le routage dans des topologies déterministes et planifiées}
+]{sabr}{SABR}{Schedule-Aware Bundle Routing}
+
+\newacronym[
+    description={Framework d'implémentation de divers variantes SABR}
+]{a-sabr}{A-SABR}{Adaptive Library for Schedule-Aware Bundle Routing}
+
+\setlength{\parskip}{1ex plus 1pt}
+\title{Rapport Final du Projet de Programmation 2}
+\author{Groupe 22 : DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent}
+\date{2025 - 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\newpage
+\printglossary[type=\acronymtype, title={Glossaire et Abréviations}, style=altlist]
+
+\newpage
+\section{Introduction}
+Le projet porte sur le protocole \gls{dtn}. 
+Nous utilisons les concepts du \gls{dtn} pour gérer les délais inhérents aux distances interplanétaires. 
+L'implémentation s'appuie également sur le standard \gls{sabr}.
+\gls{a-sabr}
+
+\newpage
+\section{Développements Logiciel : Conception, Modélisation, Implémentation}
+\subsection{Présentation}
+
+\end{document}
