@@ -34,6 +34,14 @@
     description={Structure de données centrale du projet représentant le réseau. Contient les nœuds (senders/receivers) et les contacts entre eux. Permet plusieurs contacts entre une même paire de nœuds à des moments différents, d'où le préfixe "multi".}
 ]{mg}{Multigraph}{Multigraph}
 
+\newacronym[
+    description={Mécanisme du Dynamic Loader des systèmes UNIX permettant de charger un module dont les fonctions seront utilisées en priorités avant celles de la glibC}
+]{ldp}{PRELOAD}{LD\_PRELOAD}
+
+\newacronym[
+    description={Type spécifique de socket utilisée dans le cas des DTN}
+]{bp}{BP Socket}{Bundle Protocole Socket}
+
 \setlength{\parskip}{1ex plus 1pt}
 \title{Rapport Final du Projet de Programmation 2}
 \author{Groupe 22 : DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent}
@@ -76,16 +84,18 @@ On commence une tâche, on la trouve accompli, on lance une Pull Request, on dis
 Arrivé à la fin du projet voici les réels objectifs accompli :  \\
 \begin{itemize}
     \item Création de l'onglet Options dans l'interface graphique DT-Chat : \\
-    On à créer ici un volet option dans l'interface DT-Chat permettant de changer à la volée d'algorithme et/ou de \gls{cp} \\
+    Développement d'un volet « Options » dans l'interface graphique DT-Chat : Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, l'algorithme de routage utilisé ou le \gls{cp} chargé. \\
     
-    \item Ajout de tests sur plusieurs module principals ainsi que la création d'une pipeline robuste :
-    Bastien à travailler longueument à construire une pipeline robuste et qui conviendrait pour tous le long du developpment futur de la libraire,
-    le reste de l'équipe à elle eux chacun un module à tester\\
+    \item Industrialisation et Qualité Logicielle : \\
+    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par une campagne de tests unitaires couvrant les modules principaux du projet.\\
 
-    \item Experimentation de l'utilisation du LD Preload pour le type de socket BP : \\
-    Pendant le dernier mois du projet, nous avons travaillé sur le depot BP Socket, qui est l'Implémentation du type de socket utilise dans les \gls{dtn}.
+    \item Experimentation de l'utilisation de \gls{ldp} pour l'implémentation de \gls{bp} : \\
+    Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
 
-    BP Socket telle qu'elle à été développée utilise un module kernel nécessitant les droit root pour être utilisée hors le projet à pour but final d'être utilisée en no-std donc sans droit root possible, le but de cette objectif était donc de palier à ceci.
+    \gls{bp} telle qu'elle à été développée utilise un module kernel nécessitant les droit root pour être utilisée.
+    L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp} vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
+
+    Ce dernier objectif est une total découverte de ce mécanisme offert par le Dynamic Loader et toute avancée même non complète intéresse Mr De Jonckère.
 \end{itemize}
 
 
