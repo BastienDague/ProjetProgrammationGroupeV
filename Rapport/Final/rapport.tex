@@ -19,16 +19,20 @@
 \makeglossaries
 
 \newacronym[
-    description={Architecture réseau permettant aux nœuds d'opérer selon une stratégie "store-carry-forward" pour pallier les délais interplanétaires et les interruptions causées par les dynamiques orbitales}
+    description={Réseau tolérant aux délais et aux ruptures de connectivité, où les nœuds ne sont pas forcément connectés en permanence. Les données sont transmises de manière opportuniste via des contacts planifiés.}
 ]{dtn}{DTN}{Delay-Tolerant Networking}
 
 \newacronym[
-    description={Standard spécifiant l'approche recommandée pour le routage dans des topologies déterministes et planifiées}
+    description={Plan de contacts. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.}
+]{cp}{CP}{Contact Plan}
+
+\newacronym[
+    description={Algorithme de routage pour réseaux DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds.}
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
-    description={Framework d'implémentation de divers variantes SABR}
-]{a-sabr}{A-SABR}{Adaptive Library for Schedule-Aware Bundle Routing}
+    description={Structure de données centrale du projet représentant le réseau. Contient les nœuds (senders/receivers) et les contacts entre eux. Permet plusieurs contacts entre une même paire de nœuds à des moments différents, d'où le préfixe "multi".}
+]{mg}{Multigraph}{Multigraph}
 
 \setlength{\parskip}{1ex plus 1pt}
 \title{Rapport Final du Projet de Programmation 2}
@@ -45,10 +49,50 @@
 
 \newpage
 \section{Introduction}
-Le projet porte sur le protocole \gls{dtn}. 
-Nous utilisons les concepts du \gls{dtn} pour gérer les délais inhérents aux distances interplanétaires. 
-L'implémentation s'appuie également sur le standard \gls{sabr}.
-\gls{a-sabr}
+\subsection{A-SABR}
+Notre projet de programmation porte sur la librairie ASABR, portée par Mr Olivier De Jonckère du LIRMM.
+
+Le réseau de communication spacial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effecture par des algorithmes de type \gls{sabr}.\\
+
+La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.
+C'est également pour suivre ce choix de performance que celle-ci est programmé en Rust, language connue pour son compilateur stricte et sa fine gestion de la mémoire.
+
+\subsection{Sujet}
+
+Le sujet présentait plusieurs point à aborder : \\
+\begin{itemize}
+    \item Portage au no-std
+    \item Divers tâche de DevOps (Tests, Pipeline)
+    \item Création d'un nouvel onglet dans l'interface graphique DT-Chat
+    \item Intégration dans le logiciel Hardy \\
+\end{itemize}
+
+
+Au final, tout à été un peu chamboulé, le no-std à été abbandonnée, l'intégration à Hardy jugée peut intéressante. \\
+
+Nous avons surtout compris qu'ici on ne dépendait pas seulement de nous mais qu'il s'agissait d'un immense travail d'équipe.
+On commence une tâche, on la trouve accompli, on lance une Pull Request, on discute, on modifie, tous ça prend un certain temps et nécessite beaucoup de vas et viens.\\
+
+Arrivé à la fin du projet voici les réels objectifs accompli :  \\
+\begin{itemize}
+    \item Création de l'onglet Options dans l'interface graphique DT-Chat : \\
+    On à créer ici un volet option dans l'interface DT-Chat permettant de changer à la volée d'algorithme et/ou de \gls{cp} \\
+    
+    \item Ajout de tests sur plusieurs module principals ainsi que la création d'une pipeline robuste :
+    Bastien à travailler longueument à construire une pipeline robuste et qui conviendrait pour tous le long du developpment futur de la libraire,
+    le reste de l'équipe à elle eux chacun un module à tester\\
+
+    \item Experimentation de l'utilisation du LD Preload pour le type de socket BP : \\
+    Pendant le dernier mois du projet, nous avons travaillé sur le depot BP Socket, qui est l'Implémentation du type de socket utilise dans les \gls{dtn}.
+
+    BP Socket telle qu'elle à été développée utilise un module kernel nécessitant les droit root pour être utilisée hors le projet à pour but final d'être utilisée en no-std donc sans droit root possible, le but de cette objectif était donc de palier à ceci.
+\end{itemize}
+
+
+
+
+
+
 
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
