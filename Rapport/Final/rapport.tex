@@ -42,9 +42,8 @@
     description={Type spécifique de socket utilisée dans le cas des DTN}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
-\setlength{\parskip}{1ex plus 1pt}
-\title{Rapport Final du Projet de Programmation 2}
-\author{Groupe 22 : DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent}
+\title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
+\author{DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent \\ \small L3 Informatique - Faculté des Sciences - Université de Montpellier}
 \date{2025 - 2026}
 
 \begin{document}
@@ -67,6 +66,12 @@ C'est également pour suivre ce choix de performance que celle-ci est programmé
 
 \subsection{Sujet}
 
+L'intérêt pour ce sujet a été immédiat au sein de notre groupe, motivé par la perspective de contribuer à un projet Open Source d'envergure réelle. 
+Ce cadre de travail nous a offert l'opportunité de nous initier au langage Rust, 
+dont la montée en puissance dans l'industrie logicielle souligne l'importance actuelle. 
+Pour plusieurs membres de l'équipe aspirant à se spécialiser en informatique système (bas niveau) ou en 
+réseaux, ce projet constituait une application concrète et exigeante de nos ambitions professionnelles.\\
+
 Le sujet présentait plusieurs point à aborder : \\
 \begin{itemize}
     \item Portage au no-std
@@ -82,30 +87,42 @@ Nous avons surtout compris qu'ici on ne dépendait pas seulement de nous mais qu
 On commence une tâche, on la trouve accompli, on lance une Pull Request, on discute, on modifie, tous ça prend un certain temps et nécessite beaucoup de vas et viens.\\
 
 Arrivé à la fin du projet voici les réels objectifs accompli :  \\
-\begin{itemize}
-    \item Création de l'onglet Options dans l'interface graphique DT-Chat : \\
-    Développement d'un volet « Options » dans l'interface graphique DT-Chat : Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, l'algorithme de routage utilisé ou le \gls{cp} chargé. \\
-    
-    \item Industrialisation et Qualité Logicielle : \\
-    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par une campagne de tests unitaires couvrant les modules principaux du projet.\\
 
-    \item Experimentation de l'utilisation de \gls{ldp} pour l'implémentation de \gls{bp} : \\
+\begin{description}
+    \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, l'algorithme de routage utilisé ou le \gls{cp} chargé.
+    
+    \item[Industrialisation (CI/CD) :] M    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par une campagne de tests unitaires couvrant les modules principaux du projet.\\
+
+    \item[Expérimentation Système (BP Socket) :] 
     Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
 
-    \gls{bp} telle qu'elle à été développée utilise un module kernel nécessitant les droit root pour être utilisée.
-    L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp} vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
+    \gls{bp} telle qu'elle à été développée utilise un module kernel nécessitant 
+    les droit root pour être utilisée.
+    L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp}
+    vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
 
-    Ce dernier objectif est une total découverte de ce mécanisme offert par le Dynamic Loader et toute avancée même non complète intéresse Mr De Jonckère.
-\end{itemize}
-
-
-
-
-
+    Ce dernier objectif est une total découverte de ce mécanisme offert par le Dynamic Loader et 
+    toute avancée même non complète intéresse Mr De Jonckère.
+\end{description}
 
 
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
-\subsection{Présentation}
+\subsection{DT-Chat}
+\subsubsection[DT-Chat Backend]{Backend}
+\subsubsection[DT-Chat Frontend]{Frontend}
+\subsection{Pipeline}
+Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise bien sur que ça à été PR etc etc
 
+\subsection{Test A-SABR}
+\subsubsection[Module : Contact Manager]{Contact Manager}
+Ici ta partie Yassine, que tu partagera surement avec Bastien et/ou Samy mais c'est ton module
+
+\subsubsection[Module : Pathfinding]{Pathfinding}
+\paragraph{Try\_make\_hop :}~\\\\
+Ici ta partie Samy
+
+\paragraph{Contact,Hybrid et Node parenting :}~\\\\
+
+\subsection{BP-Socket}
 \end{document}
