@@ -19,15 +19,15 @@
 \makeglossaries
 
 \newacronym[
-    description={Réseau tolérant aux délais et aux ruptures de connectivité, où les nœuds ne sont pas forcément connectés en permanence. Les données sont transmises de manière opportuniste via des contacts planifiés.}
+    description={Delay-Tolerant Networking. Réseau tolérant aux délais et aux ruptures de connectivité, où les nœuds ne sont pas forcément connectés en permanence. Les données sont transmises de manière opportuniste via des contacts planifiés.}
 ]{dtn}{DTN}{Delay-Tolerant Networking}
 
 \newacronym[
-    description={Plan de contacts. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.}
+    description={Contact Plan. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.}
 ]{cp}{CP}{Contact Plan}
 
 \newacronym[
-    description={Algorithme de routage pour réseaux DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds.}
+    description={Schedule-Aware Bundle Routing. Algorithme de routage pour réseaux DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds. \cite{sabr}}
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
@@ -39,7 +39,7 @@
 ]{ldp}{PRELOAD}{LD\_PRELOAD}
 
 \newacronym[
-    description={Type spécifique de socket utilisée dans le cas des DTN}
+    description={Bundle Protocole Socket. Type spécifique de socket utilisée dans le cas des DTN}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
 \title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
@@ -61,7 +61,7 @@ Notre projet de programmation porte sur la librairie ASABR, portée par Mr Olivi
 
 Le réseau de communication spacial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effecture par des algorithmes de type \gls{sabr}.\\
 
-La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.
+La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.\cite{sabr}
 C'est également pour suivre ce choix de performance que celle-ci est programmé en Rust, language connue pour son compilateur stricte et sa fine gestion de la mémoire.
 
 \subsection{Sujet}
@@ -125,4 +125,17 @@ Ici ta partie Samy
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
 
 \subsection{BP-Socket}
+
+\begin{thebibliography}{9} 
+
+\bibitem{sabr} 
+J. A. Fraire, O. De Jonckère, and S. Burleigh \textit{Routing in the space internet: A
+contact graph routing tutorial.}, Journal of Network and Computer Applications, 174, 102884.
+
+\bibitem{sabr} 
+O. De Jonckère, L. Ma, and J. A. Fraire. (1994) \textit{\LaTeX : -SABR: The Adaptive Library for Schedule-Aware Bundle
+Routing.}, WiSEE 2025 - IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025,
+Halifax, Canada.
+
+\end{thebibliography}
 \end{document}
