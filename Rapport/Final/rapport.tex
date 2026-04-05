@@ -5,6 +5,7 @@
 \usepackage{mathptmx}
 \usepackage{geometry}
 \usepackage{graphicx}
+\usepackage{minted}
 \geometry{a4paper, margin=2cm}
 
 \usepackage[
@@ -23,7 +24,8 @@
 ]{dtn}{DTN}{Delay-Tolerant Networking}
 
 \newacronym[
-    description={Contact Plan. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.}
+    description={Contact Plan. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.
+    Lu par la bibliothèque, il est transformé en \gls{mg}}
 ]{cp}{CP}{Contact Plan}
 
 \newacronym[
@@ -31,8 +33,13 @@
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
-    description={Structure de données centrale du projet représentant le réseau. Contient les nœuds (senders/receivers) et les contacts entre eux. Permet plusieurs contacts entre une même paire de nœuds à des moments différents, d'où le préfixe "multi".}
+    description={Structure de données centrale du projet représentant le réseau. Contient les nœuds (senders/receivers) et les contacts. Permet plusieurs contacts entre une même paire de nœuds à des moments différents, d'où le préfixe "multi"}
 ]{mg}{Multigraph}{Multigraph}
+
+\newacronym[
+    description={Equivalent du paquet dans les échanges tradionnels, se définit par sa source, sa ou ses destinations,
+    sa priorité,  sa taille et son délai d'expiration.}
+]{bundle}{Bundle}{Bundle}
 
 \newacronym[
     description={Mécanisme du Dynamic Loader des systèmes UNIX permettant de charger un module dont les fonctions seront utilisées en priorités avant celles de la glibC}
@@ -89,9 +96,13 @@ On commence une tâche, on la trouve accompli, on lance une Pull Request, on dis
 Arrivé à la fin du projet voici les réels objectifs accompli :  \\
 
 \begin{description}
-    \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, l'algorithme de routage utilisé ou le \gls{cp} chargé.
+    \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : 
+    Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, 
+    l'algorithme de routage utilisé ou le \gls{cp} chargé. \\
     
-    \item[Industrialisation (CI/CD) :] M    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par une campagne de tests unitaires couvrant les modules principaux du projet.\\
+    \item[Automatisation de test unitaires :] 
+    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par la mise en place de plusieurs tests unitaires couvrant les modules principaux du projet.
+    La pipeline teste la compilation, l'execution des tests ainsi que la rédaction de la coverage sous forme d'HTML\\
 
     \item[Expérimentation Système (BP Socket) :] 
     Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
@@ -123,16 +134,117 @@ Ici ta partie Yassine, que tu partagera surement avec Bastien et/ou Samy mais c'
 Ici ta partie Samy
 
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
+Contact,Hybride et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
+
+Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimal.
+Elle peut manquer le chemin le plus optimal car s'arrête dès qu'un chemin optimal est trouvé par rapport à un autre. \\
+
+Contact explore lui le \gls{mg} par contact plutôt que par noeud, il va utiliser une "Work Area", permettant
+d'ignorer des noeuds intermédiaires si un moindre nombre de sauts peut être effectuée. \\
+
+Hybrid est la plus complète mais également la plus complexe, il va maintenir une liste de potentiel route optimal
+tous le long du parcours, puis, grâce au fonction "can\_retain" et "must\_prune", va décider laquelle garder.\\
+
+Chacunes de ces variantes possédent les 3 mêmes macros :
+\begin{itemize}
+    \item Path : Le chemin telle que renvoyé par l'algo
+    \item PathExcl : Si l'on veut exclure un noeud précis.
+    \item TreeExcl : Pour avoir l'arbre complet du chemin avec exclusion\\
+\end{itemize}
+
+Les tests sonts simples, on créer plusieurs \gls{mg} auquel on applique chacunes des macros,
+on utilise le manager le plus simple possible pour ne rendre le test trop lourd, on applique en dernier la méthode Hop et la méthode SABR 
+pour avoir le plus de données de test possible.
+
+Les résultats attendues sont le nombre de saut réalisés, et le temps d'arrivée.
+Pour les cas d'exclusion, on donne comme objectif par exemple le noeud 3 en excluant le noeud 2 et l'on doit avoir en retour un échec du au noeud exclus.\\
+
+Dans un soucis de lisibilité et de maintienabilité du code, toute les fonctions de création d'objets (noeud,contact,bundle,multigraph)
+sont réunis dans un fichiers à part (test\_helpers.rs). De cette manière, seul les tests sont présents dans leur fichiers cibles. \\
+
+Prenons un test en particulier et décryptons le : \label{testPathFinding} \ref{CodetestPathFinding} (Cliquer sur le numéro pour être envoyé à l'annexe correspondant) \\
+
+Nous avons donc une première fonction qui va créer le \gls{mg} auquel on va applique nos tests, le multigraph créer possèdents
+5 noeuds qui n'ont pas de manager pour faire au plus simple et de 5 contacts.
+
+Exemple le premier contact émet du noeud 0 au noeud 1, début du contact à 0 et fin à 10, débit de 1 octets/seconde et aucun délai de propagation.
+
 
 \subsection{BP-Socket}
 
-\begin{thebibliography}{9} 
+\newpage
+\section{Algorithmes et Structures de Données}
+
+\newpage
+\section{Analyse des résultats}
+
+\newpage
+\section{Gestion du Projet}
+
+\newpage
+\section{Bilan et Conclusions}
+
+\newpage
+\section{Annexe de codes}
+
+
+\label{CodetestPathFinding}
+\ref{testPathFinding} (Cliquer sur le chapitre pour revenir au texte correspondant)
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+pub(crate) fn exemple_2_graph()
+-> Result<Rc<RefCell<Multigraph<NoManagement, EVLManager>>>, ASABRError> {
+    Ok(Rc::new(RefCell::new(Multigraph::new(ContactPlan::new(
+        vec![
+            make_node(0, "source", NoManagement {}),
+            make_node(1, "from_C0", NoManagement {}),
+            make_node(2, "from_C2_C1", NoManagement {}),
+            make_node(3, "from_C3", NoManagement {}),
+            make_node(4, "from_C4", NoManagement {}),
+        ],
+        vec![
+            make_contact::<NoManagement>(0, 1, 0.0, 10.0, 1.0, 0.0),
+            make_contact::<NoManagement>(0, 2, 25.0, 35.0, 1.0, 0.0),
+            make_contact::<NoManagement>(1, 2, 10.0, 20.0, 1.0, 0.0),
+            make_contact::<NoManagement>(2, 3, 20.0, 40.0, 1.0, 0.0),
+            make_contact::<NoManagement>(3, 4, 50.0, 60.0, 1.0, 0.0),
+        ],
+        None,
+    )?)?)))
+}
+
+fn test_exemple_2() -> Result<(), ASABRError> {
+        let mg = exemple_2_graph()?;
+
+        let mut algo_hop = NodeParentingPath::<NoManagement, EVLManager, Hop>::new(mg.clone());
+        let mut algo_sabr = NodeParentingPath::<NoManagement, EVLManager, SABR>::new(mg.clone());
+
+        let bundle = make_bundle(4, 0, 0.0, 1000.0);
+
+        let res_hop = algo_hop
+            .get_next(0.0, 0, &bundle, &[][..])
+            .expect("Routing Failed !");
+
+        assert_time_hop(&res_hop, 4, 50.0, 3, "Hop");
+
+        let res_sabr = algo_sabr
+            .get_next(0.0, 0, &bundle, &[][..])
+            .expect("Routing Failed !");
+
+        assert_time_hop(&res_sabr, 4, 50.0, 4, "SABR");
+
+        Ok(())
+    }
+}
+\end{minted}
+
+\newpage
+\begin{thebibliography}{3} 
 
 \bibitem{sabr} 
 J. A. Fraire, O. De Jonckère, and S. Burleigh \textit{Routing in the space internet: A
 contact graph routing tutorial.}, Journal of Network and Computer Applications, 174, 102884.
 
-\bibitem{sabr} 
+\bibitem{a-sabr} 
 O. De Jonckère, L. Ma, and J. A. Fraire. (1994) \textit{\LaTeX : -SABR: The Adaptive Library for Schedule-Aware Bundle
 Routing.}, WiSEE 2025 - IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025,
 Halifax, Canada.
