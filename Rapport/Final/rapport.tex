@@ -120,6 +120,9 @@ Arrivé à la fin du projet voici les réels objectifs accompli :  \\
     toute avancée même non complète intéresse Mr De Jonckère.
 \end{description}
 
+La compilation de la librairie et de l'interface graphique nécessitant divers paquet Linux, notre travail à été 
+réalisé soit par WSL, soit directement depuis une distribution Linux.
+
 
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
@@ -131,11 +134,11 @@ Elle supporte UDP,TCP et \gls{bp}.
     \includegraphics[width=0.49\textwidth]{DT_Message.png}
     \hfill 
     \includegraphics[width=0.49\textwidth]{DT_Network.png}
-    \caption{Onglet Message (gauche) et Events (droite) de DT-Chat}
+    \caption{Onglet Message (gauche) et Events (droite) d'un terminal DT-Chat}
     \label{fig:comparaison_dt}
 \end{figure}
 
-A gauche nous pouvons voir l'onglet principal, nous voyons un graph des différents message envoyée,
+A gauche nous pouvons voir l'onglet principal, nous voyons un graphique des différents message envoyée,
 un rectangle vert signifie un message envoyée et reçu avec confirmation. En bas il y a la possibilité de choisir 
 entre UDP,TCP et \gls{bp}. Egalement, il y a la possibilité de cocher la méthode A-SABR, ceci permet qu'a l'envoie d'un message
 l'application prédit et indique le moment où le message devrait être reçu par le recepteur.\\
@@ -146,12 +149,32 @@ A gauche le recapitulatif de l'interaction logicielle et à droite celle du rese
 Sur cette exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP, 1 \gls{bp}.
 \gls{bp} dans le network Event est marqué comme UDP car il s'agit d'une variante d'UDP.\\
 
+L'objectif sur cette interface graphique est de créer un nouvel onglet Options permettant de changer à la volée 
+de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois coté Backend et FrontEnd\\
+
 Maintenant, détaillons le travail effectuée sur chacun des parties de cette interface.
 
+\subsubsection[DT-Chat Backend]{Backend} \label{DTBackend} \ref{CodeDTBackend} (Cliquez sur le numéro pour accéder au code)\\\\
+Premièrement, on créer une fonction update tiré de la fonction start de l'interface, celle-ci prend en argument un str et un chemin de fichier.
+Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme try\_init pour qu'elle prenne également un str et un chemin de fichier, on récupère également les valeurs de 
+départ qu'on met dans l'appel de la fonction. try\_init à aussi été modifie pour retourner le nombre de node et de contact trouvée dans le \gls{cp} chargé.\\
+
+La fonction update prend donc en entrée un str qui correspond au nom de l'algorithme utilisée, et 
+un Path sous forme de string qui correspondra au chemin jusqu'au \gls{cp}.
+
+Elle va ensuite faire un match sur \texttt{"PredictionConfig::try\_init(path.clone(), algo)"} qui retournera donc un Result,
+pour empêcher un crash total de l'interface au moindre soucis.
+
+Si Ok alors on met à jour la configuration qu'on envoie au Frontent et on l'affiche dans l'App Event,
+si Err, on retourne l'erreur et on l'affiche dans l'App Event.
+
+Etant basé sur A-SABR, il faut régulièrement faire de petite modif dûe à des refactorisation de fonction ou de
+l'ajout de Result remplaçant des Options dans la librairie. \\
+
+Toute ces modifications sur la partie Backend ont fait l'objet de 2 Pull request (\texttt{\#6} et \texttt{\#7}) acceptées pour 52 lignes de code ajoutée.
 
 
 
-\subsubsection[DT-Chat Backend]{Backend}
 \subsubsection[DT-Chat Frontend]{Frontend}
 \subsection{Pipeline}
 Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise bien sur que ça à été PR etc etc
@@ -223,7 +246,7 @@ puis nous lui appliquons notre fonction de test.\\
 Le fait que le nombre de saut diverge entre Hop et SABR permet une plus grand couverture pour detecter une casse de la librarie.\\
 
 Cette partie à fait l'objet de 2 Pull Request de Vincent acceptée pour 629 lignes rajoutée 
-(Les tests dans les 3 fichiers + la création de test\_helpers). 
+correspondant aux  tests dans les 3 fichiers + la création de test\_helpers. (\texttt{\#38} et \texttt{\#44})
 
 
 
@@ -245,7 +268,67 @@ Cette partie à fait l'objet de 2 Pull Request de Vincent acceptée pour 629 lig
 \newpage
 \section{Annexe de codes}
 
+\label{CodeDTBackend}
+\ref{DTBackend} (Cliquer sur le chapitre pour revenir au texte correspondant)\\
 
+la fonction update est tiré de DTChat Backend "src/dtchat.rs" ligne 218
+
+pred\_res est tiré de DTChat Backend "src/config/mod.rs" ligne 83
+
+try\_init est tiré de DTChat Backend "src/prediction.rs" ligne 30
+
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+    pub fn update(&mut self, path:String, algo: &str){
+        match PredictionConfig::try_init(path.clone(), algo){
+            Ok(update_config) => {
+                self.a_sabr = ASabrInitState::Enabled(update_config);
+                self.notify_observers(ChatAppEvent::Info(format!("Update done with : {path} and  {algo}")));
+            }
+            Err(error) => {
+                self.a_sabr = ASabrInitState::Error(error.to_string());
+                self.notify_observers(ChatAppEvent::Info("Update failed".to_string()));
+            }
+        }
+    }
+
+pub fn try_init(cp_path: String, algo : &str) -> io::Result<Self> {
+        let (nodes, contacts) = IONContactPlan::parse::<NoManagement, EVLManager>(&cp_path)?;
+
+        let nodes_length = nodes.len();
+        let contacts_length = contacts.len();
+
+        let node_index_map: HashMap<String, NodeID> = nodes
+            .iter()
+            .enumerate()
+            .map(|(index, node)| (node.get_node_name().to_string(), index as NodeID))
+            .collect();
+
+        let router_box = build_generic_router::<NoManagement, EVLManager>(
+            algo,
+            nodes,
+            contacts,
+            None,
+        ).expect("Failed to build router");
+
+        let router: Box<dyn Router<NoManagement, EVLManager> + Send + Sync> =
+            unsafe { std::mem::transmute(router_box) };
+        // in seconds
+        let cp_start_time = DTChatTime::now().timestamp_millis() as f64 / 1000.0;
+
+        Ok(PredictionConfig {
+            ion_to_node_id: node_index_map,
+            router,
+            cp_start_time,
+            nodes_length,
+            contacts_length,
+        })
+    }
+
+
+let pred_res = PredictionConfig::try_init(cp_path_unwrapped,"VolCgrHybridParenting");
+\end{minted}
+
+\newpage
 \label{CodetestPathFinding}
 \ref{testPathFinding} (Cliquer sur le chapitre pour revenir au texte correspondant)
 \begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
