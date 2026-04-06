@@ -185,13 +185,21 @@ Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise
 \paragraph{Legacy :}~\\\\
 Partie de Yassine et ou Samy
 
-\paragraph{Seg :}~\\\\
+\paragraph{Segmentation :}~\\\\
 Ici ta partie Yassine,
 
-\paragraph{PSeg :}~\\\\
+\paragraph{PrioritySegmentation :}~\\\\
 Partie de Bastien
 
 \subsubsection[Module : Pathfinding]{Pathfinding}
+Le rôle de ce module est de calculer, à partir d'un \gls{bundle} et d'un instant donnée, la meilleurs route vers
+une destination en tenant compte des contraites temporelles de chaque contact.
+Il expose un Trait, \texttt{PathFinding}, implémentée par trois variantes : Node, Contact et Hybride, détaillée ci-après,
+ainsi qu'un sous module \texttt{limiting\_contact} qui permet de supprimer temporairement le contact le plus limitant d'une route 
+pour forcer la découverte de routes alternatives. 
+
+Chaque variante est instanciée avec une métrique de distance, soit \textbf{Hop} qui minimise le nombre de saut, 
+soit \textbf{\gls{sabr}} qui minimise le temps d'arrivée.
 \paragraph{Try\_make\_hop :}~\\\\
 Ici ta partie Samy
 
