@@ -5,6 +5,7 @@
 \usepackage{mathptmx}
 \usepackage{geometry}
 \usepackage{graphicx}
+\graphicspath{{Images/}}
 \usepackage{minted}
 \usepackage{titlesec}
 \setcounter{secnumdepth}{4}
@@ -49,7 +50,7 @@
 ]{ldp}{PRELOAD}{LD\_PRELOAD}
 
 \newacronym[
-    description={Bundle Protocole Socket. Type spécifique de socket utilisée dans le cas des DTN}
+    description={Bundle Protocole Socket. Type spécifique de socket utilisée dans le cas des DTN \cite{bp}}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
 \title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
@@ -123,6 +124,33 @@ Arrivé à la fin du projet voici les réels objectifs accompli :  \\
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
 \subsection{DT-Chat}
+DT-Chat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
+Elle supporte UDP,TCP et \gls{bp}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.49\textwidth]{DT_Message.png}
+    \hfill 
+    \includegraphics[width=0.49\textwidth]{DT_Network.png}
+    \caption{Onglet Message (gauche) et Events (droite) de DT-Chat}
+    \label{fig:comparaison_dt}
+\end{figure}
+
+A gauche nous pouvons voir l'onglet principal, nous voyons un graph des différents message envoyée,
+un rectangle vert signifie un message envoyée et reçu avec confirmation. En bas il y a la possibilité de choisir 
+entre UDP,TCP et \gls{bp}. Egalement, il y a la possibilité de cocher la méthode A-SABR, ceci permet qu'a l'envoie d'un message
+l'application prédit et indique le moment où le message devrait être reçu par le recepteur.\\
+
+A droite nous voyons l'onglet Event, celui ci recapitule de manière textuelle toute interaction de l'interface.
+A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, on voit bien les différents message envoyée et reçu.
+
+Sur cette exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP, 1 \gls{bp}.
+\gls{bp} dans le network Event est marqué comme UDP car il s'agit d'une variante d'UDP.\\
+
+Maintenant, détaillons le travail effectuée sur chacun des parties de cette interface.
+
+
+
+
 \subsubsection[DT-Chat Backend]{Backend}
 \subsubsection[DT-Chat Frontend]{Frontend}
 \subsection{Pipeline}
@@ -275,9 +303,13 @@ J. A. Fraire, O. De Jonckère, and S. Burleigh \textit{Routing in the space inte
 contact graph routing tutorial.}, Journal of Network and Computer Applications, 174, 102884.
 
 \bibitem{a-sabr} 
-O. De Jonckère, L. Ma, and J. A. Fraire. (1994) \textit{\LaTeX : -SABR: The Adaptive Library for Schedule-Aware Bundle
+O. De Jonckère, L. Ma, and J. A. Fraire. \textit{ A-SABR: The Adaptive Library for Schedule-Aware Bundle
 Routing.}, WiSEE 2025 - IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025,
 Halifax, Canada.
+
+\bibitem{bp} 
+Sylvain Pierrot, Olivier de Jonckère, Scott Burleigh, Charley Geoffroy.\textit{ Design and Implementation of a Native Socket Interface for the Bundle Protocol.}
+, WiSEE 2025 - 13th Annual IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025, Halifax, Canada.
 
 \end{thebibliography}
 \end{document}
