@@ -6,6 +6,9 @@
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{minted}
+\usepackage{titlesec}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
 \geometry{a4paper, margin=2cm}
 
 \usepackage[
@@ -127,7 +130,15 @@ Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise
 
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
-Ici ta partie Yassine, que tu partagera surement avec Bastien et/ou Samy mais c'est ton module
+
+\paragraph{Legacy :}~\\\\
+Partie de Yassine et ou Samy
+
+\paragraph{Seg :}~\\\\
+Ici ta partie Yassine,
+
+\paragraph{PSeg :}~\\\\
+Partie de Bastien
 
 \subsubsection[Module : Pathfinding]{Pathfinding}
 \paragraph{Try\_make\_hop :}~\\\\
@@ -137,37 +148,56 @@ Ici ta partie Samy
 Contact,Hybride et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
 
 Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimal.
-Elle peut manquer le chemin le plus optimal car s'arrête dès qu'un chemin optimal est trouvé par rapport à un autre. \\
+Il trouve le chemin optimal selon la métrique choisie mais s'arrête dès que la destination est atteinte en mode Path,
+contrairement aux autres variantes qui continuent d'explorer.\\
 
-Contact explore lui le \gls{mg} par contact plutôt que par noeud, il va utiliser une "Work Area", permettant
-d'ignorer des noeuds intermédiaires si un moindre nombre de sauts peut être effectuée. \\
+Contact explore lui le \gls{mg} par contact plutôt que par noeud, il va utiliser une "Work Area", permettant d'explorer les contacts directement sans passer par la logique nœud par nœud, 
+ce qui peut trouver des routes avec moins de saut dans certains cas.\\
 
 Hybrid est la plus complète mais également la plus complexe, il va maintenir une liste de potentiel route optimal
 tous le long du parcours, puis, grâce au fonction "can\_retain" et "must\_prune", va décider laquelle garder.\\
 
 Chacunes de ces variantes possédent les 3 mêmes macros :
 \begin{itemize}
-    \item Path : Le chemin telle que renvoyé par l'algo
+    \item Path : Chemin simple vers une destination, s'arrête dès qu'elle est atteinte.
     \item PathExcl : Si l'on veut exclure un noeud précis.
-    \item TreeExcl : Pour avoir l'arbre complet du chemin avec exclusion\\
+    \item TreeExcl : Explore l'entièreté du \gls{mg} avec exclusion.\\
 \end{itemize}
 
 Les tests sonts simples, on créer plusieurs \gls{mg} auquel on applique chacunes des macros,
-on utilise le manager le plus simple possible pour ne rendre le test trop lourd, on applique en dernier la méthode Hop et la méthode SABR 
+on utilise le manager le plus simple possible pour ne pas rendre le test trop lourd, on applique en dernier la méthode Hop (le moins de saut) ou la méthode SABR (le plus rapide) 
 pour avoir le plus de données de test possible.
 
 Les résultats attendues sont le nombre de saut réalisés, et le temps d'arrivée.
 Pour les cas d'exclusion, on donne comme objectif par exemple le noeud 3 en excluant le noeud 2 et l'on doit avoir en retour un échec du au noeud exclus.\\
 
 Dans un soucis de lisibilité et de maintienabilité du code, toute les fonctions de création d'objets (noeud,contact,bundle,multigraph)
-sont réunis dans un fichiers à part (test\_helpers.rs). De cette manière, seul les tests sont présents dans leur fichiers cibles. \\
+sont réunis dans un fichiers à part (test\_helpers). De cette manière, seul les tests sont présents dans leur fichiers cibles. \\
 
 Prenons un test en particulier et décryptons le : \label{testPathFinding} \ref{CodetestPathFinding} (Cliquer sur le numéro pour être envoyé à l'annexe correspondant) \\
 
 Nous avons donc une première fonction qui va créer le \gls{mg} auquel on va applique nos tests, le multigraph créer possèdents
-5 noeuds qui n'ont pas de manager pour faire au plus simple et de 5 contacts.
+5 noeuds qui ont un manager neutre (qui ne fait rien) pour faire au plus simple et de 5 contacts.
 
-Exemple le premier contact émet du noeud 0 au noeud 1, début du contact à 0 et fin à 10, débit de 1 octets/seconde et aucun délai de propagation.
+Exemple : le premier contact émet du noeud 0 au noeud 1, début du contact à 0 et fin à 10, 
+débit de 1 unité/seconde et aucun délai de propagation.
+
+Ensuite nous créeons un \gls{bundle} à destination du noeud 4, sans priorité et sans taille précise.
+
+On contruit les deux chemin, un avec la méthode SABR, l'autre avec la méthode Hop, 
+puis nous lui appliquons notre fonction de test.\\
+
+\begin{itemize}
+    \item Hop : On attend 3 sauts en 50 unité de temps.
+    \item SABR : On attend 4 sauts en 50 unité de temps.\\
+\end{itemize}
+
+Le fait que le nombre de saut diverge entre Hop et SABR permet une plus grand couverture pour detecter une casse de la librarie.\\
+
+Cette partie à fait l'objet de 2 Pull Request de Vincent acceptée pour 629 lignes rajoutée 
+(Les tests dans les 3 fichiers + la création de test\_helpers). 
+
+
 
 
 \subsection{BP-Socket}
