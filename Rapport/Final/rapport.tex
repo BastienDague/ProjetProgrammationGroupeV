@@ -154,7 +154,8 @@ de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois coté
 
 Maintenant, détaillons le travail effectuée sur chacun des parties de cette interface.
 
-\subsubsection[DT-Chat Backend]{Backend} \label{DTBackend} \ref{CodeDTBackend} (Cliquez sur le numéro pour accéder au code)\\\\
+\subsubsection[DT-Chat Backend]{Backend}
+ \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
 Premièrement, on créer une fonction update tiré de la fonction start de l'interface, celle-ci prend en argument un str et un chemin de fichier.
 Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme try\_init pour qu'elle prenne également un str et un chemin de fichier, on récupère également les valeurs de 
 départ qu'on met dans l'appel de la fonction. try\_init à aussi été modifie pour retourner le nombre de node et de contact trouvée dans le \gls{cp} chargé.\\
@@ -171,11 +172,44 @@ si Err, on retourne l'erreur et on l'affiche dans l'App Event.
 Etant basé sur A-SABR, il faut régulièrement faire de petite modif dûe à des refactorisation de fonction ou de
 l'ajout de Result remplaçant des Options dans la librairie. \\
 
-Toute ces modifications sur la partie Backend ont fait l'objet de 2 Pull request (\texttt{\#6} et \texttt{\#7}) acceptées pour 52 lignes de code ajoutée.
-
-
+Toute ces modifications sur la partie Backend ont fait l'objet de 2 Pull request acceptées de Vincent pour 52 lignes de code ajoutée (PR \texttt{\#6} et \texttt{\#7}).
 
 \subsubsection[DT-Chat Frontend]{Frontend}
+\label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
+
+L'interface DT Chat peut être vue comme un modèle MVC en programmation Web, le Modèle serait le Backend,
+la Vue toute les interactions possibles avec l'interface, et le contrôleur le code qui résulte de ces interactions.
+
+Ici le but est donc d'afficher ce fameux onglet Options et d'envoyer les différents ordre au Backend suivant les actions faite.
+
+Le raccourci ci-dessus permet d'accéder au code la vue Options, il se résume simplement en un bouton qui ouvre un explorateur
+pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisé pour un ou pour l'autre,
+l'interface se met directement à jour et affiche les nouveaux paramètres chargées dans l'App Event.
+
+Une spécificité existe pour le choix d'algorithme, certain algorithme sont conditionnées à l'activation ou non
+de "features", des fonctionnalités qu'on choisit d'activer ou non lors du lancement de l'interface, on peut voir
+dans le code que la ComboBox s'adapte aux choix de features choisies lors de la compilation.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.49\textwidth]{DT_Algos.png}
+    \hfill 
+    \includegraphics[width=0.49\textwidth]{DT_Changes.png}
+    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptatif (droite) d'un terminal DT-Chat}
+    \label{fig:dt_changes}
+\end{figure}
+
+L'interface graphique à sur cette exemple illustrée été compilé avec la feature \texttt{contact\_work\_area}, 
+donc la ComboBox s'est adaptée. J'ai ensuite sélectionnée l'algorithme \texttt{VolCgrNodeParenting} ainsi que
+chargé le \gls{cp} \texttt{ion\_format.cp} et nous voyons bien dans l'App Event que le changement est effectif
+et que le nombre de node et de contacts à bien été détectée.\\
+
+Dans les fait, l'algorithme choisit ne change pas réellement ce que l'interface nous montre lors de la réception
+ou l'envoi de message, il s'agit ici d'implémenter cette possibilité pour un usage futur.
+
+Pour finir, un soucis à été détecté en ce qui concerne le changement de \gls{cp}.
+
+
 \subsection{Pipeline}
 Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise bien sur que ça à été PR etc etc
 
@@ -251,10 +285,10 @@ puis nous lui appliquons notre fonction de test.\\
     \item SABR : On attend 4 sauts en 50 unité de temps.\\
 \end{itemize}
 
-Le fait que le nombre de saut diverge entre Hop et SABR permet une plus grand couverture pour detecter une casse de la librarie.\\
+Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour detecter une casse de la librarie.\\
 
-Cette partie à fait l'objet de 2 Pull Request de Vincent acceptée pour 629 lignes rajoutée 
-correspondant aux  tests dans les 3 fichiers + la création de test\_helpers. (\texttt{\#38} et \texttt{\#44})
+Cette partie à fait l'objet de 2 Pull Request acceptée de Vincent  pour 629 lignes rajoutée 
+correspondant aux  tests dans les 3 fichiers + la création de test\_helpers. (PR \texttt{\#38} et \texttt{\#44})
 
 
 
@@ -276,14 +310,15 @@ correspondant aux  tests dans les 3 fichiers + la création de test\_helpers. (\
 \newpage
 \section{Annexe de codes}
 
+\phantomsection
 \label{CodeDTBackend}
 \ref{DTBackend} (Cliquer sur le chapitre pour revenir au texte correspondant)\\
 
-la fonction update est tiré de DTChat Backend "src/dtchat.rs" ligne 218
+La fonction update est tiré de DTChat Backend "src/dtchat.rs" ligne 218
+
+La fonction try\_init est tiré de DTChat Backend "src/prediction.rs" ligne 30
 
 pred\_res est tiré de DTChat Backend "src/config/mod.rs" ligne 83
-
-try\_init est tiré de DTChat Backend "src/prediction.rs" ligne 30
 
 \begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
     pub fn update(&mut self, path:String, algo: &str){
@@ -300,12 +335,12 @@ try\_init est tiré de DTChat Backend "src/prediction.rs" ligne 30
     }
 
 pub fn try_init(cp_path: String, algo : &str) -> io::Result<Self> {
-        let (nodes, contacts) = IONContactPlan::parse::<NoManagement, EVLManager>(&cp_path)?;
+        let cp = IONContactPlan::parse::<NoManagement, EVLManager>(&cp_path)?;
 
-        let nodes_length = nodes.len();
-        let contacts_length = contacts.len();
+        let nodes_length = cp.nodes.len();
+        let contacts_length = cp.contacts.len();
 
-        let node_index_map: HashMap<String, NodeID> = nodes
+        let node_index_map: HashMap<String, NodeID> = cp.nodes
             .iter()
             .enumerate()
             .map(|(index, node)| (node.get_node_name().to_string(), index as NodeID))
@@ -313,8 +348,7 @@ pub fn try_init(cp_path: String, algo : &str) -> io::Result<Self> {
 
         let router_box = build_generic_router::<NoManagement, EVLManager>(
             algo,
-            nodes,
-            contacts,
+            cp,
             None,
         ).expect("Failed to build router");
 
@@ -337,6 +371,8 @@ let pred_res = PredictionConfig::try_init(cp_path_unwrapped,"VolCgrHybridParenti
 \end{minted}
 
 \newpage
+
+\phantomsection
 \label{CodetestPathFinding}
 \ref{testPathFinding} (Cliquer sur le chapitre pour revenir au texte correspondant)
 \begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
@@ -382,6 +418,122 @@ fn test_exemple_2() -> Result<(), ASABRError> {
         assert_time_hop(&res_sabr, 4, 50.0, 4, "SABR");
 
         Ok(())
+    }
+}
+\end{minted}
+
+\newpage
+\phantomsection
+(Code du chapitre \ref{DTFrontend})
+\label{CodeDTFrontend}
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+    use crate::main_view::MirroredData;
+use eframe::egui;
+use egui_file_dialog::FileDialog;
+
+
+pub struct OptionsView{
+    pub selected_algo: String,
+    pub selected_cp_path: String,
+    file_dialog: FileDialog,
+}
+
+impl OptionsView{
+    pub fn new() -> Self {
+        Self {
+            selected_algo: "VolCgrHybridParenting".to_string(),
+            selected_cp_path: "./db/ion.cp".to_string(),
+            file_dialog: FileDialog::new(),
+        }
+    }
+    pub fn show(&mut self,ui: &mut egui::Ui, _data: &mut MirroredData) -> Option<(String,String)>{
+        self.file_dialog.update(ui.ctx());
+        let mut update = false;
+        ui.vertical(|ui| {
+            ui.add_space(5.0);
+            ui.heading("Options");
+            ui.add_space(5.0);
+            ui.separator();
+            ui.add_space(15.0);
+
+            //Contact Plan
+            ui.horizontal(|ui| {
+                ui.label("Change Contact Plan :");
+                if ui.button("Explore ").clicked() {
+                    self.file_dialog.pick_file();
+                    }
+            });
+
+            if let Some(path) = self.file_dialog.take_picked(){
+                self.selected_cp_path = path.display().to_string();
+                update = true;
+            }
+
+            ui.add_space(10.0);
+
+            //Algorithme
+            ui.horizontal(|ui| {
+                ui.label("Change Algo :");
+                let old_algo = self.selected_algo.clone();
+                
+                let mut algos: Vec<&str> = vec![
+                    "VolCgrNodeParenting",
+                    "VolCgrHybridParenting",
+                    "VolCgrHybridParentingHop",
+                    "VolCgrNodeParentingHop",
+                ];
+
+                #[cfg(feature = "contact_work_area")]
+                algos.extend([
+                    "VolCgrContactParenting",
+                    "VolCgrContactParentingHop",
+                ]);
+
+                #[cfg(feature = "contact_suppression")]
+                algos.extend([
+                    "CgrFirstEndingHybridParentingHop",
+                    "CgrFirstEndingHybridParenting",
+                    "CgrFirstEndingNodeParentingHop",
+                    "CgrFirstEndingNodeParenting",
+                ]);
+
+                #[cfg(all(feature = "contact_work_area", feature = "contact_suppression"))]
+                algos.extend([
+                    "CgrFirstEndingContactParenting",
+                    "CgrFirstEndingContactParentingHop",
+                ]);
+
+                #[cfg(all(feature = "contact_suppression", feature = "first_depleted"))]
+                algos.extend([
+                    "CgrFirstDepletedHybridParentingHop",
+                    "CgrFirstDepletedHybridParenting",
+                    "CgrFirstDepletedNodeParentingHop",
+                    "CgrFirstDepletedNodeParenting",
+                ]);
+
+                #[cfg(all(feature = "contact_work_area", feature = "contact_suppression", feature = "first_depleted"))]
+                algos.extend([
+                    "CgrFirstDepletedContactParentingHop",
+                    "CgrFirstDepletedContactParenting",
+                ]);
+
+                egui::ComboBox::from_id_salt("algo_selector")
+                    .selected_text(&self.selected_algo)
+                    .show_ui(ui, |ui| {
+                        for algo in algos{
+                            ui.selectable_value(&mut self.selected_algo, algo.to_string(), algo);
+                        }
+                    });
+                if old_algo != self.selected_algo{
+                    update = true;
+                }
+            });
+        });
+        if update{
+            Some((self.selected_cp_path.clone(),self.selected_algo.clone()))
+        } else{
+            None
+        }
     }
 }
 \end{minted}
