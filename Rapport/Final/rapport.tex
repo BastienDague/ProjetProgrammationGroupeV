@@ -346,7 +346,49 @@ Jte laisse ça samy, tu détaille exactement ce que fait l'algo tu peux faire de
 
 \newpage
 \section{Bilan et Conclusions}
+Bien que les orientations initiales aient évolué pour s'adapter aux contraintes techniques rencontrées, 
+les jalons majeurs de développement ont été atteints.
 
+Notre effort s'est concentré sur la fiabilisation de l'existant et l'extension des capacités 
+de la bibliothèque.\\
+
+
+\begin{itemize}
+    \item Mise en place d'une pipeline CI/CD spécifique pour la librairie.
+    \item Mises en places de nombreux test unitaires pour la librairie.
+    \item Refactorisation et ajout d'un onglet pour l'interface graphique DT-Chat.
+    \item Correction de bug dans la librairie.
+    \item Ajout d'un système d'agrégat dans PrioritySegmentation.
+    \item Expérimentation d'interception d'appel système via LD\_PRELOAD pour BP-Socket.\\
+\end{itemize}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Composant} & \textbf{Nombre de tests} & \textbf{Cible technique} \\ \hline
+Module Legacy & 39 & Stabilité des fonctions historiques \\ \hline
+Parenting (Node, Contact, Hybrid) & 18 & Logiques de routage et filiation \\ \hline
+Fonction \texttt{Try\_Make\_Hop} & 12 & Précision du calcul de prochain saut \\ \hline
+Segmentation (Standard \& Priority) & 10 & Intégrité et agrégation des données \\ \hline
+\textbf{Total au 13 Avril} & \textbf{79} & \textbf{Couverture des modules les plus bas} \\ \hline
+\end{tabular}
+\caption{Répartition de l'effort de test par module.}
+\end{table}
+
+Je noterai ici la coverage quand la PR de Samy sera acceptée.\\
+
+La pertinence de notre suite de tests a été confirmée lors de récente modifications de la librairie par Mr De Jonckère.
+Nos tests ont agi comme un filet de sécurité critique, permettant d'identifier immédiatement
+les régressions et facilitant ainsi une évolution rapide du code et évitant la casse de la librairie.\\
+
+Pour résumé l'état d'esprit du projet, on débarque sur quelque chose de déjà en partie construit, dans un
+language moderne, nouveau et d'autant plus Open Source.
+
+Cela à nécessité un certain temps d'adaptation et de modifications de nos habitudes scolaires 
+pour produire quelque chose de sérieux et professionnel. C'était extraordinaire à faire, apprendre
+le système de Pull Request, apprendre à produire du code fiable et maintenable, manier Git dans les détails
+et surtout avoir son nom dans les contributeurs d'un projet important.
 \newpage
 \section{Annexe de codes}
 
