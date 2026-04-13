@@ -211,20 +211,20 @@ Pour finir, un soucis à été détecté en ce qui concerne le changement de \gl
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.40\textwidth]{Contact_Plan_DT.png}
+    \includegraphics[width=0.35\textwidth]{Contact_Plan_DT.png}
     \caption{Contact plan "A-SABR/examples/contact\_plans/ion\_format.cp"}
     \label{fig:dt_cp_ion_format}
 \end{figure}
 
 Ci-dessus, on a le format classique de \gls{cp} que l'interface comprend correctement, hors il existe plusieurs
 autre format. De base il n'y avait pas l'affichage du nombre de nodes et de contact détectée lors du chargement d'un contact plan,
-mais j'ai trouvée étrange que l'appli prennent sans erreurs tous type de fichiers et donc, après discussion, on à décider 
-de faire afficher le nombre de contact et de nodes et la plupart des contact plan qui ne sont pas en format "ION" comme celuic ci-dessus
+mais j'ai trouvée étrange que l'appli prennent sans erreurs tous type de fichiers et donc, après investigation et discussion, on à décider 
+de faire afficher le nombre de contact et de noeuds. La plupart des contact plan qui ne sont pas en format "ION" comme ci-dessus
 ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contacts et 0 noeuds.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.50\textwidth]{Contact_Plan_ASABR.png}
+    \includegraphics[width=0.55\textwidth]{Contact_Plan_ASABR.png}
     \caption{Contact plan "A-SABR/examples/contact\_plans/asabr\_format\_dynamic.cp"}
     \label{fig:dt_cp_asabr}
 \end{figure}
@@ -234,7 +234,7 @@ Ci-dessus un exemple de contact plan qu'il ne lit pas du tous.
 Pour régler le soucis, il aurait fallu développer tous un parser qui s'adapte au type de \gls{cp} chargé. Dans les fait c'était réalisable 
 mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc on a juste rajouté le compteur de noeuds et de contacts.\\
 
-Toutes ces modifications sur le FrontEnd ont fait l'objet d'une PR de Vincent acceptée pour 145 lignes de codes ajoutée (PR \texttt{\#13}). 
+Toutes ces modifications sur le FrontEnd ont fait l'objet d'une Pull Request de Vincent acceptée pour 145 lignes de codes ajoutée (PR \texttt{\#13}). 
 
 \subsection{Pipeline}
 Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise bien sur que ça à été PR etc etc
@@ -242,11 +242,14 @@ Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
 
+Expliquez bien ici ce qu'est un contact manager
+
 \paragraph{Legacy :}~\\\\
 Partie de Yassine et ou Samy
+expliquer aussi en quoi ils sont dépréciés et pas utilisée
 
 \paragraph{Segmentation :}~\\\\
-Ici ta partie Yassine,
+Ici ta partie Yassine, montre en quoi c'est une evolution des contacts legacy
 
 \paragraph{PrioritySegmentation :}~\\\\
 Partie de Bastien
@@ -314,18 +317,29 @@ puis nous lui appliquons notre fonction de test.\\
 Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour detecter une casse de la librarie.\\
 
 Cette partie à fait l'objet de 2 Pull Request acceptée de Vincent  pour 629 lignes rajoutée 
-correspondant aux  tests dans les 3 fichiers + la création de test\_helpers. (PR \texttt{\#38} et \texttt{\#44})
+correspondant aux  tests dans les 3 fichiers + la création du test\_helpers du module Pathfinding. (PR \texttt{\#38} et \texttt{\#44})
 
 
+\subsubsection[Module : Routing]{Routing}
 
+Si on à le temps de PR ou d'avoir quelque chose de bien.
+\paragraph{VolCgr}
+\paragraph{Spsn}
 
 \subsection{BP-Socket}
 
 \newpage
 \section{Algorithmes et Structures de Données}
+\subsection{PrioritySegmentation}
+Jte laisse ça samy, tu détaille exactement ce que fait l'algo tu peux faire des schéma complexité algo et temps tous le bazar tous les types de données que t'utilise
+\subsection{Hybrid Parenting}
+
+
+
 
 \newpage
 \section{Analyse des résultats}
+\subsection{Benchmark}
 
 \newpage
 \section{Gestion du Projet}
