@@ -236,8 +236,91 @@ mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR don
 
 Toutes ces modifications sur le FrontEnd ont fait l'objet d'une Pull Request de Vincent acceptée pour 145 lignes de codes ajoutée (PR \texttt{\#13}). 
 
-\subsection{Pipeline}
-Bastien : Ici detail point par point la pipeline l'évolution de ta PR, précise bien sur que ça à été PR etc etc
+\subsection[Pipeline]{Pipeline CI/CD}
+\subsubsection{Première version du fichier:}
+
+L'une des tâches principales de notre projet était d'apporter des pipelines d'automatisation pour faciliter le travail futur de l'équipe. 
+Pour ce faire, il a fallu déterminer ce dont le projet avait besoin et comment le mettre en place grâce aux outils propres au langage Rust. 
+Après en avoir discuté avec Mr De Jonckère, nous avons décidé de travailler sur 4 aspects principaux: le format du code, la validité, l'optimisation et son bon fonctionnement grâce aux tests.
+Commençons par détailler la première version de notre travail (à noter que le fichier présenté ensuite est commun à \texttt{A-SABR}, \texttt{dtchat-egui} et \texttt{dtchat-backend}).
+\label{CI/CD} (Code en annexe \ref{CodeCIv1})
+
+Ce fichier ci.yml crée dans le dossier \texttt{.github/workflows} se présente de la manière suivante:
+
+\begin{itemize}
+    \item Les déclencheurs: comme nous pouvons le voir, il est précisé que le fichier doit se lancer
+          dans les branches \texttt{main}, \texttt{develop} et toutes les branches commençant par \texttt{feature/} afin d'offrir à notre équipe
+          localement le travail de cette Pipeline. 
+    \item L'environnement: afin d'effectuer notre travail, il nous faut travailler dans un environnement Linux. Nous utilisons donc \texttt{ubuntu-latest} pour la richesse de ses outils.
+          Cependant, un problème est rapidement apparu: utiliser cet environnement tel quel fait appel à bien trop de ressources, ainsi nous
+          avons décidé d'utiliser le container \texttt{rust-slim} car c'est un bon compromis entre légèreté et la présence des outils nécessaires.
+    \item La préparation du travail: il nous faut ensuite configurer tous les outils que nous utiliserons ensuite.
+    
+          Tout d'abord, \texttt{actions/checkout@v4} s'occupe de récupérer le code source du projet, ensuite pour avoir
+          la version stable du compilateur Rust nous utilisons \texttt{dtolnay/rust-toolchain@stable} avec deux outils supplémentaires indispensables: \texttt{rustfmt} et \texttt{clippy} dont nous reparlerons.
+          Enfin, pour avoir de meilleurs performances et un temps d'exécution réduit nous utilisons \texttt{swatinem/rust-cache@v2}, cela nous permet sauvegarder les dépendances téléchargées pour les réutiliser ensuite.
+    \item Le travail effectué: maintenant que tout est prêt, nous pouvons utiliser nos commandes pour faire le travail attendu. 
+    
+          Pour commencer, \texttt{cargo fmt --all -- --check} est l'outil qui vérifie
+          si le code respecte bien le format standard Rust, nous remarquons que l'appel de cette commande est suivi par \texttt{continue-on-error: true} 
+          cela veut dire que si une erreur de format est détectée elle est signalée mais n'arrête pas le workflow.
+
+
+          Le second outil utilisé est \texttt{cargo clippy}. Il nous permet de vérifier beaucoup de choses cruciales pour le projet:
+          la bonne compilation du code et si malgré une compilation réussie il reste des erreurs de logique. Ces erreurs peuvent être de différents types:
+          trop d'arguments dans une fonction, code inutile ou encore des erreurs de sécurité. 
+          Pour terminer, nous ajoutons \texttt{cargo test} pour, comme son nom l'indique, lancer nos tests implémentés.
+
+
+          On y ajoute les cibles \texttt{--lib}, \texttt{--bins} et \texttt{--tests} afin de tester respectivement
+          la partie bibliothèque du code, les exécutables et les fichiers du dossier \texttt{tests/}.
+\end{itemize}
+
+
+Avec cette première version, nous répondons bien aux problèmes évoqués plus tôt. 
+Cependant, après discussion lors de l'ouverture de la Pull Request, il était clair que ce fichier manquait d'optimisation et n'était pas assez strict (les erreurs fmt et clippy sont tolérées). 
+Tout est rassemblé en un seul job rendant plus difficile le diagnostic d'une potentielle erreur et aucun commentaire ne permet aux personnes ne connaissant pas cette syntaxe de comprendre le fonctionnement du fichier.
+
+\subsubsection{Optimisation du fichier de base:}
+
+Après avoir reçu les premiers retours, voici ce qui en est ressorti: la manque de clarté du fichier,
+le fait d'autoriser certaines erreurs, un temps d'installation des dépendances pouvant être raccourcis et
+la possibilité de rajouter un job de coverage. Afin de répondre aux attentes, voici comment le fichier a été corrigé (à noter qu'ici les modifications ne concernent que le fichier lié à \texttt{A-SABR}, nous reparlerons de \texttt{dtchat} dans la section suivante):
+\label{CI/CD} (Code en annexe \ref{CodeCIv2})
+
+\begin{itemize}
+    \item Grâce à la partie \texttt{concurrency}, nous permettons à Github d'arrêter l'exécution 
+          en cours de la Pipeline si un nouveau commit est poussé afin que seul ce dernier profite des vérifications. 
+          Cela permet de gagner un peu de temps si on pousse un commit avec une erreur puis qu'on la corrige directement dans le commit suivant.
+    \item Pour répondre aux problèmes de clarté, nous avons extrait les différentes vérifications en 4 jobs: \texttt{fmt}, \texttt{clippy}, \texttt{tests} et \texttt{coverage}.
+          De plus, grâce à la balise \texttt{name}, nous ajoutons un titre à chaque nouvelle commande afin de permettre à d'autres de mieux comprendre le travail effectué.
+    \item Il fallait également rendre la Pipeline moins permissive, nous avons donc retiré la mention \texttt{continue-on-error: true} dans le job \texttt{fmt} afin de faire en sorte que les erreurs de format
+          deviennent bloquantes. Concernant clippy, on lui ajoute les cibles \texttt{--all-targets}, \texttt{--all-features} et \texttt{-- -D warnings}.
+          Ces ajouts permettent respectivement de lancer clippy sur l'intégralité du code, d'utiliser toutes les features disponibles et de rendre les avertissements bloquants.
+    \item Concernant la partie test, nous avons juste ajouté la cible \texttt{--verbose} à \texttt{cargo test} afin d'avoir des messages d'erreurs plus détaillés.
+    \item Enfin, nous avons ajouté un job de coverage. Le but de ce travail est de générer un fichier html qui permettra de voir où en est la couverture de code globale du projet.
+          Pour ce faire, nous utilisons l'outil tarpaulin. Le fichier généré est mis dans les artefacts GitHub et sauvegardé pendant 7 jours. 
+          Ce job étant le plus demandant en ressources, nous avons décidé avec Mr De Jonckère de ne l'exécuter que lorsqu'il est appelé sur la branche main grâce à \texttt{if: github.ref == 'refs/github/main}
+          Dans les captures d'écran suivantes, nous pouvons voir le poucentage de couverture pour chaque dossier et fichier.
+          Quand nous cliquons sur un fichier, les lignes couvertes apparaissent en vertes et celles non couvertes en rouge afin de mieux guider le développeur implémentant les tests.
+\end{itemize}
+
+Il est intéressant de remarquer également les lignes du type \verb|if: ${{ !env.ACT }}|.
+ACT est un outil installé localement permettant de lancer le fichier ci.yml directement sur notre machine sans l'envoyer vers GitHub permettant de garder un historique plus propre sur le dépôt.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\textwidth]{CoverageHomePage.png}
+    \includegraphics[width=0.55\textwidth]{CoverageExemple.png}
+    \caption{Captures d'écrans du fichier de coverage géneré}
+    \label{fig:CoverageHomePage}
+\end{figure}
+
+Grâce à ces ajouts, nous avons implémenté un travail de meilleure qualité tout en ajoutant des fonctionnalités non prévues au début.
+Cependant, la bonne utilisation de ces fonctionnalités dépend d'un envoi vers le serveur GitHub. Nous avons bien essayé de contourner ce problème via ACT
+mais cet outil est soumis au même temps d'exécution que celui sur le serveur ce qui peut devenir très chronophage lorsqu'il faut le tester plusieurs fois.
+
+\subsubsection{Implémentation de hooks pour la pipeline}
+
 
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
@@ -628,6 +711,126 @@ impl OptionsView{
     }
 }
 \end{minted}
+\newpage
+\phantomsection
+\label{CodeCIv1}
+\ref{CI/CD} (Cliquer sur le chapitre pour revenir au texte correspondant)
+
+Code complet de la première version de notre fichier ci.yml:
+\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
+    name: CI
+
+on:
+  push:
+    branches: ["develop","main","feature/*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: rust:slim
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: swatinem/rust-cache@v2
+
+      - run: cargo fmt --all -- --check
+        continue-on-error: true
+      - run: cargo clippy
+      - run: cargo test --lib --bins --tests
+\end{minted}
+
+\newpage
+\phantomsection
+\label{CodeCIv2}
+\ref{CI/CD} (Cliquer sur le chapitre pour revenir au texte correspondant)
+
+Code complet de la seconde version de notre fichier ci.yml:
+\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
+name: A-SABR CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt:
+    name: Check formatting with Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      
+      - run: cargo fmt --all -- --check
+  
+  clippy:
+    name: Linting with Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - uses: swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+      - run: cargo test --lib --bins --tests --verbose
+  
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: tests
+    steps:
+        - uses: actions/checkout@v4
+        - uses: dtolnay/rust-toolchain@stable
+        - uses: swatinem/rust-cache@v2
+        
+        - name: Install tarpaulin
+          if: ${{ !env.ACT }}
+          uses: taiki-e/install-action@cargo-tarpaulin
+
+        - name: Generate coverage report
+          if: ${{ !env.ACT }}
+          run: cargo tarpaulin --ignore-tests --out Html --out Xml
+
+        - name: Upload report
+          if: ${{ !env.ACT }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: code-coverage-report
+            path: tarpaulin-report.html
+            retention-days: 7
+\end{minted}
+
 
 \newpage
 \begin{thebibliography}{3} 
