@@ -18,11 +18,16 @@
 *.glg
 *.acr
 *.alg
+*.pyg
 Rapport/Sprint/rapport.pdf
+**/_minted-*/
+Rapport/Final/_minted-rapport
 Rapport/Final/_minted-rapport
 ProjetProgrammationGroupeV\Rapport\Sprint\rapport.pdf
+
 Cargo.lock
 target
 A-SABR/exercises
 bin
 _minted
+.latexmkrc
