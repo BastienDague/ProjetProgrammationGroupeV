@@ -312,7 +312,7 @@ ACT est un outil installé localement permettant de lancer le fichier ci.yml dir
     \includegraphics[width=0.55\textwidth]{CoverageHomePage.png}
     \includegraphics[width=0.55\textwidth]{CoverageExemple.png}
     \caption{Captures d'écrans du fichier de coverage géneré}
-    \label{fig:CoverageHomePage}
+    \label{fig:CoveragePage}
 \end{figure}
 
 Grâce à ces ajouts, nous avons implémenté un travail de meilleure qualité tout en ajoutant des fonctionnalités non prévues au début.
@@ -351,7 +351,7 @@ Pour profiter des fonctionnalités de ce fichier, on peut utiliser la commande \
     \centering
     \includegraphics[width=0.55\textwidth]{run-pre-commit-fail.png}
     \caption{Exemple d'un résultat de lancement de la commande avec détection d'erreurs}
-    \label{fig:CoverageHomePage}
+    \label{fig:PreCommitFail}
 \end{figure}
 
 Mais le plus intéressant avec cet outil est la possibilité de bloquer un commit défectueux.
@@ -476,7 +476,76 @@ Jte laisse ça samy, tu détaille exactement ce que fait l'algo tu peux faire de
 
 \newpage
 \section{Gestion du Projet}
+\subsection{Organisation prévue en début de projet}
+Lors du début de notre travail, il était prévu de travailler sur ces 3 tâches:
+\begin{itemize}
+    \item Les tests et pipelines
+    \item La modification de l'interface graphique \texttt{dtchat}
+    \item L'implémentation d'A-SABR dans Hardy
+\end{itemize}
+Il était prévu de suivre le calendrier suivant.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\textwidth]{GanttPrevision.png}
+    \caption{Diagramme de Gantt prévisionnel}
+    \label{fig:GanttDiagramme}
+\end{figure}
 
+Concernant la structure de notre GitHub, comme nous devions travailler sur
+plusieurs dépôts, nous avons fait le choix de créer un dépôt principal avec à l'intérieur
+des sous-modules pointant vers les dépôts sur lesquels nous avons travaillé en laissant à la racine tout ce qui
+concerne le côté scolaire du projet notamment le dossier pour le rapport.
+
+Quant à notre manière de travailler, il était prévu de suivre la structure bien connue Gitflow.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ImageGitflow.png}
+    \caption{Structure Gitflow}
+    \label{fig:Gitflow}
+\end{figure}
+
+\subsection{Organisation réelle du travail}
+Après avoir débuté notre travail, nous avons rapidement compris que les choix
+d'organisation que nous avons fait allaient devoir rapidement être adaptés afin 
+d'être plus efficace. 
+\\[1pt]
+
+Pour commencer, nous voulions suivre une structure Gitflow, donc travailler dans des branches feature/
+puis mettre en commun dans la branche develop pour ensuite envoyer une version stable vers notre main puis
+vers le dépôt de Monsieur De Jonckère. Mais en commençant notamment nos tests, nous nous sommes vite rendus
+compte que la mise en commun dans develop n'était pas nécessaire puisque nos tâches ne dépendaient pas de la réussite des autres
+Cette approche était même plus compliquée à manipuler pour notre encadrant: à chaque Pull Request de notre main
+vers le sien, il aurait dû vérifier un très grand nombre de modifications en une seule fois.
+\\[0.5pt]
+
+La solution trouvée a donc été la suivante: notre main suivra toujours la branche main du dépôt d'origine,
+à chaque nouvel ajout nous créeons une branche depuis le main, sur cette branche on effectue un \texttt{git rebase main}
+pour récupérer le travail le plus récent et nous commençons à travailler. Quand le travail est jugé satisfaisant,
+nous ouvrons une Pull Request vers le main du dépôt d'origine afin d'avoir des retours. Après la prise en compte des suggestions,
+la Pull Request est acceptée et notre travail est merge dans le dépôt d'origine.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Workflow_Github_Groupe_V.png}
+    \caption{Structure suivie par le groupe}
+    \label{fig:StructureGit}
+\end{figure}
+
+Concernant les tâches effectivement réalisées, la majorité des objectifs prévus ont été atteints: modification de l'interface \texttt{dtchat}, ajout de nombreux tests et pipeline performante.
+Certains changements de tâches ont quand même eu lieu au cours du projet: le travail d'intégration dans Hardy a été mis de côté
+pour laisser la place au travail de BP-Socket jugé plus intéressant pour nous
+et pour Monsieur De Jonckère. 
+
+Même si l'objectif BP-Socket n'a été atteint que partiellement par manque de temps, 
+le début de travail déjà fait pourrait amener à quelque chose de plus élaboré lors de potentielles
+nouvelles contributions en dehors du cadre de projet de programmation.
+\\[1pt]
+
+Pour conclure, ce projet a été des plus formateurs pour nos qualités de gestion de projet.
+Nous avons dû confronter nos connaissances académiques à celles du monde professionnel afin d'en tirer les conclusions
+qui ont le mieux fonctionné pour nous. Même si une petite sensation de désordre s'est fait ressentir en début de parcours, 
+elle nous a permis de devenir par la suite plus performants avec les outils Git et de faire preuve d'une meilleure flexibilité
+face à un environnement inconnu.
 \newpage
 \section{Bilan et Conclusions}
 Bien que les orientations initiales aient évolué pour s'adapter aux contraintes techniques rencontrées, 
