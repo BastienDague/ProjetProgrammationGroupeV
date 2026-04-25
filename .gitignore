@@ -19,6 +19,7 @@
 *.acr
 *.alg
 Rapport/Sprint/rapport.pdf
+Rapport/Final/_minted-rapport
 ProjetProgrammationGroupeV\Rapport\Sprint\rapport.pdf
 Cargo.lock
 target

@@ -321,6 +321,56 @@ mais cet outil est soumis au même temps d'exécution que celui sur le serveur c
 
 \subsubsection{Implémentation de hooks pour la pipeline}
 
+Lors de la suite de nos discussions, Mr De Jonckère nous a suggéré d'utiliser le principe de pre-commit grâce aux hooks.
+C'était à ce moment du travail une notion que nous ne maîtrisions pas, ce qui nous a pris un temps de recherche pour bien adapter cette solution au projet.
+Le principe est simple, comme le nom "pre-commit" l'indique l'analyse interviendra juste avant de préparer le commit du travail effectué et pourra le bloquer s'il ne respecte pas certaines règles. 
+On procèdera donc à une analyse locale avant envoi puis une analyse après envoi.
+Pour cela, il nous a fallu créer un fichier \texttt{.pre-commit-config.yaml} et modifier notre \texttt{ci.yml}.
+Voyons plus en détail ces nouveaux fichiers en
+commençant par le fichier de pre-commit: \label{CI/CD} (Code du fichier de pre-commit en annexe \ref{CodeCIprecommit})
+
+\begin{itemize}
+    \item Pour travailler nous utiliserons 2 repositories, le premier utilise des outils disponibles via un dépôt GitHub, le second utilise notre système local.
+    
+          Le premier repo, nous permet l'utilisation de 4 outils: \texttt{trailing-whitespace} qui supprime les grands espaces dans le code,
+          \texttt{end-of-file-fixer} met à la fin de tous les fichiers un unique saut de ligne,
+          \texttt{check-yaml} vérifie la bonne syntaxe des fichiers .yml et .yaml et
+          \texttt{check-added-large-files} empêche de faire des commits trop lourds (ajout accidental d'un dossier de fichiers compilés).
+
+          Le second repo est utilisé afin d'utiliser les outils Rust avec lesquels nous avons travaillé jusqu'ici
+          à savoir cargo fmt et cargo clippy, l'appel des ces outils reste le même que précedemment. 
+          Nous pouvons relever un détail qui a son importance qui est la ligne \texttt{language: system}.
+          En effet, cette ligne précise que le fichier devra aller chercher les outils Rust dans la toolchain locale de l'utilisateur,
+          nous pouvions également demander d'aller chercher les outils dans un dépôt en ligne cependant nous avons
+          considéré que nos machines sont régulièrement mises à jour donc les problèmes de différences de versions ne gêneront pas et
+          que ce serait plus simple à maintenir si le dépôt venait à ne pas plus être mis à jour.
+\end{itemize}
+
+Pour profiter des fonctionnalités de ce fichier, on peut utiliser la commande \texttt{pre-commit run --all-files} qui lancera tous les jobs de pre-commit sur l'ensemble des fichiers.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\textwidth]{run-pre-commit-fail.png}
+    \caption{Exemple d'un résultat de lancement de la commande avec détection d'erreurs}
+    \label{fig:CoverageHomePage}
+\end{figure}
+
+Mais le plus intéressant avec cet outil est la possibilité de bloquer un commit défectueux.
+Après avoir installé pre-commit sur sa machine, les jobs se lanceront sur les fichiers qui ont été staged au moment de taper \texttt{git commit ...}
+Ainsi, grâce à cela il est impossible d'envoyer sur le dépôt un commit qui ne respecte pas les règles établies.
+
+Concernant le fichier \texttt{ci.yml}\label{CI/CD} (Code du fichier ci.yml en annexe \ref{CodeCIyml}), un changement majeur est à relever: 
+les jobs lancés localement par le fichier de pre commit sont rappelés par la ligne \texttt{uses: pre-commit/action@v3.0.1}
+dans un job nommé "lint". Grâce à cela on assure une stabilité plus importante du code 
+et une meilleure optimisation future car le fichier \texttt{ci.yml} utilise le contenu du fichier de pre-commit.
+
+Le reste du fichier présente peu de changements par rapport à la version précédente, nous lançons les tests dans un job dédié suivi du job de couverture des tests.
+\\[1cm]
+Pour conclure cette partie, nous avons su au fur et à mesure de l'avancée du travail
+relever nos erreurs et les corriger tout en prenant en compte les remarques et besoins des autres collaborateurs du projet
+ce qui nous a permis de découvrir de nouvelles notions et de consolider nos connaissances déjà existantes dans ce domaine.
+
+Notre travail a finalement été accepté dans le dépôt de Monsieur De Jonckère (PR\texttt{\#30}) et peut maintenant servir à toute l'équipe.
+
 
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
@@ -830,6 +880,98 @@ jobs:
             path: tarpaulin-report.html
             retention-days: 7
 \end{minted}
+
+\newpage
+\phantomsection
+\label{CodeCIprecommit}
+\ref{CI/CD} (Cliquer sur le chapitre pour revenir au texte correspondant)
+Code complet du fichier \texttt{.pre-commit-config.yaml}.
+\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --all -- --check
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: cargo clippy --all-targets --all-features -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
+\end{minted}
+
+\newpage
+\phantomsection
+\label{CodeCIyml}
+\ref{CI/CD}
+Code complet de la version finale du fichier \texttt{ci.yml}.
+\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
+name: A-SABR CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and Style (Pre-commit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: swatinem/rust-cache@v2
+      - uses: pre-commit/action@v3.0.1
+
+  tests:
+    name: Run Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+      - name: Run Tests
+        run: cargo test --all-features --all-targets
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-tarpaulin
+      - run: cargo tarpaulin --ignore-tests --out Html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: tarpaulin-report.html
+          retention-days: 7
+\end{minted}
+
 
 
 \newpage
