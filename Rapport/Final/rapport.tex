@@ -385,7 +385,66 @@ expliquer aussi en quoi ils sont dépréciés et pas utilisée
 Ici ta partie Yassine, montre en quoi c'est une evolution des contacts legacy
 
 \paragraph{PrioritySegmentation :}~\\\\
-Partie de Bastien
+Le module \texttt{PrioritySegmentation} abrégé en \texttt{pseg}, quant à lui, reprend exactement le même principe 
+que le module \texttt{Segmentation} mais ajoute, comme son nom l'indique, une gestion de la priorité des paquets.
+Le principe central de ce module est le suivant: un paquet de plus haute priorité peut remplacer un segment occupé par un paquet
+de plus petite priorité. L'intérêt de cette approche est de pouvoir mettre en place une hiérarchie dans l'importance des paquets envoyés,
+dans le cas du routage spatial, on préfèrera faire passer un message d'urgence avant un retour d'analyse quelconque, c'est ce que permet \texttt{pseg}.
+Ci-dessous un schéma d'explication du fonctionnement de \texttt{pseg}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{schémapseg.png}
+    \caption{Schéma de fonctionnement de PrioritySegmentation}
+    \label{fig:SchemaPseg}
+\end{figure}
+
+On observe tout d'abord que les segments libres sont notés d'une priorité -1 tandis que les paquets peuvent avoir
+une priorité allant de 0 à 2. Un paquet de plus haute priorité ne remplace pas forcément tout le paquet de priorité inférieure,
+on peut voir qu'au moment de l'insertion du paquet de priorité 2 en rouge seule la partie dont il avait besoin a été allouée et n'a pas remplacé
+l'entièreté du segment occupé par le paquet de priorité 1.
+
+Le fonctionnement de ce module est assez similaire à celui de \texttt{Segmentation} expliqué précedemment. 
+Nous retrouvons les segments de débit et de délai pour construire l'univers dans lequel nous travaillerons. Cependant
+nous n'utilisons pas ici des intervalles libres mais des segments appelés \texttt{bookings} qui seront initialisés avec 
+une date de début et de fin, une priorité -1 pour indiquer qu'ils sont libres.
+
+Nous retrouvons le modèle des deux fonctions centrales: \texttt{dry\_run\_tx} pour la simulation et \texttt{schedule\_tx}
+pour l'application effective des modifications. L'analyse algorithmique du module sera traitée dans la partie 3.
+
+Dans le cadre du projet, nous avons apporté certaines modifications au module.
+Une procédure permettant de fusionner les \texttt{bookings} adjacents de même priorité a été implémenté
+et une couverture de tests importante a été faite. De plus, durant cette phase de tests, un bug a été descelé et résolu: 
+il existait un cas où l'insertion échouait quand elle devait être faite à la fin du segment alors qu'elle devait réussir.
+Détaillons maintenant le travail implémenté pour créer nos tests. Pour avoir des tests satisfaisants, nous devions
+vérifier l'égalité des retours des fonctions \texttt{dry\_run\_tx} et \texttt{schedule\_tx} et couvrir tous les différents scénarios qu'il était possible de rencontrer.
+Au début, des tests simples ont été faits: une fonction de test par scénario. Cette approche fonctionnait et offrait une bonne couverture
+mais elle pouvait être très largement simplifié pour les futurs utilisateurs.
+Après en avoir discuté avec Monsieur De Jonckère, nous avons mis au point une fonction centrale \texttt{start\_test}
+qui s'occupe de construire l'environnement et de lancer le test associé et des fonctions qui appelaient notre \texttt{start\_test} avec
+des valeurs différentes, expliquons le principe de cette fonction: \label{pseg} (Code de la fonction \texttt{start\_test} en annexe \ref{CodeStartTest})
+\begin{itemize}
+    \item Le principe global: la fonction prend 3 paramètres qui sont \texttt{input} une liste d'objets de type InputSeg 
+    afin de construire l'environnement de base, \texttt{output} qui est une liste de bookings de type OutpuSeg représentant les bookings attendus par le retour de la fonction
+    et \texttt{requests} une liste de tuples respectant la norme suivante: en premier, le paquet de type \texttt{Bundle} à insérer, ensuite le moment où il doit être inséré (de type f64) et
+    un booléen mis à \texttt{true} si on s'attend à ce que l'inserion réussise et \texttt{false} sinon.
+    \item La construction de l'environnement: quand la fonction est appelé elle va utiliser la liste \texttt{input} pour construire l'environnement de test.
+    Par exemple, avec un input de type let input = vec![InputSeg::Delay(0.0, 200.0, 4.0),InputSeg::Rate(0.0, 200.0, 100.0),]; la fonction va faire un matching sur les différents champs
+    pour construire les segments utiles, elle crée le segment de délai avec les valeurs 0, 200 et 4 et le segment de débit avec les valeurs 0, 200 et 100. Si il n'y a pas de champ \texttt{booking} dans l'input
+    alors on part d'une liste de \texttt{bookings} vide sinon on peut partir d'une liste avec des \texttt{bookings} déjà existants.
+    \item Les tests effectués: maintenant que l'environnement est crée, nous pouvons commencer les insertions de paquets.
+    Pour chaque paquet dans la liste \texttt{requests} on va récupérer les résultats de \texttt{dry\_run\_tx} et de \texttt{schedule\_tx} afin de tester s'ils sont égaux.
+
+    Ensuite, on vérifie que l'insertion du paquet est bien en accord avec le booléen représentant la réussite de l'insertion, si le test renvoie une erreur c'est que le paquet a été inséré alors
+    qu'on s'attendait à un échec ou le contraire. 
+
+    Enfin, on construit la sortie réelle de la fonction et on vérifie qu'elle est bien équivalente à la sortie attendue représentée par le champ \texttt{output}.
+\end{itemize}
+
+La force de cette fonction est qu'elle permet de faire 3 tests communs en un seul appel pour différents scénarios. 
+De plus, si des collaborateurs souhaitent écrire de nouveaux tests, ils n'auront besoin que de construire les valeurs attendues
+sans avoir à réecrire à chaque fois les mêmes principes de tests que les précédents.
+
+
 
 \subsubsection[Module : Pathfinding]{Pathfinding}
 Le rôle de ce module est de calculer, à partir d'un \gls{bundle} et d'un instant donnée, la meilleurs route vers
@@ -1041,6 +1100,85 @@ jobs:
           retention-days: 7
 \end{minted}
 
+\newpage
+\phantomsection
+\label{CodeStartTest}
+\ref{pseg}
+Code de la fonction \texttt{start\_test}.
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+
+    #[derive(Debug, PartialEq, Clone)]
+    enum InputSeg {
+        Delay(Date, Date, Duration),
+        Rate(Date, Date, DataRate),
+        Booking(Date, Date, Priority),
+    }
+
+    #[derive(Debug, PartialEq, Clone)]
+    enum OutputSeg {
+        Booking(Date, Date, Priority),
+    }
+    #[track_caller]
+    fn start_test(
+        input: Vec<InputSeg>,
+        output: Vec<OutputSeg>,
+        requests: Vec<(Bundle, f64, bool)>,
+    ) {
+        let contact_info = ContactInfo::new(0, 1, 0.0, 200.0);
+        let mut delay_segments: Vec<Segment<Date>> = Vec::new();
+        let mut rate_segments: Vec<Segment<DataRate>> = Vec::new();
+        let mut actual_output = Vec::new();
+        let mut initial_bookings: Vec<Segment<Priority>> = Vec::new();
+
+        for seg in input {
+            match seg {
+                InputSeg::Delay(start, end, val) => {
+                    delay_segments.push(Segment { start, end, val })
+                }
+                InputSeg::Rate(start, end, val) => rate_segments.push(Segment { start, end, val }),
+                InputSeg::Booking(start, end, priority) => initial_bookings.push(Segment {
+                    start,
+                    end,
+                    val: priority,
+                }),
+            }
+        }
+        let mut manager = PSegmentationManager::new(rate_segments, delay_segments);
+        manager.try_init(&contact_info);
+        if !initial_bookings.is_empty() {
+            manager.booking = initial_bookings;
+        }
+
+        for (i, (bundle, at_time, expect_success)) in requests.iter().enumerate() {
+            let dry_run_res = manager.dry_run_tx(&contact_info, *at_time, bundle);
+            let schedule_tx_res = manager.schedule_tx(&contact_info, *at_time, bundle);
+
+            assert_eq!(
+                dry_run_res, schedule_tx_res,
+                "TEST N°{} FAILED: dry_run and schedule_tx doesn't match.\n",
+                i
+            );
+            assert_eq!(
+                schedule_tx_res.is_some(),
+                *expect_success,
+                "TEST N°{} FAILED: expected: {} actual: {}",
+                i,
+                expect_success,
+                schedule_tx_res.is_some()
+            );
+        }
+
+        //Building actual output
+
+        for seg in &manager.booking {
+            actual_output.push(OutputSeg::Booking(seg.start, seg.end, seg.val));
+        }
+        assert_eq!(
+            actual_output, output,
+            "TEST FAILED: Actual output is not the one expected."
+        );
+    }
+\end{minted}
 
 
 \newpage
