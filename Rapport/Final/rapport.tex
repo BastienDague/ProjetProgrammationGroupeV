@@ -375,14 +375,94 @@ Notre travail a finalement été accepté dans le dépôt de Monsieur De Jonckè
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
 
-Expliquez bien ici ce qu'est un contact manager
+Les \textit{Contact Managers} sont les composants responsables de la planification des transmissions sur un contact réseau dans A-SABR. Leur rôle est de déterminer si un bundle peut être transmis à un instant donné, de calculer les dates associées à cette transmission, puis de mettre à jour l’état du contact lorsque celle-ci est effectivement planifiée.
+
+Tous les gestionnaires de contacts implémentent une interface commune reposant principalement sur deux opérations :
+\begin{itemize}
+    \item \texttt{dry\_run\_tx}, qui simule une transmission sans modifier l’état interne du contact,
+    \item \texttt{schedule\_tx}, qui planifie effectivement la transmission et met à jour les ressources disponibles.
+\end{itemize}
+
+Plusieurs implémentations de \textit{Contact Manager} coexistent dans le projet afin de proposer différents niveaux de précision et de modélisation. Elles sont regroupées en deux grandes familles : les gestionnaires \textit{Legacy}, reposant sur des modèles historiques plus simples, et les gestionnaires basés sur la segmentation, offrant une représentation plus fine des contacts.
 
 \paragraph{Legacy :}~\\\\
-Partie de Yassine et ou Samy
-expliquer aussi en quoi ils sont dépréciés et pas utilisée
+Les gestionnaires \textit{Legacy} correspondent aux premières implémentations de gestionnaires de contacts présentes dans A-SABR. Ils sont considérés comme dépréciés car ils reposent sur une modélisation plus simple du contact, avec moins de granularité que les approches plus récentes comme la segmentation. Ils restent présents dans la librairie pour des raisons de compatibilité et de comparaison, mais ne constituent plus l’approche principale utilisée pour représenter finement les transmissions.
+
+Ces gestionnaires restent néanmoins importants à tester, car ils font encore partie du code existant et peuvent être utilisés comme référence pour vérifier le comportement d’autres modules.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{Images/legacy_managers_comparison.png}
+\caption{Comparaison des comportements des gestionnaires Legacy (ETO, EVL, QD).}
+\label{fig:legacy_managers_comparison}
+\end{figure}
+
+\textbf{[SAMY : Ajoute ici la présentation des tests communs aux gestionnaires (ETO, EVL, QD)]}
+
+En complément de ces tests communs, des tests spécifiques ont été ajoutés afin de valider les comportements propres à chaque implémentation.
+
+Pour \texttt{ETO}, les tests spécifiques vérifient que la file d’attente n’est pas automatiquement mise à jour après une planification. Ainsi, plusieurs appels successifs à \texttt{schedule\_tx} peuvent produire le même résultat tant qu’aucune mise à jour manuelle de la file n’est effectuée.
+
+Pour \texttt{EVL}, les tests permettent de confirmer que l’occupation de la file d’attente influence la capacité disponible, sans modifier directement la date de début de transmission. Autrement dit, le volume restant diminue, mais \texttt{tx\_start} reste indépendant de cette occupation.
+
+Enfin, pour \texttt{QD}, les tests valident que l’occupation de la file peut décaler la date effective de début de transmission. Ils vérifient également qu’une transmission peut devenir impossible si ce décalage repousse la fin de transmission au-delà de la fenêtre du contact.
+
+L’ajout de ces tests spécifiques permet donc de compléter la couverture existante sur les gestionnaires \textit{Legacy}, tout en documentant plus clairement les différences de comportement entre \texttt{ETO}, \texttt{EVL} et \texttt{QD}.\\
+
+Toute ces modifications sur la partie Legacy ont fait l'objet de 1 Pull request en attente d'acceptation de Samy/Yassine pour 502 lignes de code ajoutées (PR \texttt{\#54})
 
 \paragraph{Segmentation :}~\\\\
-Ici ta partie Yassine, montre en quoi c'est une evolution des contacts legacy
+
+Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en découpant un contact en plusieurs intervalles temporels indépendants. Chaque segment peut ainsi posséder ses propres caractéristiques de transmission, comme le débit ou le délai.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{Images/legacy_vs_segmentation.png}
+\caption{Illustration du découpage d’un contact en segments temporels indépendants.}
+\label{fig:segmentation_vs_legacy}
+\end{figure}
+
+Le gestionnaire de segmentation repose sur trois structures principales : les segments de débit (\texttt{rate\_intervals}), les segments de délai (\texttt{delay\_intervals}) et les intervalles libres (\texttt{free\_intervals}), représentant les portions du contact encore disponibles pour la transmission. Chaque segment est défini par un intervalle temporel et une valeur associée.
+
+Deux opérations principales sont utilisées :
+\begin{itemize}
+    \item \texttt{dry\_run\_tx} : simulation d’une transmission sans modification de l’état interne,
+    \item \texttt{schedule\_tx} : planification effective de la transmission avec mise à jour des intervalles libres.
+\end{itemize}
+
+Lorsqu’une transmission est demandée, le gestionnaire recherche un intervalle libre compatible avec l’instant considéré (\texttt{at\_time}). Si cet instant est situé avant le début du contact, la transmission démarre au début du premier intervalle valide ; sinon, elle commence à \texttt{at\_time}. La durée de transmission est ensuite calculée en tenant compte des segments de débit traversés, ce qui permet à une transmission de s’étendre sur plusieurs segments successifs si nécessaire.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{Images/free_intervals_evolution.png}
+\caption{Découpage d’un intervalle libre après planification d’un bundle.}
+\label{fig:free_intervals}
+\end{figure}
+
+La planification d’un bundle entraîne une mise à jour dynamique des intervalles libres. Comme illustré ci-dessus, un intervalle initial peut être découpé en plusieurs sous-intervalles afin de conserver une représentation cohérente des ressources disponibles pour les transmissions futures.
+
+Les tests implémentés dans le fichier \texttt{seg.rs} ont permis de valider plusieurs comportements essentiels :
+\begin{itemize}
+    \item insertion d’un bundle dans un intervalle libre,
+    \item enchaînement de plusieurs transmissions successives,
+    \item gestion de débits variables,
+    \item prise en compte correcte de l’instant \texttt{at\_time}.
+\end{itemize}
+
+Ces tests garantissent la cohérence entre les fonctions \texttt{dry\_run\_tx} et \texttt{schedule\_tx}, ainsi que la mise à jour correcte des intervalles libres après chaque planification.
+
+\vspace{0.3cm}
+
+\textbf{Difficultés rencontrées :}
+
+Plusieurs difficultés ont été rencontrées lors de l’implémentation des tests de segmentation. La manipulation d’intervalles temporels a notamment entraîné des erreurs d’indices, en particulier lors de l’accès à des segments inexistants. Ces problèmes ont été corrigés en ajoutant des vérifications sur les bornes des intervalles et en sécurisant les accès aux structures de données.
+
+La gestion des cas limites s’est également révélée délicate, notamment pour les situations où l’instant de transmission se situe en dehors des intervalles définis ou à leurs frontières. Certains tests ont dû être ajustés afin de respecter strictement les contraintes temporelles du modèle.
+
+Enfin, des contraintes liées aux outils d’intégration continue ont été rencontrées. Les hooks \textit{pre-commit}, incluant \texttt{cargo fmt} et \texttt{cargo clippy}, ont empêché certains commits en raison de problèmes de formatage ou de warnings. Ces difficultés ont été résolues en appliquant les corrections nécessaires et en respectant les règles imposées par le projet.
+
+Ces difficultés ont permis de mieux comprendre les invariants du modèle et de renforcer la robustesse des tests implémentés.\\
+
+Toute ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})
 
 \paragraph{PrioritySegmentation :}~\\\\
 Partie de Bastien
