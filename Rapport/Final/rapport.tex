@@ -627,6 +627,53 @@ Jte laisse ça samy, tu détaille exactement ce que fait l'algo tu peux faire de
 \newpage
 \section{Analyse des résultats}
 \subsection{Benchmark}
+Benchmarker une librairie de routage DTN comme A-SABR présente plusieurs défis inhérents.
+Contrairement à des algorithmes classiques facilement isolables,
+le routage DTN implique une chaîne complète de composants interdépendants
+— le parsing du Contact Plan, la construction du Multigraph, le pathfinding, et la gestion des routes — 
+ce qui rend difficile l'isolation d'un composant précis pour en mesurer les performances.
+
+Des tentatives de benchmarks réalisés avec Criterion souffrent également du bruit inhérent aux runners GitHub Actions partagés,
+où les variations entre deux runs peuvent atteindre ±15\% sans aucun changement de code.
+Cela rend la détection de régressions fines impossible en CI.
+
+Une autre tentative, toujours avec critérion mais cette fois ci en local, qui elle génères des schémas
+violin plots, bien que lisibles, manquent de conclusivité. Les distributions sont larges et se chevauchent 
+partiellement, rendant difficile l'affirmation catégorique qu'une variante est strictement meilleure qu'une autre.
+Par exemple la comparaison entre Node, Hybrid et Contact Parenting montre des tendances cohérentes avec la théorie,
+mais les intervalles de confiance se superposent trop pour conclure avec certitude.
+
+Enfin le choix d'un seul Contact Plan de référence (\texttt{"A-SABR/benches/ptvg\_files/sample1.json"}) 
+avec une unique paire source/destination limite la portée des résultats — un seul scénario peut être 
+favorable ou défavorable à une variante particulière sans que ce soit représentatif du comportement général 
+de la librairie.\\
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{PathFinding.pdf}
+    \caption{Comparaison des 3 algos de routage Contact, Node et Hybrid}
+    \label{fig:bench_pathfinding}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Router.pdf}
+    \caption{Comparaison entre les deux principaux routers, VolCgr et Spsn}
+    \label{fig:bench_router}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{CI_Criterion.png}
+    \caption{Exemple qui illustre le bruit de la tentative de CI Régression pour un même code}
+    \label{fig:ci_Criterion}
+\end{figure}
+
+
+
+Pour apporter un peu plus de détail, la question de comment benchmarker proprement et de manière fiable la
+libraire est une vraie problématique toujours en cours de recherche de la part de l'équipe de développement,
+des tentatives étaient déjà présentes à notre arrivée (c'est de là que provient le gros \gls{cp} en JSON).
 
 \newpage
 \section{Gestion du Projet}
