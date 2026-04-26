@@ -618,7 +618,70 @@ Si on à le temps de PR ou d'avoir quelque chose de bien.
 \newpage
 \section{Algorithmes et Structures de Données}
 \subsection{PrioritySegmentation}
-Jte laisse ça samy, tu détaille exactement ce que fait l'algo tu peux faire des schéma complexité algo et temps tous le bazar tous les types de données que t'utilise
+Dans cette partie, nous allons détailler le fonctionnement algorithmique du module \texttt{PrioritySegmentation (pseg)}.
+Pour commencer, étudions la fonction de simulation du module \texttt{dry\_run\_tx}. 
+Parlons d'abord de sa signature, la fonction prend 4 paramètres:
+\begin{itemize}
+    \item \&self: la référence vers l'instance du PSegmentationManager contenant toute la logique. Un détail a son importance ici,
+    comme la fonction ne fait qu'une simulation on limite l'attribut à une lecture seule en ne mettant pas le mot clé \texttt{mut} indiquant à Rust que cette variable n'est pas mutable.
+    \item contact\_data: \&ContactInfo: c'est une \texttt{struct} contenant des attributs \texttt{source} et \texttt{dest} de type \texttt{NodeID}
+    et deux attributs \texttt{start} et \texttt{end} de type \texttt{Date}. Cette structure de données représente les limitations physiques: \texttt{source} et \texttt{dest} sont les noeuds concernés par le contact
+    et \texttt{start} et \texttt{end} représentent la fenêtre temporelle du contact.
+    \item at\_time: Date: c'est l'instant t à partir duquel nous souhaitons insérer le paquet.
+    \item bundle: \&Bundle: la référence vers le paquet que l'on souhaite transmettre.
+\end{itemize}
+Le type de données renvoyé par la fonction est \texttt{Option<ContactManagerTxData>}. En Rust, \texttt{Option<T>} est une énumération polymorphique qui se définit par deux états, None et Some(T). Dans notre cas voici comment sont traités les deux cas: 
+\begin{itemize}
+    \item Le cas d'échec symbolisé par \texttt{None}: la transmission est impossible.
+    \item Le cas de de succès symbolisé ici par \texttt{Some(ContactManagerTxData)}: un créneau utilisable a été trouvé par la fonction. On renvoie donc un objet de type \texttt{struct ContactManagerTxData}
+    qui comprend toutes les informations du paquet inséré: les heures de début et de fin d'émission représentés par \texttt{tx\_start} et \texttt{tx\_end}, les heures de réception prenant en compte le délai de propagation représentés par \texttt{rx\_start} et \texttt{rx\_end}
+    et la date d'expiration du paquet représenté par le champ \texttt{expiration}.
+\end{itemize}
+
+Passons maintenant au corps de l'algorithme. On commence par initialiser deux variables: \texttt{tx\_start} initialisée à \texttt{at\_time}
+et \texttt{tx\_end\_opt} représentant l'état de la recherche, \texttt{None} si on cherche un point de départ et \texttt{Some(date)} sinon.
+Ensuite, grâce à une boucle \texttt{for}, l'algorithme évalue chaque segment de \texttt{self.booking} avec une complexité de \texttt{O(n), n} étant le nombre de segments.
+Dans un premier temps, l'algorithme applique 2 vérifications, avec la ligne \mintinline{rust}{if seg.end <= at_time { continue; }} on ignore les segments qui se trouvent avant du paramètre \texttt{at\_time}.
+Grâce à la ligne \mintinline{rust}{if bundle.priority <= seg.val { tx_end_opt = None; continue; }}, on ignore également les segments dont la priorité est supérieur à celle du paquet à insérer.
+
+Après ça, on peut commencer le calcul débutant par \texttt{match tx\_end\_opt}:
+\begin{itemize}
+    \item Cas \texttt{None}: un espace libre a été trouvé, on fixe \texttt{tx\_start} à \texttt{at\_time} et on calcule les besoins du paquet.
+    Si tout rentre dans le segment en cours, on peut renvoyer le résultat, sinon on passe dans l'état \texttt{Some(tx\_end)} pour aller chercher de l'espace dans le ou les segments suivants.
+    \item Cas \texttt{Some(tx\_end)}: on cherchait déjà à insérer dans le segment précédent donc on cherche de l'espace supplémentaire dans ce segment. Si \texttt{tx\_end} tombe dans ce segment, on renvoie le résultat sinon on répète l'opération.
+\end{itemize}
+
+Si aucun créneau n'a été trouvé, on renvoie None sinon on renvoie la \texttt{struct ContactManagerTxData} correspondante. 
+Dans le pire des cas, on a une complexité de l'ordre de \texttt{O(n * r)} avec n le nombres de segments \texttt{booking} er r le nombre de segments de débit.
+En effet, à chaque fois qu'un créneau potentiellement libre est trouvé, le calcul de la fin de transmission est relancé par \mintinline{rust}|super::get_tx_end|, cette fonction doit reparcourir les r intervalles de débit.
+Donc dans le pire cas, cette sous-recherche est lancée à chaque nouveau segment libre soit une complexité \texttt{O(n * r)}.
+
+Cependant, il est intéressant de noter que physiquement le délai est une valeur qui reste fixe dans la plupart des cas, il sera donc représenté dans la majorité des cas par un segment unique.
+Donc la plupart du temps, on aura plutôt une compelexité de l'ordre de \texttt{O(n)}.
+\\[1cm]
+Après la fonction de simulation, nous pouvons passer à la fonction d'allocation \texttt{schedule\_tx}.
+La signature de la fonction est très similaire à celle \texttt{dry\_run\_tx} mais à une différence près: on utilise \texttt{\&mut self} à la place de \texttt{\&self}.
+Là où la première fonction n'était qu'une simulation et n'avait pas besoin de modifier des données, ici il faut expliciter le fait que cette variable est mutable et sera donc
+modifié par \texttt{schedule\_tx}. Le type de données renvoyé reste également le même.
+Passons directement à l'étude algorithmique. Pour commencer, on récupère le résultat de la simulation via \mintinline{rust}|let out = self.dry_run_tx(contact_data, at_time, bundle)?;|. 
+L'opérateur '?' est quelque chose de propre à Rust, il permet d'arrêter l'exécution si None est renvoyé.
+Après ça, on peut commencer le découpage des segments. Grâce à une boucle \texttt{while} on parcourt tous les segments afin de trouver tous ceux qui sont dans la fenêtre temporelle \texttt{tx\_start -- tx\_end}, avec une complexité \texttt{O(n)}.
+Pour chaque segment, il y a 3 opérations possibles:
+\begin{itemize}
+    \item La coupe à gauche avec \mintinline{rust}{seg.start < tx_start}: si le segment commence avant le début de la fenêtre, il est scindé en deux parties.
+    On insère un "nouveau" segment gauche intact grâce à \mintinline{rust}{insert(i)} et on repousse le début du segment actuel à \texttt{tx\_start}.
+    \item La coupe à droite avec \mintinline{rust}{seg.end > tx_end}: le principe est très similaire au cas précédent mais avec le côté droit. Si le segment s'arrête après la fin de notre fenêtre,
+    on crée un "nouveau" segment droit et on raccourci la fin du segment à \texttt{tx\_end}.
+    \item L'écrasement: maintenant que l'on possède un segment qui rentre dans notre fenêtre, on peut simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \mintinline{rust}{self.booking[i].val = bundle.priority}
+\end{itemize}
+
+Enfin, une procédure simple parcourt tous les segments nouvellement crées sauf le dernier grâce à une boucle \texttt{while j < self.booking.len()-1 (O(n-1))} 
+afin d'agréger les segments adjacents de même priorité. Pour chaque segment i, on vérifie si le segment i+1 commence quand le segment i se termine (\mintinline{rust} {if self.booking[j].end == self.booking[j + 1].start}) et s'ils ont la même priorité.
+Si c'est le cas on crée un segment avec la date de début du segment i, la date de fin du segment i+1 et leur priorité commune. Si la fusion est faire on n'augmente pas l'indice j, en effet le segment fusionné nouvellement crée à la possibilité d'être fusionné avec le suivant.
+S'il n'y a pas de fusion, on passe au segment suivant en faisant j+=1.
+
+Concernant la complexité, le temps de recherche est de l'ordre de \texttt{O(n)}. Les modifications faites pendant cette recherche comme \mintinline{rust}|Vec::insert()| et \mintinline{rust}|Vec::remove()| ont aussi un coût \texttt{O(n)}.
+On a donc dans le pire des cas, une complexité \texttt{O(n²)} pour \texttt{schedule\_tx}.
 \subsection{Hybrid Parenting}
 
 
