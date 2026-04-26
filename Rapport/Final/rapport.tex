@@ -53,6 +53,10 @@
     description={Bundle Protocole Socket. Type spécifique de socket utilisée dans le cas des DTN \cite{bp}}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
+\newacronym[
+    description={Interplanetary Overlay Network. implémentation de référence développée par la NASA pour les protocoles de réseaux tolérants aux délais }
+]{ion}{ION}{Interplanetary Overlay Network}
+
 \title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
 \author{DAGUE Bastien, AL FARAJ Samy, JOUINI Yassine, BROCHARD Vincent \\ \small L3 Informatique - Faculté des Sciences - Université de Montpellier}
 \date{2025 - 2026}
@@ -668,18 +672,22 @@ Le fichier \texttt{mod.rs} de ce dossier définit les bases communes à tous les
 
 Le fichier contient aussi des fonctions partagées par tous les routeurs, comme \texttt{schedule\_unicast}, \texttt{schedule\_multicast}, \texttt{dry\_run\_unicast\_path}, \texttt{dry\_run\_unicast\_tree} et \texttt{dry\_run\_multicast}. Ces fonctions implémentent deux phases distinctes. Le \textit{dry run} simule le parcours d'un chemin ou d'un arbre sans réserver de ressources, pour vérifier qu'un bundle peut effectivement atteindre sa destination en fonction des contacts. Le \textit{scheduling} effectue ensuite la réservation réelle en appelant \texttt{schedule()} sur chaque \texttt{RouteStage} du chemin.
 
-Le dossier contient trois implémentations concrètes du trait \texttt{Router} : CGR, VolCGR et SPSN. Dans le cadre de notre projet, nous n'avons travaillé que sur VolCGR et SPSN.\paragraph{VolCgr}
-\paragraph{Spsn} ~\\\\
+Le dossier contient trois implémentations concrètes du trait \texttt{Router} : CGR, VolCGR et SPSN. Dans le cadre de notre projet, nous n'avons travaillé que sur VolCGR et SPSN. 
+
+VolCGR est une évolution de CGR qui est la méthode de la NASA, et Spsn qui est une implémentation toute nouvelle venant d'A-SABR.
+
+\paragraph{VolCgr}
+\paragraph{Spsn} ~\\
 
 SPSN, pour \textit{Shortest Path with Safety Nodes}, est l'un des trois routeurs implémentés dans le projet. Son objectif est d'optimiser le routage en évitant de recalculer des routes déjà connues comme impossibles, et en réutilisant les arbres de routes calculés pour plusieurs bundles successifs.
 
 La struct \texttt{Spsn} est générique sur quatre types : un \texttt{NodeManager}, un \texttt{ContactManager}, un algorithme de pathfinding \texttt{P} et une stratégie de stockage \texttt{S}. Le pathfinding calcule de nouveaux arbres de routes via Dijkstra lorsque nécessaire. Le \texttt{route\_storage}, concrètement un \texttt{TreeCache}, stocke les arbres déjà calculés sous forme d'une file à taille maximale et les restitue si un bundle compatible se présente. Enfin, l'\texttt{unicast\_guard} est une \texttt{HashMap} qui associe à chaque paire (destination, priorité) la taille maximale d'un bundle connu comme inatteignable. D'où le nom de l'algorithme : les \textit{Safety Nodes} sont ces destinations mémorisées comme impossibles, qui permettent d'avorter immédiatement les tentatives futures sans relancer Dijkstra.
 
-La méthode \texttt{route()} commence par vérifier si le bundle est expiré, puis dispatche vers \texttt{route\_unicast()} ou \texttt{route\_multicast()} selon le nombre de destinations. Dans \texttt{route\_unicast()}, le guard est consulté en premier : si la taille du bundle est inférieure à la limite connue pour cette destination, le routage est immédiatement abandonné. Sinon, le cache va vérifier qu'un arbre existant reste valide pour ce bundle. En cas de cache hit, le scheduling est lancé directement. En cas de cache miss, Dijkstra est appelé, l'arbre est stocké, puis on vérifie que la destination est atteignable et que l'arrivée ne dépasse pas l'expiration du bundle. Si la destination est absente de l'arbre, \texttt{add\_limit()} met à jour le guard pour bloquer les bundles futurs de taille inférieure ou égale. Dans \texttt{route\_multicast()}, la logique est similaire mais le cache retourne également la liste des nœuds atteignables : si elle couvre toutes les destinations du bundle, le scheduling est lancé directement sans dry run supplémentaire.
+La méthode \texttt{route()} commence par vérifier si le bundle est expiré, puis dispatche vers \texttt{route\_unicast()} ou \texttt{route\_multicast()} selon le nombre de destinations. Dans \texttt{route\_unicast()}, le guard est consulté en premier : si la taille du bundle est inférieure à la limite connue pour cette destination, le routage est immédiatement abandonné. Sinon, le cache va vérifier qu'un arbre existant reste valide pour ce bundle. En cas de cache hit, le scheduling est lancé directement. En cas de cache miss, Dijkstra est appelé, l'arbre est stocké, puis on vérifie que la destination est atteignable et que l'arrivée ne dépasse pas l'expiration du bundle. Si la destination est absente de l'arbre, \texttt{add\_limit()} met à jour le guard pour bloquer les bundles futurs de taille inférieure ou égale. Dans \texttt{route\_multicast()}, la logique est similaire mais le cache retourne également la liste des nœuds atteignables : si elle couvre toutes les destinations du bundle, le scheduling est lancé directement sans dry run supplémentaire.\\
 
-\subsubsection{Tests de SPSN}
 
-Pour tester SPSN, nous avons organisé les cas de test autour des branches identifiées dans le code. Les tests reposent sur les helpers existants de \texttt{pathfinding/test\_helpers.rs}, notamment \texttt{make\_cp()} qui fournit un graphe à 5 nœuds avec des fenêtres temporelles variées, et \texttt{make\_multicast\_bundle()} que nous avons ajouté pour les cas multicast. Un contact plan dédié \texttt{make\_cp\_partial\_window} a également été créé localement pour le test de cache partiel, car aucun helper existant ne proposait une fenêtre se fermant en cours de simulation.
+
+Pour tester SPSN, nous avons organisé les cas de test autour des branches identifiées dans le code. Les tests reposent sur les helpers existants de \texttt{pathfinding/test\_helpers.rs}, notamment \texttt{make\_cp()} qui fournit un graphe à 5 nœuds avec des fenêtres temporelles variées, et \texttt{make\_multicast\_bundle()} que nous avons ajouté pour les cas multicast. Un contact plan dédié \texttt{make\_cp\_partial\_window} a également été créé localement pour le test de cache partiel, car aucun helper existant ne proposait une fenêtre se fermant en cours de simulation.\\
 
 Les tests couvrent les cas suivants :
 
@@ -693,6 +701,129 @@ Les tests couvrent les cas suivants :
     \item \textbf{Routage multicast} : on vérifie qu'un premier appel calcule et stocke l'arbre, qu'un second appel avec toutes les destinations couvertes réutilise le cache sans dry run supplémentaire, et qu'un cache hit partiel — où l'arbre ne couvre plus toutes les destinations après fermeture d'un contact — déclenche bien un nouveau calcul. On vérifie aussi qu'un routage multicast sans aucune destination atteignable retourne un \texttt{RoutingOutput} avec \texttt{first\_hops} vide.
 \end{itemize}
 \subsection{BP-Socket}
+\subsubsection{Mise en situation}
+
+Le projet  a pour objectif de fournir une interface socket  pour \gls{bp},
+utilisé dans les réseaux \gls{dtn}. L'idée est de permettre à une application d'envoyer et
+recevoir des bundles BP exactement comme elle enverrait des paquets UDP ou TCP, en utilisant la même API socket.
+
+Il s'agit ici de voir autre chose que la librairie A-SABR, tous en travaillant sur quelque chose de très important
+pour le futur de A-SABR.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{bp_kernel.png}
+\caption{Architecture original de BP-Socket.}
+\label{fig:bp_kernel}
+\end{figure}
+
+Voici donc les problématique du projets : \\
+
+\begin{itemize}
+    \item Pour charger le module kernel, il faut utiliser \texttt{insmod}, ce qui nécessite les droits root.
+
+    \item Le module kernel doit être recompilé pour chaque version du noyau.
+
+    \item Un bug avec le module provoque un Kernel Panic! .
+
+    \item Avoir un module kernel rajoute une charge en plus pour lancer le tous qui est déjà assez complexe.\\
+\end{itemize}
+
+Pour tester le tous, il faut bien suivre le README du projet qui utilisent des VM Vagrant (une VM \gls{ion} et une VM µDTN) et beaucoup de commandes à taper.
+
+\subsubsection{Solution}
+
+La solution vient d'un mécanisme propre au C, le \gls{ldp}.
+Sans module kernel, un appel à \texttt{socket(AF,BP)} ne sera pas reconnu et ne retournera aucun file descripteur,
+L'idée ici sera de créer un module spécifique qui interceptera l'appel au principales fonction (\texttt{socket,bind,send,recv,close})
+puis d'envoyer les infos nécessaire au Daemon.
+
+L'intêret du \gls{ldp} ici vient du fait qu'il force le dynamic loader à charger nos fonctions contenue dans le module
+avant celle de la glibC.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{bp_interceptor.png}
+\caption{Architecture finale désirée de BP-Socket.}
+\label{fig:bp_preload}
+\end{figure}
+
+Il faut donc : 
+
+\begin{itemize}
+    \item Supprimer tous les fichiers kernel et nettoyer les Makefile.
+
+    \item Nettoyez le daemon et supprimer tous les fichiers du General Netlink.
+
+    \item Définir le nouveau protocol de communication entre le hook et le Daemon, celui ci contiendra toute les options nécessaires(\texttt{OPEN ENDPOINT, CLOSE ENDPOINT, SEND BUNDLE, RECV BUNDLE}).
+
+    \item Ecrire le hook en lui même.
+    
+    \item Ecrire un fichier qui gérera l'état des files descripteur créer par notre version de \texttt{socket}
+
+    \item Modifier le daemon avec les nouvelles fonctions relatif au hook (\texttt{send bundle, connect, message})
+    
+    \item Modifier \gls{ion} avec les nouvelles fonctions du Daemon.
+\end{itemize}
+
+\subsubsection{Application}
+
+Il y a beaucoup de code, donc pour rester dans le plus intéressant,
+présentons le fichier le plus intéressant, le hook. \label{Result_Hook}\ref{CodeHook}\\
+
+Dans les première ligne du fichier, on retrouve les signatures des fonctions \texttt{socket,close,bind,sendto}
+avec le nom real avant leur nom. Ceci est à mettre en relation avec la fonction \texttt{attribute} juste en dessous.
+
+Cette fonctionne permet de dire grâce à \texttt{dlsym} : Si j'appelle, par exemple, \texttt{real\_socket},
+le dynamic loader ira chercher dans la glibC la fonction s'appelant socket.
+
+De cette manière nous on peut redéfinir socket, et choisir si oui ou non on appelle la vraie fonction.\\
+
+On suit ensuite le schéma suivant, lorsqu'on appelle une fonction, on vérifie si le domaine du fd est \texttt{AF\_BP},
+si c'est le cas, là notre hook fait son job, sinon on appelle la vraie fonction de la glibC.\\
+
+\textbf{connect to daemon}: Etablit une connexion avec le Daemon via un Unix Socket.
+
+Crée un socket Unix avec la vraie \texttt{socket()}de la glibc, puis se connecte au fichier \texttt{/tmp/bp\_daemon.sock} .
+Retourne le fd de connexion si succès, -1 sinon. Cette fonction est appelée uniquement depuis \texttt{socket()}
+quand une socket BP est ouverte.\\
+
+\textbf{socket} :  Intercepte la création d'un socket BP et le redirige vers le daemon au lieu du kernel.
+
+Fonctionnement : Si la famille d'adresse n'est pas \texttt{AF\_BP}, laisse passer normalement à la glibc. 
+Sinon, appelle \texttt{connect\_to\_daemon()} pour ouvrir une connexion vers le daemon, 
+enregistre ce fd dans \texttt{fd\_table} pour le reconnaître plus tard, et le retourne à l'application.
+L'app croit avoir un vrai socket kernel alors qu'elle a en réalité un fd de connexion Unix vers le daemon.\\
+
+\textbf{bind} : Intercepte l'association d'une adresse BP à une socket et demande au daemon d'ouvrir l'endpoint correspondant dans \gls{ion}.
+
+Si le fd n'est pas BP, comportement normal. Sinon, récupère le \textbf{node\_id} et \textbf{service\_id} depuis \texttt{sockaddr\_bp},
+les stocke dans \texttt{fd\_table}, puis envoie un message \textbf{BP\_IPC\_OPEN\_ENDPOINT} au daemon.
+Attend la réponse OK ou ERR. Si OK, \gls{ion} a ouvert l'endpoint et est prêt à envoyer/recevoir sur \textbf{ipn:node\_id.service\_id}.\\
+
+\textbf{close} : Intercepte la fermeture d'un socket BP et demande au daemon de fermer l'endpoint dans \gls{ion}.
+
+Si le fd n'est pas BP, comportement normal. Sinon, envoie \textbf{BP\_IPC\_CLOSE\_ENDPOINT} au daemon avec le \textbf{node\_id} et \textbf{service\_id} stockés dans \texttt{fd\_table}. 
+Attend la confirmation, puis supprime l'entrée de \texttt{fd\_table} et ferme le fd Unix socket vers le daemon. 
+Sans ce \texttt{close()}, ION garderait l'endpoint ouvert indéfiniment et bloquerait les prochains \texttt{bind()},
+ce qui nous ait arrivée lors du développement.\\
+
+\textbf{sendto} :  Intercepte l'envoi d'un bundle BP et le transmet au daemon qui le passera à ION.
+
+Si le fd n'est pas BP, comportement normal. Sinon, construit un message \textbf{BP\_IPC\_SEND\_BUNDLE} contenant les adresses
+source et destination (\textbf{src\_node\_id, src\_service\_id, dst\_node\_id, dst\_service\_id}),
+les flags BP (\textbf{MSG\_ACK\_REQUESTED etc.}) et la taille du payload. 
+Envoie d'abord ce header au daemon, puis le payload (le contenu du message) juste après. 
+Attend la réponse OK ou ERR et retourne le nombre de bytes envoyés si succès.\\
+
+Le sender est parfaitement fonctionnel, il permet d'envoyer des messsages d'\gls{ion} vers µDTN et ceux sans module kernel.
+
+\subsubsection{Avenir}
+
+Il reste le fait de recevoir un message, qui inclut donc le fait de détruire un bundle une fois reçu et lu, mais
+par manque de temps nous ne pourrons pas le faire. Néanmoins, Monsieur De Jonckère à un collègue qui aimerait reprendre le travail
+donc nous lui transmettrons nos travaux dès que possible.
+
 
 \newpage
 \section{Algorithmes et Structures de Données}
@@ -1462,6 +1593,148 @@ Code de la fonction \texttt{start\_test}.
             "TEST FAILED: Actual output is not the one expected."
         );
     }
+\end{minted}
+
+\newpage
+\phantomsection
+\label{CodeHook}
+\ref{Result_Hook}
+Code complet du hook BP Socket \texttt{"bp\_socket/interceptor.c"}.
+\begin{minted}[frame=lines, framesep=2mm, linenos]{C}
+#define _GNU_SOURCE
+#include "bp_ipc.h"
+#include "bp_socket.h"
+#include "fd_table.h"
+#include <dlfcn.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+static int (*real_socket)(int, int, int) = NULL;
+static int (*real_close)(int) = NULL;
+static int (*real_bind)(int, const struct sockaddr*, socklen_t) = NULL;
+static ssize_t (*real_sendto)(int, const void*, size_t, int, const struct sockaddr*, socklen_t) = NULL;
+
+static void __attribute__((constructor)) init()
+{
+	real_socket = dlsym(RTLD_NEXT, "socket");
+	real_close = dlsym(RTLD_NEXT, "close");
+	real_bind = dlsym(RTLD_NEXT, "bind");
+	real_sendto = dlsym(RTLD_NEXT, "sendto");
+}
+
+static int connect_to_daemon()
+{
+	struct sockaddr_un addr;
+	int fd = real_socket(AF_UNIX, SOCK_STREAM, 0);
+	if (fd < 0)
+		return -1;
+
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, BP_IPC_SOCKET_PATH, sizeof(addr.sun_path));
+
+	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+		real_close(fd);
+		return -1;
+	}
+	return fd;
+}
+
+int socket(int domain, int type, int protocol)
+{
+    if (domain != AF_BP)
+        return real_socket(domain, type, protocol);
+
+    int unix_fd = connect_to_daemon();
+    if (unix_fd < 0) {
+        return -1;
+    }
+
+    fd_table_add(unix_fd, unix_fd, 0, 0);
+    return unix_fd;
+}
+
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+{
+    if (!is_bp_fd(sockfd))
+        return real_bind(sockfd, addr, addrlen);
+
+    struct sockaddr_bp *bp_addr = (struct sockaddr_bp *)addr;
+    bp_fd_entry_t *entry        = fd_table_get(sockfd);
+
+    entry->node_id    = bp_addr->bp_addr.ipn.node_id;
+    entry->service_id = bp_addr->bp_addr.ipn.service_id;
+
+    bp_ipc_msg_t msg = {
+        .cmd            = BP_IPC_OPEN_ENDPOINT,
+        .src_node_id    = entry->node_id,
+        .src_service_id = entry->service_id,
+        .payload_len    = 0,
+    };
+    write(entry->unix_fd, &msg, sizeof(msg));
+
+    bp_ipc_response_t resp;
+    read(entry->unix_fd, &resp, sizeof(resp));
+
+    if (resp.status == BP_IPC_OK)
+        return 0;
+
+    return -1;
+}
+
+int close(int fd)
+{
+    if (!is_bp_fd(fd))
+        return real_close(fd);
+
+    bp_fd_entry_t *entry = fd_table_get(fd);
+
+    bp_ipc_msg_t msg = {
+        .cmd            = BP_IPC_CLOSE_ENDPOINT,
+        .src_node_id    = entry->node_id,
+        .src_service_id = entry->service_id,
+        .payload_len    = 0,
+    };
+    write(entry->unix_fd, &msg, sizeof(msg));
+
+    bp_ipc_response_t resp;
+    read(entry->unix_fd, &resp, sizeof(resp));
+
+    fd_table_remove(fd);
+    real_close(fd);
+
+    return 0;
+}
+
+ssize_t sendto(int sockfd, const void* buf, size_t len, int flags,
+    const struct sockaddr* dest_addr, socklen_t addrlen)
+{
+	if (!is_bp_fd(sockfd))
+		return real_sendto(sockfd, buf, len, flags, dest_addr, addrlen);
+
+	struct sockaddr_bp* bp_dest = (struct sockaddr_bp*)dest_addr;
+	bp_fd_entry_t* entry = fd_table_get(sockfd);
+
+	bp_ipc_msg_t msg = {
+		.cmd = BP_IPC_SEND_BUNDLE,
+		.src_node_id = entry->node_id,
+		.src_service_id = entry->service_id,
+		.dst_node_id = bp_dest->bp_addr.ipn.node_id,
+		.dst_service_id = bp_dest->bp_addr.ipn.service_id,
+		.flags = (uint32_t)flags,
+		.payload_len = (uint32_t)len,
+	};
+	write(entry->unix_fd, &msg, sizeof(msg));
+	write(entry->unix_fd, buf, len);
+
+	bp_ipc_response_t resp;
+	read(entry->unix_fd, &resp, sizeof(resp));
+
+	if (resp.status == BP_IPC_OK)
+		return (ssize_t)len;
+
+	return -1;
+}
 \end{minted}
 
 
