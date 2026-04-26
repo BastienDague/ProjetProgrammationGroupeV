@@ -211,13 +211,27 @@ Pour finir, un soucis à été détecté en ce qui concerne le changement de \gl
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.35\textwidth]{Contact_Plan_DT.png}
+    \includegraphics[width=0.30\textwidth]{Contact_Plan_DT.png}
     \caption{Contact plan "A-SABR/examples/contact\_plans/ion\_format.cp"}
     \label{fig:dt_cp_ion_format}
 \end{figure}
 
-Ci-dessus, on a le format classique de \gls{cp} que l'interface comprend correctement, hors il existe plusieurs
-autre format. De base il n'y avait pas l'affichage du nombre de nodes et de contact détectée lors du chargement d'un contact plan,
+Ci-dessus, on a le format classique de \gls{cp} que l'interface comprend correctement :
+
+Ce \gls{cp} au format ION, format de référence de la NASA, définit un réseau de 6 nœuds avec une topologie linéaire 1→2→3→4→5→6. 
+Chaque lien est actif entre t=+60s et t=+7260s.
+
+Les lignes contact définissent les fenêtres de communication avec leurs débits respectifs
+ — le lien 1→2 dispose de 10 000 octets/s, 2→3 de 15 000,
+et ainsi de suite jusqu'à 30 000 octets/s pour 5→6.
+
+Les lignes range définissent le délai de propagation physique du signal sur chaque lien
+ — 10 secondes entre les nœuds 1 et 2, 15 entre 2 et 3, jusqu'à 30 secondes pour 5→6,
+  simulant des distances croissantes entre les nœuds
+ comme on pourrait en trouver en situation réelle.
+
+Hors il existe plusieurs autre format. 
+De base il n'y avait pas l'affichage du nombre de nodes et de contact détectée lors du chargement d'un contact plan,
 mais j'ai trouvée étrange que l'appli prennent sans erreurs tous type de fichiers et donc, après investigation et discussion, on à décider 
 de faire afficher le nombre de contact et de noeuds. La plupart des contact plan qui ne sont pas en format "ION" comme ci-dessus
 ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contacts et 0 noeuds.
@@ -229,7 +243,8 @@ ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche si
     \label{fig:dt_cp_asabr}
 \end{figure}
 
-Ci-dessus un exemple de contact plan qu'il ne lit pas du tous.
+Ci-dessus un exemple de contact plan au format ASABR qu'il ne lit pas du tous. On voit que les contacts précisent le contact Manager à adoptée
+et qu'ils peuvent être différent au sein du même \gls{cp}.
 
 Pour régler le soucis, il aurait fallu développer tous un parser qui s'adapte au type de \gls{cp} chargé. Dans les fait c'était réalisable 
 mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc on a juste rajouté le compteur de noeuds et de contacts.\\
