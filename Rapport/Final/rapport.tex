@@ -79,6 +79,13 @@ Le réseau de communication spatial repose sur le \gls{dtn}. Avec ce type de pro
 La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.\cite{sabr}
 C'est également pour suivre ce choix de performance que celle-ci est programmée en Rust, langage connu pour son compilateur strict et sa fine gestion de la mémoire.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.1\textwidth]{resume_asabr.png}
+    \caption{Schéma récapitulatif d'A-SABR}
+    \label{fig:resume_asabr}
+\end{figure}
+
 \subsection{Sujet}
 
 L'intérêt pour ce sujet a été immédiat au sein de notre groupe, motivé par la perspective de contribuer à un projet Open Source d'envergure réelle. 
@@ -101,7 +108,7 @@ Au final, tout a été un peu chamboulé, le no-std a été abandonné et l'int�
 Nous avons surtout compris qu'on ne dépendait pas seulement de nous, mais qu'il s'agissait d'un immense travail d'équipe.
 On commence une tâche, on l'accomplit, on lance une Pull Request, on discute, on modifie. Tout ça prend un certain temps et nécessite beaucoup de coordination.\\
 
-Arrivé à la fin du projet voici les objectifs qu'on a finalement pu accomplir :  \\
+Arrivé à la fin du projet voici les objectifs sur lesquelles nous avons travaillés :  \\
 
 \begin{description}
     \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : 
@@ -428,9 +435,9 @@ Le sous-module contient trois implémentations : EVL, QD et ETO. Ces implémenta
 
 EVL, QD et ETO se distinguent par leurs valeurs de ces paramètres. EVL est le manager le plus simple : il se contente de consommer le volume d'un bundle à chaque \texttt{schedule\_tx} sur un contact. La queue est mise à jour automatiquement et il n'y a pas de délai. QD est similaire à EVL, à la différence que \texttt{tx\_start} est décalé depuis le début du contact en fonction du volume déjà réservé. Enfin, ETO est le plus complexe des trois : le décalage de la queue doit être géré manuellement et débute à \texttt{at\_time}, soit le temps courant.
 
-Chacun de ces fichiers instancie la macro pour générer trois variantes : un manager de base sans priorités, un avec priorités, et un autre avec priorités et budgets, un budget étant la quantité maximale de données qu'un bundle peut réserver sur un contact.
+Chacun de ces fichiers instancie la macro pour générer trois variantes : un manager de base sans priorités, un avec priorités, et un autre avec priorités et budgets, un budget étant la quantité maximale de données qu'un bundle peut réserver sur un contact.\\\\
 
-\paragraph{Tests du module Legacy}~\\\\
+
 
 Pour tester ces implémentations, et sachant qu'elles partagent une base de tests en commun, nous avons mis en place des macros de tests dans un fichier \texttt{test\_helpers.rs} afin d'éviter la duplication de code. Quatre macros ont été définies :
 
@@ -676,30 +683,13 @@ Le dossier contient trois implémentations concrètes du trait \texttt{Router} :
 
 VolCGR est une évolution de CGR qui est la méthode de la NASA, et Spsn qui est une implémentation toute nouvelle venant d'A-SABR.
 
-\paragraph{VolCgr}
-\paragraph{Spsn} ~\\
+\paragraph{Tests}~\\
 
-SPSN, pour \textit{Shortest Path with Safety Nodes}, est l'un des trois routeurs implémentés dans le projet. Son objectif est d'optimiser le routage en évitant de recalculer des routes déjà connues comme impossibles, et en réutilisant les arbres de routes calculés pour plusieurs bundles successifs.
+Bien que des tests aient été rédigés et soient en grande partie fonctionnels sur notre branche de 
+développement, une refactorisation majeure des Contact Plans ainsi que notre test helpers et nos anciens test ont rendu leur intégration complexe.
+L'effort de rebase nécessaire étant important par rapport au temps restant, nous avons privilégié de ne pas les inclures dans le rapport
+mais de laisser l'explication du module ci-dessus.
 
-La struct \texttt{Spsn} est générique sur quatre types : un \texttt{NodeManager}, un \texttt{ContactManager}, un algorithme de pathfinding \texttt{P} et une stratégie de stockage \texttt{S}. Le pathfinding calcule de nouveaux arbres de routes via Dijkstra lorsque nécessaire. Le \texttt{route\_storage}, concrètement un \texttt{TreeCache}, stocke les arbres déjà calculés sous forme d'une file à taille maximale et les restitue si un bundle compatible se présente. Enfin, l'\texttt{unicast\_guard} est une \texttt{HashMap} qui associe à chaque paire (destination, priorité) la taille maximale d'un bundle connu comme inatteignable. D'où le nom de l'algorithme : les \textit{Safety Nodes} sont ces destinations mémorisées comme impossibles, qui permettent d'avorter immédiatement les tentatives futures sans relancer Dijkstra.
-
-La méthode \texttt{route()} commence par vérifier si le bundle est expiré, puis dispatche vers \texttt{route\_unicast()} ou \texttt{route\_multicast()} selon le nombre de destinations. Dans \texttt{route\_unicast()}, le guard est consulté en premier : si la taille du bundle est inférieure à la limite connue pour cette destination, le routage est immédiatement abandonné. Sinon, le cache va vérifier qu'un arbre existant reste valide pour ce bundle. En cas de cache hit, le scheduling est lancé directement. En cas de cache miss, Dijkstra est appelé, l'arbre est stocké, puis on vérifie que la destination est atteignable et que l'arrivée ne dépasse pas l'expiration du bundle. Si la destination est absente de l'arbre, \texttt{add\_limit()} met à jour le guard pour bloquer les bundles futurs de taille inférieure ou égale. Dans \texttt{route\_multicast()}, la logique est similaire mais le cache retourne également la liste des nœuds atteignables : si elle couvre toutes les destinations du bundle, le scheduling est lancé directement sans dry run supplémentaire.\\
-
-
-
-Pour tester SPSN, nous avons organisé les cas de test autour des branches identifiées dans le code. Les tests reposent sur les helpers existants de \texttt{pathfinding/test\_helpers.rs}, notamment \texttt{make\_cp()} qui fournit un graphe à 5 nœuds avec des fenêtres temporelles variées, et \texttt{make\_multicast\_bundle()} que nous avons ajouté pour les cas multicast. Un contact plan dédié \texttt{make\_cp\_partial\_window} a également été créé localement pour le test de cache partiel, car aucun helper existant ne proposait une fenêtre se fermant en cours de simulation.\\
-
-Les tests couvrent les cas suivants :
-
-\begin{itemize}
-    \item \textbf{Construction et expiration} : on vérifie que \texttt{Spsn::new()} réussit avec un plan de contacts valide, et qu'un bundle dont la date d'expiration est dépassée retourne \texttt{None} immédiatement sans consulter le guard ni le cache.
-
-    \item \textbf{Guard} : on vérifie qu'une destination connue comme inatteignable bloque immédiatement les bundles futurs de taille inférieure à la limite mémorisée. On teste également que \texttt{add\_limit} ne met pas à jour la limite si le bundle échouant est plus grand que la limite existante. Enfin, on vérifie le comportement avec \texttt{with\_priorities} : lorsqu'il est activé, les limites sont isolées par priorité, sinon une limite s'applique à toutes les priorités indépendamment.
-
-    \item \textbf{Routage unicast} : on couvre les quatre issues possibles après le guard. Un cache hit réutilise directement l'arbre existant. Un cache miss avec destination inatteignable met à jour le guard. Un cache miss avec chemin trouvé mais arrivée dépassant l'expiration du bundle retourne \texttt{None} sans mettre à jour le guard, car c'est un problème de timing et non de capacité. Enfin, un cache miss avec chemin valide retourne un \texttt{RoutingOutput} avec les bonnes métadonnées.
-
-    \item \textbf{Routage multicast} : on vérifie qu'un premier appel calcule et stocke l'arbre, qu'un second appel avec toutes les destinations couvertes réutilise le cache sans dry run supplémentaire, et qu'un cache hit partiel — où l'arbre ne couvre plus toutes les destinations après fermeture d'un contact — déclenche bien un nouveau calcul. On vérifie aussi qu'un routage multicast sans aucune destination atteignable retourne un \texttt{RoutingOutput} avec \texttt{first\_hops} vide.
-\end{itemize}
 \subsection{BP-Socket}
 \subsubsection{Mise en situation}
 
@@ -1052,11 +1042,12 @@ Segmentation (Standard \& Priority) & 10 & Intégrité et agrégation des donné
 \caption{Répartition de l'effort de test par module.}
 \end{table}
 
-Je noterai ici la coverage quand la PR de Samy sera acceptée.\\
-
 La pertinence de notre suite de tests a été confirmée lors de récente modifications de la librairie par Mr De Jonckère.
 Nos tests ont agi comme un filet de sécurité critique, permettant d'identifier immédiatement
-les régressions et facilitant ainsi une évolution rapide du code et évitant la casse de la librairie.\\
+les régressions et facilitant ainsi une évolution rapide du code et évitant la casse de la librairie.
+
+La librairie évoluant rapidement, nos tests ont été refactorisées et n'apparaissent plus telle que nous les avions écrits.
+Le nombre inscrit ci-dessus n'est donc plus valide dans la version la plus récente d'A-SABR.\\
 
 Pour résumé l'état d'esprit du projet, on débarque sur quelque chose de déjà en partie construit, dans un
 language moderne, nouveau et d'autant plus Open Source.
