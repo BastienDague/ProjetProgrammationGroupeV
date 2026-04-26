@@ -54,7 +54,7 @@
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
 \title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
-\author{DAGUE Bastien, AL-FARAJ Samy, JOUINI Yassine, BROCHARD Vincent \\ \small L3 Informatique - Faculté des Sciences - Université de Montpellier}
+\author{DAGUE Bastien, AL FARAJ Samy, JOUINI Yassine, BROCHARD Vincent \\ \small L3 Informatique - Faculté des Sciences - Université de Montpellier}
 \date{2025 - 2026}
 
 \begin{document}
@@ -68,18 +68,18 @@
 \newpage
 \section{Introduction}
 \subsection{A-SABR}
-Notre projet de programmation porte sur la librairie ASABR, portée par Mr Olivier De Jonckère du LIRMM.
+Notre projet de programmation porte sur la librairie A-SABR, portée par Mr. Olivier De Jonckère du LIRMM.
 
-Le réseau de communication spacial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effecture par des algorithmes de type \gls{sabr}.\\
+Le réseau de communication spatial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effectue à l'aide d'algorithmes de type \gls{sabr}.\\
 
 La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.\cite{sabr}
-C'est également pour suivre ce choix de performance que celle-ci est programmé en Rust, language connue pour son compilateur stricte et sa fine gestion de la mémoire.
+C'est également pour suivre ce choix de performance que celle-ci est programmée en Rust, langage connu pour son compilateur strict et sa fine gestion de la mémoire.
 
 \subsection{Sujet}
 
 L'intérêt pour ce sujet a été immédiat au sein de notre groupe, motivé par la perspective de contribuer à un projet Open Source d'envergure réelle. 
 Ce cadre de travail nous a offert l'opportunité de nous initier au langage Rust, 
-dont la montée en puissance dans l'industrie logicielle souligne l'importance actuelle. 
+dont la montée en puissance dans l'industrie logicielle souligne son importance actuelle. 
 Pour plusieurs membres de l'équipe aspirant à se spécialiser en informatique système (bas niveau) ou en 
 réseaux, ce projet constituait une application concrète et exigeante de nos ambitions professionnelles.\\
 
@@ -92,12 +92,12 @@ Le sujet présentait plusieurs point à aborder : \\
 \end{itemize}
 
 
-Au final, tout à été un peu chamboulé, le no-std à été abbandonnée, l'intégration à Hardy jugée peut intéressante. \\
+Au final, tout a été un peu chamboulé, le no-std a été abandonné et l'intégration à Hardy jugée peu intéressante. \\
 
-Nous avons surtout compris qu'ici on ne dépendait pas seulement de nous mais qu'il s'agissait d'un immense travail d'équipe.
-On commence une tâche, on la trouve accompli, on lance une Pull Request, on discute, on modifie, tous ça prend un certain temps et nécessite beaucoup de vas et viens.\\
+Nous avons surtout compris qu'on ne dépendait pas seulement de nous, mais qu'il s'agissait d'un immense travail d'équipe.
+On commence une tâche, on l'accomplit, on lance une Pull Request, on discute, on modifie. Tout ça prend un certain temps et nécessite beaucoup de coordination.\\
 
-Arrivé à la fin du projet voici les réels objectifs accompli :  \\
+Arrivé à la fin du projet voici les objectifs qu'on a finalement pu accomplir :  \\
 
 \begin{description}
     \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : 
@@ -106,21 +106,21 @@ Arrivé à la fin du projet voici les réels objectifs accompli :  \\
     
     \item[Automatisation de test unitaires :] 
     Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par la mise en place de plusieurs tests unitaires couvrant les modules principaux du projet.
-    La pipeline teste la compilation, l'execution des tests ainsi que la rédaction de la coverage sous forme d'HTML\\
+    La pipeline teste la compilation, l'éxecution des tests ainsi que la rédaction de la coverage sous forme d'HTML\\
 
     \item[Expérimentation Système (BP Socket) :] 
     Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
 
-    \gls{bp} telle qu'elle à été développée utilise un module kernel nécessitant 
-    les droit root pour être utilisée.
+    \gls{bp}, telle qu'elle a été développée, utilise un module kernel nécessitant 
+    les droits root pour être utilisé.
     L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp}
     vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
 
-    Ce dernier objectif est une total découverte de ce mécanisme offert par le Dynamic Loader et 
+    Ce dernier objectif est une totale découverte de ce mécanisme offert par le Dynamic Loader et 
     toute avancée même non complète intéresse Mr De Jonckère.
 \end{description}
 
-La compilation de la librairie et de l'interface graphique nécessitant divers paquet Linux, notre travail à été 
+La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
 
 
@@ -408,11 +408,37 @@ Ces gestionnaires restent néanmoins importants à tester, car ils font encore p
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{Images/legacy_managers_comparison.png}
-\caption{Comparaison des comportements des gestionnaires Legacy (ETO, EVL, QD).}
+\caption{Comparaison des comportements des gestionnaires Legacy (ETO, EVL, QD).}- \\
 \label{fig:legacy_managers_comparison}
 \end{figure}
 
-\textbf{[SAMY : Ajoute ici la présentation des tests communs aux gestionnaires (ETO, EVL, QD)]}
+
+Le sous-module contient trois implémentations : EVL, QD et ETO. Ces implémentations sont générées à l'aide d'une macro qui prend différents paramètres :
+
+\begin{itemize}
+    \item \texttt{\$add\_delay} : indique si le délai de queue doit être pris en compte pour le calcul de \texttt{tx\_start}
+    \item \texttt{\$auto\_update} : indique si la queue est mise à jour automatiquement après un \texttt{schedule\_tx} ou manuellement
+    \item \texttt{\$prio\_count} : donne le nombre de niveaux de priorités
+    \item \texttt{\$with\_budget} : indique si des budgets sont appliqués lorsque des priorités sont présentes
+\end{itemize}
+
+EVL, QD et ETO se distinguent par leurs valeurs de ces paramètres. EVL est le manager le plus simple : il se contente de consommer le volume d'un bundle à chaque \texttt{schedule\_tx} sur un contact. La queue est mise à jour automatiquement et il n'y a pas de délai. QD est similaire à EVL, à la différence que \texttt{tx\_start} est décalé depuis le début du contact en fonction du volume déjà réservé. Enfin, ETO est le plus complexe des trois : le décalage de la queue doit être géré manuellement et débute à \texttt{at\_time}, soit le temps courant.
+
+Chacun de ces fichiers instancie la macro pour générer trois variantes : un manager de base sans priorités, un avec priorités, et un autre avec priorités et budgets, un budget étant la quantité maximale de données qu'un bundle peut réserver sur un contact.
+
+\paragraph{Tests du module Legacy}~\\\\
+
+Pour tester ces implémentations, et sachant qu'elles partagent une base de tests en commun, nous avons mis en place des macros de tests dans un fichier \texttt{test\_helpers.rs} afin d'éviter la duplication de code. Quatre macros ont été définies :
+
+\begin{itemize}
+    \item \texttt{generate\_common\_tests!} : regroupe les tests communs à tous les managers, en testant le comportement de \texttt{dry\_run\_tx} et \texttt{schedule\_tx} en termes de timing, de volume et de conditions limites.
+
+    \item \texttt{generate\_auto\_update\_tests!} : teste les comportements liés à la mise à jour automatique de la queue, notamment la saturation du contact et l'isolation des priorités. Ces tests ne s'appliquent pas à ETO puisque \texttt{\$auto\_update=false} pour lui.
+
+    \item \texttt{generate\_budget\_tests!} : vérifie que les limites de budget par priorité sont bien respectées.
+
+    \item \texttt{generate\_budget\_auto\_update\_tests!} : teste l'indépendance des budgets entre priorités. Ces tests ont été séparés de \texttt{generate\_budget\_tests!} car ils nécessitent \texttt{auto\_update=true}, ce qui exclut ETO. \\
+\end{itemize}
 
 En complément de ces tests communs, des tests spécifiques ont été ajoutés afin de valider les comportements propres à chaque implémentation.
 
@@ -551,7 +577,34 @@ pour forcer la découverte de routes alternatives.
 Chaque variante est instanciée avec une métrique de distance, soit \textbf{Hop} qui minimise le nombre de saut, 
 soit \textbf{\gls{sabr}} qui minimise le temps d'arrivée.
 \paragraph{Try\_make\_hop :}~\\\\
-Ici ta partie Samy
+
+\texttt{try\_make\_hop} est la fonction centrale du module de pathfinding. Son rôle est de déterminer, depuis un nœud source à un instant donné, le meilleur contact disponible pour acheminer un bundle vers un nœud voisin en un seul saut. Elle prend en entrée un \texttt{RouteStage} source qui représente l'état courant du routage (temps d'arrivée au nœud, délai cumulé, expiration), une liste de contacts triés par ordre de début, ainsi que les nœuds émetteur et récepteur. Elle retourne soit le meilleur saut trouvé, soit \texttt{None} si aucun contact ne permet la transmission.
+
+La fonction parcourt chaque contact fourni en entrée à partir d'un \texttt{first\_contact\_index}, ce qui permet un \textit{lazy pruning} : les contacts déjà dépassés par un saut précédent dans Dijkstra n'ont pas besoin d'être reconsidérés. Pour chaque contact, elle appelle \texttt{dry\_run\_tx} du Contact Manager pour simuler la transmission, puis retient le contact permettant la date d'arrivée \texttt{rx\_end} la plus rapide. Elle s'arrête dès que le début d'un contact est postérieur au meilleur \texttt{rx\_end} déjà trouvé, les contacts étant supposés triés. Si un contact est retenu, elle construit un nouveau \texttt{RouteStage} avec les métadonnées mises à jour : \texttt{hop\_count} incrémenté, \texttt{cumulative\_delay} mis à jour et \texttt{expiration} calculée comme le minimum entre la fin du contact et l'expiration propagée depuis la source.
+
+\texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. On trouve ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi.
+
+\paragraph{Tests de try\_make\_hop :}~\\\\
+
+Afin de tester cette fonction, nous avons créé un \textit{mock} de \texttt{NodeManager} dans le fichier \texttt{test\_helpers} du dossier pathfinding. En effet, nos tests doivent contrôler le comportement des nœuds émetteurs et récepteurs avec les features \texttt{node\_tx} et \texttt{node\_rx}, contrairement aux autres fichiers qui n'ont besoin que de \texttt{NoManagement}. Ce mock permet d'implémenter et de contrôler un \texttt{NodeManager} avec quatre fonctions : \texttt{accepting()} qui accepte toujours, \texttt{refusing\_rx()} et \texttt{refusing\_tx()} qui rejettent la transmission d'un côté, et \texttt{processing(delay)} qui simule un délai de traitement du bundle. Les fonctions helpers telles que \texttt{make\_node}, \texttt{make\_contact}, \texttt{make\_source} et \texttt{make\_bundle} ont été rendues génériques sur \texttt{NM} pour pouvoir être partagées entre les deux types de manager.
+
+Les tests mis en place couvrent les cas suivants :
+
+\begin{itemize}
+    \item \textbf{Cas de base} : appel avec une liste de contacts vide, un \texttt{first\_contact\_index} dépassant le slice, ou un bundle trop volumineux pour un contact donné. On vérifie que la fonction renvoie bien \texttt{None} dans ces cas.
+
+    \item \textbf{Transmission valide} : test avec un seul contact compatible. On vérifie que \texttt{Some} est bien retourné.
+
+    \item \textbf{Lazy pruning} : test avec \texttt{first\_contact\_index=1} qui saute un contact valide. On vérifie que le résultat correspond bien au second contact et non au premier.
+
+    \item \textbf{Feature \texttt{contact\_suppression}} : si tous les contacts sont supprimés, la fonction doit renvoyer \texttt{None}. Si un seul contact parmi deux est supprimé, le second doit bien être choisi.
+
+    \item \textbf{Mock NodeManager (\texttt{node\_tx}, \texttt{node\_rx}, \texttt{node\_proc})} : ces trois tests ne peuvent pas utiliser \texttt{HopContext} car ils nécessitent des managers différents sur \texttt{tx} et \texttt{rx}. On vérifie qu'un nœud refusant l'émission ou la réception bloque le saut, et qu'un délai de traitement décale correctement le \texttt{sending\_time} et donc le \texttt{at\_time} dans le résultat.
+
+    \item \textbf{Sélection du meilleur contact} : test avec 4 contacts dont certains sont élagués par le lazy pruning. On vérifie que le contact avec le \texttt{rx\_end} minimal est bien choisi et que les métadonnées finales sont correctes.
+
+    \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
+\end{itemize}
 
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
 Contact,Hybride et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
@@ -609,10 +662,36 @@ correspondant aux  tests dans les 3 fichiers + la création du test\_helpers du 
 
 \subsubsection[Module : Routing]{Routing}
 
-Si on à le temps de PR ou d'avoir quelque chose de bien.
-\paragraph{VolCgr}
-\paragraph{Spsn}
+Le dossier \texttt{routing} regroupe l'ensemble de la logique de routage du projet. Son rôle est de prendre un bundle en entrée et de retourner un \texttt{RoutingOutput}, c'est-à-dire la liste des premiers sauts à emprunter pour acheminer ce bundle vers sa ou ses destinations.
 
+Le fichier \texttt{mod.rs} de ce dossier définit les bases communes à tous les routeurs. Il contient d'abord le trait \texttt{Router}, qui impose à toute implémentation de routeur de fournir une méthode \texttt{route()} prenant en entrée le nœud source, le bundle à router, le temps courant et une liste de nœuds exclus. Il définit ensuite \texttt{RoutingOutput}, une structure qui associe à chaque premier saut (représenté par un contact) la liste des \texttt{RouteStage} des destinations atteignables via ce saut. Cette structure expose également \texttt{lazy\_get\_for\_unicast()}, une méthode qui recherche le premier saut menant à une destination précise, utilisée notamment dans les tests.
+
+Le fichier contient aussi des fonctions partagées par tous les routeurs, comme \texttt{schedule\_unicast}, \texttt{schedule\_multicast}, \texttt{dry\_run\_unicast\_path}, \texttt{dry\_run\_unicast\_tree} et \texttt{dry\_run\_multicast}. Ces fonctions implémentent deux phases distinctes. Le \textit{dry run} simule le parcours d'un chemin ou d'un arbre sans réserver de ressources, pour vérifier qu'un bundle peut effectivement atteindre sa destination en fonction des contacts. Le \textit{scheduling} effectue ensuite la réservation réelle en appelant \texttt{schedule()} sur chaque \texttt{RouteStage} du chemin.
+
+Le dossier contient trois implémentations concrètes du trait \texttt{Router} : CGR, VolCGR et SPSN. Dans le cadre de notre projet, nous n'avons travaillé que sur VolCGR et SPSN.\paragraph{VolCgr}
+\paragraph{Spsn} ~\\\\
+
+SPSN, pour \textit{Shortest Path with Safety Nodes}, est l'un des trois routeurs implémentés dans le projet. Son objectif est d'optimiser le routage en évitant de recalculer des routes déjà connues comme impossibles, et en réutilisant les arbres de routes calculés pour plusieurs bundles successifs.
+
+La struct \texttt{Spsn} est générique sur quatre types : un \texttt{NodeManager}, un \texttt{ContactManager}, un algorithme de pathfinding \texttt{P} et une stratégie de stockage \texttt{S}. Le pathfinding calcule de nouveaux arbres de routes via Dijkstra lorsque nécessaire. Le \texttt{route\_storage}, concrètement un \texttt{TreeCache}, stocke les arbres déjà calculés sous forme d'une file à taille maximale et les restitue si un bundle compatible se présente. Enfin, l'\texttt{unicast\_guard} est une \texttt{HashMap} qui associe à chaque paire (destination, priorité) la taille maximale d'un bundle connu comme inatteignable. D'où le nom de l'algorithme : les \textit{Safety Nodes} sont ces destinations mémorisées comme impossibles, qui permettent d'avorter immédiatement les tentatives futures sans relancer Dijkstra.
+
+La méthode \texttt{route()} commence par vérifier si le bundle est expiré, puis dispatche vers \texttt{route\_unicast()} ou \texttt{route\_multicast()} selon le nombre de destinations. Dans \texttt{route\_unicast()}, le guard est consulté en premier : si la taille du bundle est inférieure à la limite connue pour cette destination, le routage est immédiatement abandonné. Sinon, le cache va vérifier qu'un arbre existant reste valide pour ce bundle. En cas de cache hit, le scheduling est lancé directement. En cas de cache miss, Dijkstra est appelé, l'arbre est stocké, puis on vérifie que la destination est atteignable et que l'arrivée ne dépasse pas l'expiration du bundle. Si la destination est absente de l'arbre, \texttt{add\_limit()} met à jour le guard pour bloquer les bundles futurs de taille inférieure ou égale. Dans \texttt{route\_multicast()}, la logique est similaire mais le cache retourne également la liste des nœuds atteignables : si elle couvre toutes les destinations du bundle, le scheduling est lancé directement sans dry run supplémentaire.
+
+\subsubsection{Tests de SPSN}
+
+Pour tester SPSN, nous avons organisé les cas de test autour des branches identifiées dans le code. Les tests reposent sur les helpers existants de \texttt{pathfinding/test\_helpers.rs}, notamment \texttt{make\_cp()} qui fournit un graphe à 5 nœuds avec des fenêtres temporelles variées, et \texttt{make\_multicast\_bundle()} que nous avons ajouté pour les cas multicast. Un contact plan dédié \texttt{make\_cp\_partial\_window} a également été créé localement pour le test de cache partiel, car aucun helper existant ne proposait une fenêtre se fermant en cours de simulation.
+
+Les tests couvrent les cas suivants :
+
+\begin{itemize}
+    \item \textbf{Construction et expiration} : on vérifie que \texttt{Spsn::new()} réussit avec un plan de contacts valide, et qu'un bundle dont la date d'expiration est dépassée retourne \texttt{None} immédiatement sans consulter le guard ni le cache.
+
+    \item \textbf{Guard} : on vérifie qu'une destination connue comme inatteignable bloque immédiatement les bundles futurs de taille inférieure à la limite mémorisée. On teste également que \texttt{add\_limit} ne met pas à jour la limite si le bundle échouant est plus grand que la limite existante. Enfin, on vérifie le comportement avec \texttt{with\_priorities} : lorsqu'il est activé, les limites sont isolées par priorité, sinon une limite s'applique à toutes les priorités indépendamment.
+
+    \item \textbf{Routage unicast} : on couvre les quatre issues possibles après le guard. Un cache hit réutilise directement l'arbre existant. Un cache miss avec destination inatteignable met à jour le guard. Un cache miss avec chemin trouvé mais arrivée dépassant l'expiration du bundle retourne \texttt{None} sans mettre à jour le guard, car c'est un problème de timing et non de capacité. Enfin, un cache miss avec chemin valide retourne un \texttt{RoutingOutput} avec les bonnes métadonnées.
+
+    \item \textbf{Routage multicast} : on vérifie qu'un premier appel calcule et stocke l'arbre, qu'un second appel avec toutes les destinations couvertes réutilise le cache sans dry run supplémentaire, et qu'un cache hit partiel — où l'arbre ne couvre plus toutes les destinations après fermeture d'un contact — déclenche bien un nouveau calcul. On vérifie aussi qu'un routage multicast sans aucune destination atteignable retourne un \texttt{RoutingOutput} avec \texttt{first\_hops} vide.
+\end{itemize}
 \subsection{BP-Socket}
 
 \newpage
