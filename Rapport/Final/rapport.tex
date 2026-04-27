@@ -72,7 +72,7 @@
 \newpage
 \section{Introduction}
 \subsection{A-SABR}
-Notre projet de programmation porte sur la librairie A-SABR, portée par Mr. Olivier De Jonckère du LIRMM.
+Notre projet de programmation se concentre sur la librairie A-SABR, portée par Mr. Olivier De Jonckère du LIRMM.
 
 Le réseau de communication spatial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effectue à l'aide d'algorithmes de type \gls{sabr}.\\
 
@@ -103,12 +103,12 @@ Le sujet présentait plusieurs point à aborder : \\
 \end{itemize}
 
 
-Au final, tout a été un peu chamboulé, le no-std a été abandonné et l'intégration à Hardy jugée peu intéressante. \\
+Au final, les tâches à effectuer se sont vues être en partie modifiées, le no-std a été abandonné et l'intégration dans Hardy jugée peu intéressante. \\
 
 Nous avons surtout compris qu'on ne dépendait pas seulement de nous, mais qu'il s'agissait d'un immense travail d'équipe.
 On commence une tâche, on l'accomplit, on lance une Pull Request, on discute, on modifie. Tout ça prend un certain temps et nécessite beaucoup de coordination.\\
 
-Arrivé à la fin du projet voici les objectifs sur lesquelles nous avons travaillés :  \\
+Arrivés à la fin du projet voici les objectifs sur lesquelles nous avons travaillés :  \\
 
 \begin{description}
     \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : 
@@ -123,7 +123,7 @@ Arrivé à la fin du projet voici les objectifs sur lesquelles nous avons travai
     Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
 
     \gls{bp}, telle qu'elle a été développée, utilise un module kernel nécessitant 
-    les droits root pour être utilisé.
+    les droits root pour être utilisée.
     L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp}
     vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
 
@@ -149,29 +149,29 @@ Elle supporte UDP,TCP et \gls{bp}.
     \label{fig:comparaison_dt}
 \end{figure}
 
-A gauche nous pouvons voir l'onglet principal, nous voyons un graphique des différents message envoyée,
-un rectangle vert signifie un message envoyée et reçu avec confirmation. En bas il y a la possibilité de choisir 
-entre UDP,TCP et \gls{bp}. Egalement, il y a la possibilité de cocher la méthode A-SABR, ceci permet qu'a l'envoie d'un message
-l'application prédit et indique le moment où le message devrait être reçu par le recepteur.\\
+A gauche nous pouvons observer l'onglet principal, nous voyons un graphique des différents messages envoyés,
+un rectangle vert signifie un message envoyé et reçu avec confirmation. En bas il y a la possibilité de choisir 
+entre UDP,TCP et \gls{bp}. Egalement, il y a la possibilité de cocher la méthode A-SABR, ceci permet qu'à l'envoi d'un message
+l'application prédise et indique le moment où le message devrait être reçu par le récepteur.\\
 
-A droite nous voyons l'onglet Event, celui ci recapitule de manière textuelle toute interaction de l'interface.
-A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, on voit bien les différents message envoyée et reçu.
+A droite nous voyons l'onglet Event, celui ci récapitule de manière textuelle toute interaction de l'interface.
+A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, nous remarquons bien les différents messages envoyés et reçus.
 
-Sur cette exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP, 1 \gls{bp}.
+Sur cet exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP, 1 \gls{bp}.
 \gls{bp} dans le network Event est marqué comme UDP car il s'agit d'une variante d'UDP.\\
 
 L'objectif sur cette interface graphique est de créer un nouvel onglet Options permettant de changer à la volée 
-de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois coté Backend et FrontEnd\\
+de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois côté Backend et FrontEnd\\
 
-Maintenant, détaillons le travail effectuée sur chacun des parties de cette interface.
+Maintenant, détaillons le travail effectué sur chaque partie de cette interface.
 
 \subsubsection[DT-Chat Backend]{Backend}
  \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
-Premièrement, on créer une fonction update tiré de la fonction start de l'interface, celle-ci prend en argument un str et un chemin de fichier.
-Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme try\_init pour qu'elle prenne également un str et un chemin de fichier, on récupère également les valeurs de 
-départ qu'on met dans l'appel de la fonction. try\_init à aussi été modifie pour retourner le nombre de node et de contact trouvée dans le \gls{cp} chargé.\\
+Premièrement, on crée une fonction \texttt{update} tiré de la fonction \texttt{start} de l'interface, celle-ci prend en argument un \texttt{str} et un chemin de fichier.
+Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme \texttt{try\_init} pour qu'elle prenne également un \texttt{str} et un chemin de fichier, on récupère également les valeurs de 
+départ qu'on met dans l'appel de la fonction. \texttt{try\_init} à aussi été modifie pour retourner le nombre de node et de contact trouvée dans le \gls{cp} chargé.\\
 
-La fonction update prend donc en entrée un str qui correspond au nom de l'algorithme utilisée, et 
+La fonction \texttt{update} prend donc en entrée un \texttt{str} qui correspond au nom de l'algorithme utilisé, et 
 un Path sous forme de string qui correspondra au chemin jusqu'au \gls{cp}.
 
 Elle va ensuite faire un match sur \texttt{"PredictionConfig::try\_init(path.clone(), algo)"} qui retournera donc un Result,
@@ -180,10 +180,10 @@ pour empêcher un crash total de l'interface au moindre soucis.
 Si Ok alors on met à jour la configuration qu'on envoie au Frontent et on l'affiche dans l'App Event,
 si Err, on retourne l'erreur et on l'affiche dans l'App Event.
 
-Etant basé sur A-SABR, il faut régulièrement faire de petite modif dûe à des refactorisation de fonction ou de
+Etant basé sur A-SABR, il faut régulièrement faire de légères modifications dûes à des refactorisations de fonctions ou de
 l'ajout de Result remplaçant des Options dans la librairie. \\
 
-Toute ces modifications sur la partie Backend ont fait l'objet de 2 Pull request acceptées de Vincent pour 52 lignes de code ajoutée (PR \texttt{\#6} et \texttt{\#7}).
+Toutes ces modifications sur la partie Backend ont fait l'objet de 2 Pull requests acceptées de Vincent pour 52 lignes de code ajoutées (PR \texttt{\#6} et \texttt{\#7}).
 
 \subsubsection[DT-Chat Frontend]{Frontend}
 \label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
@@ -191,13 +191,13 @@ Toute ces modifications sur la partie Backend ont fait l'objet de 2 Pull request
 L'interface DT Chat peut être vue comme un modèle MVC en programmation Web, le Modèle serait le Backend,
 la Vue toute les interactions possibles avec l'interface, et le contrôleur le code qui résulte de ces interactions.
 
-Ici le but est donc d'afficher ce fameux onglet Options et d'envoyer les différents ordre au Backend suivant les actions faite.
+Ici le but est donc d'afficher ce fameux onglet Options et d'envoyer les différents ordre au Backend suivant les actions faites.
 
-Le raccourci ci-dessus permet d'accéder au code la vue Options, il se résume simplement en un bouton qui ouvre un explorateur
-pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisé pour un ou pour l'autre,
-l'interface se met directement à jour et affiche les nouveaux paramètres chargées dans l'App Event.
+Le raccourci ci-dessus permet d'accéder au code de la vue Options, il se résume simplement en un bouton qui ouvre un explorateur
+pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisée pour un ou pour l'autre,
+l'interface se met directement à jour et affiche les nouveaux paramètres chargés dans l'App Event.
 
-Une spécificité existe pour le choix d'algorithme, certain algorithme sont conditionnées à l'activation ou non
+Une spécificité existe pour le choix d'algorithme, certains algorithmes sont conditionnés à l'activation ou non
 de "features", des fonctionnalités qu'on choisit d'activer ou non lors du lancement de l'interface, on peut voir
 dans le code que la ComboBox s'adapte aux choix de features choisies lors de la compilation.
 
@@ -210,13 +210,13 @@ dans le code que la ComboBox s'adapte aux choix de features choisies lors de la 
     \label{fig:dt_changes}
 \end{figure}
 
-L'interface graphique à sur cette exemple illustrée été compilé avec la feature \texttt{contact\_work\_area}, 
+L'interface graphique a, sur cet exemple illustré, été compilé avec la feature \texttt{contact\_work\_area}, 
 donc la ComboBox s'est adaptée. J'ai ensuite sélectionnée l'algorithme \texttt{VolCgrNodeParenting} ainsi que
 chargé le \gls{cp} \texttt{ion\_format.cp} et nous voyons bien dans l'App Event que le changement est effectif
-et que le nombre de node et de contacts à bien été détectée.\\
+et que le nombre de node et de contacts à bien été détecté.\\
 
-Dans les fait, l'algorithme choisit ne change pas réellement ce que l'interface nous montre lors de la réception
-ou l'envoi de message, il s'agit surtout ici de préparer de possible futur ajoux car le Backend lui comprend totalement les changement effectués.\\
+Dans les faits, l'algorithme choisi ne change pas réellement ce que l'interface nous montre lors de la réception
+ou l'envoi de message, il s'agit surtout ici de préparer de possible futur ajout car le Backend lui comprend totalement les changements effectués.\\
 
 Pour finir, un soucis à été détecté en ce qui concerne le changement de \gls{cp}.
 
@@ -241,11 +241,11 @@ Les lignes range définissent le délai de propagation physique du signal sur ch
   simulant des distances croissantes entre les nœuds
  comme on pourrait en trouver en situation réelle.
 
-Hors il existe plusieurs autre format. 
-De base il n'y avait pas l'affichage du nombre de nodes et de contact détectée lors du chargement d'un contact plan,
-mais j'ai trouvée étrange que l'appli prennent sans erreurs tous type de fichiers et donc, après investigation et discussion, on à décider 
-de faire afficher le nombre de contact et de noeuds. La plupart des contact plan qui ne sont pas en format "ION" comme ci-dessus
-ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contacts et 0 noeuds.
+Or il existe plusieurs autres formats. 
+A l'origine, il n'y avait pas l'affichage du nombre de nodes et de contact détectés lors du chargement d'un contact plan,
+mais j'ai trouvé étrange que l'application prenne sans erreur tout type de fichiers et donc, après recherche et discussion, on a décidé
+de faire afficher le nombre de contacts et de noeuds. La plupart des contact plans qui ne sont pas en format "ION" comme ci-dessus
+ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contact et 0 noeud.
 
 \begin{figure}[h]
     \centering
@@ -254,11 +254,11 @@ ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche si
     \label{fig:dt_cp_asabr}
 \end{figure}
 
-Ci-dessus un exemple de contact plan au format ASABR qu'il ne lit pas du tous. On voit que les contacts précisent le contact Manager à adoptée
-et qu'ils peuvent être différent au sein du même \gls{cp}.
+Ci-dessus un exemple de contact plan au format ASABR qui n'est pas lu. Nous observons que les contacts précisent le contact Manager à adopter
+et qu'ils peuvent être différent sau sein du même \gls{cp}.
 
-Pour régler le soucis, il aurait fallu développer tous un parser qui s'adapte au type de \gls{cp} chargé. Dans les fait c'était réalisable 
-mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc on a juste rajouté le compteur de noeuds et de contacts.\\
+Pour régler le soucis, il aurait fallu développer tout un parser qui s'adapte au type de \gls{cp} chargé. Dans les faits, il était réalisable 
+mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc nous avons juste rajouté le compteur de noeuds et de contacts.\\
 
 Toutes ces modifications sur le FrontEnd ont fait l'objet d'une Pull Request de Vincent acceptée pour 145 lignes de codes ajoutée (PR \texttt{\#13}). 
 
@@ -267,7 +267,7 @@ Toutes ces modifications sur le FrontEnd ont fait l'objet d'une Pull Request de 
 
 L'une des tâches principales de notre projet était d'apporter des pipelines d'automatisation pour faciliter le travail futur de l'équipe. 
 Pour ce faire, il a fallu déterminer ce dont le projet avait besoin et comment le mettre en place grâce aux outils propres au langage Rust. 
-Après en avoir discuté avec Mr De Jonckère, nous avons décidé de travailler sur 4 aspects principaux: le format du code, la validité, l'optimisation et son bon fonctionnement grâce aux tests.
+Après en avoir discuté avec Monsieur De Jonckère, nous avons décidé de travailler sur 4 aspects principaux: le format du code, la validité, l'optimisation et son bon fonctionnement grâce aux tests.
 Commençons par détailler la première version de notre travail (à noter que le fichier présenté ensuite est commun à \texttt{A-SABR}, \texttt{dtchat-egui} et \texttt{dtchat-backend}).
 \label{CI/CD} (Code en annexe \ref{CodeCIv1})
 
@@ -277,10 +277,10 @@ Ce fichier ci.yml crée dans le dossier \texttt{.github/workflows} se présente 
     \item Les déclencheurs: comme nous pouvons le voir, il est précisé que le fichier doit se lancer
           dans les branches \texttt{main}, \texttt{develop} et toutes les branches commençant par \texttt{feature/} afin d'offrir à notre équipe
           localement le travail de cette Pipeline. 
-    \item L'environnement: afin d'effectuer notre travail, il nous faut travailler dans un environnement Linux. Nous utilisons donc \texttt{ubuntu-latest} pour la richesse de ses outils.
+    \item L'environnement: afin d'effectuer notre travail, il nous faut utiliser un environnement Linux. Nous utilisons donc \texttt{ubuntu-latest} pour la richesse de ses outils.
           Cependant, un problème est rapidement apparu: utiliser cet environnement tel quel fait appel à bien trop de ressources, ainsi nous
           avons décidé d'utiliser le container \texttt{rust-slim} car c'est un bon compromis entre légèreté et la présence des outils nécessaires.
-    \item La préparation du travail: il nous faut ensuite configurer tous les outils que nous utiliserons ensuite.
+    \item La préparation du travail: il nous faut configurer tous les outils que nous utiliserons ensuite.
     
           Tout d'abord, \texttt{actions/checkout@v4} s'occupe de récupérer le code source du projet, ensuite pour avoir
           la version stable du compilateur Rust nous utilisons \texttt{dtolnay/rust-toolchain@stable} avec deux outils supplémentaires indispensables: \texttt{rustfmt} et \texttt{clippy} dont nous reparlerons.
@@ -316,7 +316,7 @@ la possibilité de rajouter un job de coverage. Afin de répondre aux attentes, 
 
 \begin{itemize}
     \item Grâce à la partie \texttt{concurrency}, nous permettons à Github d'arrêter l'exécution 
-          en cours de la Pipeline si un nouveau commit est poussé afin que seul ce dernier profite des vérifications. 
+          en cours de la Pipeline si un nouveau commit est poussé pendant l'exécution de la Pipeline afin que seul ce dernier profite des vérifications. 
           Cela permet de gagner un peu de temps si on pousse un commit avec une erreur puis qu'on la corrige directement dans le commit suivant.
     \item Pour répondre aux problèmes de clarté, nous avons extrait les différentes vérifications en 4 jobs: \texttt{fmt}, \texttt{clippy}, \texttt{tests} et \texttt{coverage}.
           De plus, grâce à la balise \texttt{name}, nous ajoutons un titre à chaque nouvelle commande afin de permettre à d'autres de mieux comprendre le travail effectué.
@@ -326,7 +326,7 @@ la possibilité de rajouter un job de coverage. Afin de répondre aux attentes, 
     \item Concernant la partie test, nous avons juste ajouté la cible \texttt{--verbose} à \texttt{cargo test} afin d'avoir des messages d'erreurs plus détaillés.
     \item Enfin, nous avons ajouté un job de coverage. Le but de ce travail est de générer un fichier html qui permettra de voir où en est la couverture de code globale du projet.
           Pour ce faire, nous utilisons l'outil tarpaulin. Le fichier généré est mis dans les artefacts GitHub et sauvegardé pendant 7 jours. 
-          Ce job étant le plus demandant en ressources, nous avons décidé avec Mr De Jonckère de ne l'exécuter que lorsqu'il est appelé sur la branche main grâce à \texttt{if: github.ref == 'refs/github/main}
+          Ce job étant le plus demandant en ressources, nous avons décidé avec Monsieur De Jonckère de ne l'exécuter que lorsqu'il est appelé sur la branche main grâce à \texttt{if: github.ref == 'refs/github/main}
           Dans les captures d'écran suivantes, nous pouvons voir le poucentage de couverture pour chaque dossier et fichier.
           Quand nous cliquons sur un fichier, les lignes couvertes apparaissent en vertes et celles non couvertes en rouge afin de mieux guider le développeur implémentant les tests.
 \end{itemize}
@@ -363,12 +363,12 @@ commençant par le fichier de pre-commit: \label{CI/CD} (Code du fichier de pre-
           \texttt{check-yaml} vérifie la bonne syntaxe des fichiers .yml et .yaml et
           \texttt{check-added-large-files} empêche de faire des commits trop lourds (ajout accidental d'un dossier de fichiers compilés).
 
-          Le second repo est utilisé afin d'utiliser les outils Rust avec lesquels nous avons travaillé jusqu'ici
+          Le second repo est utilisé afin de pouvoir se servir des outils Rust avec lesquels nous avons travaillé jusqu'ici
           à savoir cargo fmt et cargo clippy, l'appel des ces outils reste le même que précedemment. 
           Nous pouvons relever un détail qui a son importance qui est la ligne \texttt{language: system}.
           En effet, cette ligne précise que le fichier devra aller chercher les outils Rust dans la toolchain locale de l'utilisateur,
           nous pouvions également demander d'aller chercher les outils dans un dépôt en ligne cependant nous avons
-          considéré que nos machines sont régulièrement mises à jour donc les problèmes de différences de versions ne gêneront pas et
+          considéré que nos machines étaient régulièrement mises à jour donc les problèmes de différences de versions ne gêneront pas et
           que ce serait plus simple à maintenir si le dépôt venait à ne pas plus être mis à jour.
 \end{itemize}
 
@@ -620,7 +620,7 @@ Les tests mis en place couvrent les cas suivants :
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
 Contact,Hybride et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
 
-Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimal.
+Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimale.
 Il trouve le chemin optimal selon la métrique choisie mais s'arrête dès que la destination est atteinte en mode Path,
 contrairement aux autres variantes qui continuent d'explorer.\\
 
@@ -637,19 +637,19 @@ Chacunes de ces variantes possédent les 3 mêmes macros :
     \item TreeExcl : Explore l'entièreté du \gls{mg} avec exclusion.\\
 \end{itemize}
 
-Les tests sonts simples, on créer plusieurs \gls{mg} auquel on applique chacunes des macros,
+Les tests sonts simples, on crée plusieurs \gls{mg} auquel on applique chacune des macros,
 on utilise le manager le plus simple possible pour ne pas rendre le test trop lourd, on applique en dernier la méthode Hop (le moins de saut) ou la méthode SABR (le plus rapide) 
-pour avoir le plus de données de test possible.
+pour avoir le plus de données de test possibles.
 
-Les résultats attendues sont le nombre de saut réalisés, et le temps d'arrivée.
-Pour les cas d'exclusion, on donne comme objectif par exemple le noeud 3 en excluant le noeud 2 et l'on doit avoir en retour un échec du au noeud exclus.\\
+Les résultats attendus sont le nombre de sauts réalisés, et le temps d'arrivée.
+Pour les cas d'exclusion, on donne comme objectif par exemple le noeud 3 en excluant le noeud 2 et l'on doit avoir en retour un échec du au noeud exclu.\\
 
-Dans un soucis de lisibilité et de maintienabilité du code, toute les fonctions de création d'objets (noeud,contact,bundle,multigraph)
-sont réunis dans un fichiers à part (test\_helpers). De cette manière, seul les tests sont présents dans leur fichiers cibles. \\
+Dans un soucis de lisibilité et de maintenabilité du code, toutes les fonctions de création d'objets (noeud,contact,bundle,multigraph)
+sont réunies dans un fichier à part (test\_helpers). De cette manière, seuls les tests sont présents dans leurs fichiers cibles. \\
 
 Prenons un test en particulier et décryptons le : \label{testPathFinding} \ref{CodetestPathFinding} (Cliquer sur le numéro pour être envoyé à l'annexe correspondant) \\
 
-Nous avons donc une première fonction qui va créer le \gls{mg} auquel on va applique nos tests, le multigraph créer possèdents
+Nous avons donc une première fonction qui va créer le \gls{mg} auquel on va appliquer nos tests, le multigraph crée possède
 5 noeuds qui ont un manager neutre (qui ne fait rien) pour faire au plus simple et de 5 contacts.
 
 Exemple : le premier contact émet du noeud 0 au noeud 1, début du contact à 0 et fin à 10, 
@@ -665,10 +665,10 @@ puis nous lui appliquons notre fonction de test.\\
     \item SABR : On attend 4 sauts en 50 unité de temps.\\
 \end{itemize}
 
-Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour detecter une casse de la librarie.\\
+Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour détecter une erreur de la librarie.\\
 
-Cette partie à fait l'objet de 2 Pull Request acceptée de Vincent  pour 629 lignes rajoutée 
-correspondant aux  tests dans les 3 fichiers + la création du test\_helpers du module Pathfinding. (PR \texttt{\#38} et \texttt{\#44})
+Cette partie a fait l'objet de 2 Pull Requests acceptées de Vincent pour 629 lignes rajoutée 
+correspondant aux tests dans les 3 fichiers + la création du test\_helpers du module Pathfinding. (PR \texttt{\#38} et \texttt{\#44})
 
 
 \subsubsection[Module : Routing]{Routing}
@@ -693,11 +693,11 @@ mais de laisser l'explication du module ci-dessus.
 \subsection{BP-Socket}
 \subsubsection{Mise en situation}
 
-Le projet  a pour objectif de fournir une interface socket  pour \gls{bp},
-utilisé dans les réseaux \gls{dtn}. L'idée est de permettre à une application d'envoyer et
+Le projet a pour objectif de fournir une interface socket pour \gls{bp},
+utilisée dans les réseaux \gls{dtn}. L'idée est de permettre à une application d'envoyer et
 recevoir des bundles BP exactement comme elle enverrait des paquets UDP ou TCP, en utilisant la même API socket.
 
-Il s'agit ici de voir autre chose que la librairie A-SABR, tous en travaillant sur quelque chose de très important
+Il s'agit ici de voir autre chose que la librairie A-SABR, tout en travaillant sur quelque chose de très important
 pour le futur de A-SABR.
 
 \begin{figure}[H]
@@ -707,7 +707,7 @@ pour le futur de A-SABR.
 \label{fig:bp_kernel}
 \end{figure}
 
-Voici donc les problématique du projets : \\
+Voici donc les problématiques du projet : \\
 
 \begin{itemize}
     \item Pour charger le module kernel, il faut utiliser \texttt{insmod}, ce qui nécessite les droits root.
@@ -716,19 +716,19 @@ Voici donc les problématique du projets : \\
 
     \item Un bug avec le module provoque un Kernel Panic! .
 
-    \item Avoir un module kernel rajoute une charge en plus pour lancer le tous qui est déjà assez complexe.\\
+    \item Avoir un module kernel rajoute une charge en plus pour lancer l'ensemnle, ce qui est déjà assez complexe.\\
 \end{itemize}
 
-Pour tester le tous, il faut bien suivre le README du projet qui utilisent des VM Vagrant (une VM \gls{ion} et une VM µDTN) et beaucoup de commandes à taper.
+Pour tester le tout, il faut bien suivre le README du projet qui utilise des VM Vagrant (une VM \gls{ion} et une VM µDTN) et beaucoup de commandes à taper.
 
 \subsubsection{Solution}
 
 La solution vient d'un mécanisme propre au C, le \gls{ldp}.
 Sans module kernel, un appel à \texttt{socket(AF,BP)} ne sera pas reconnu et ne retournera aucun file descripteur,
-L'idée ici sera de créer un module spécifique qui interceptera l'appel au principales fonction (\texttt{socket,bind,send,recv,close})
-puis d'envoyer les infos nécessaire au Daemon.
+L'idée ici sera de créer un module spécifique qui interceptera l'appel au principales fonctions (\texttt{socket,bind,send,recv,close})
+puis d'envoyer les informations nécessaires au Daemon.
 
-L'intêret du \gls{ldp} ici vient du fait qu'il force le dynamic loader à charger nos fonctions contenue dans le module
+L'intêret du \gls{ldp} ici vient du fait qu'il force le dynamic loader à charger nos fonctions contenues dans le module
 avant celle de la glibC.
 
 \begin{figure}[H]
@@ -743,15 +743,15 @@ Il faut donc :
 \begin{itemize}
     \item Supprimer tous les fichiers kernel et nettoyer les Makefile.
 
-    \item Nettoyez le daemon et supprimer tous les fichiers du General Netlink.
+    \item Nettoyer le daemon et supprimer tous les fichiers du General Netlink.
 
-    \item Définir le nouveau protocol de communication entre le hook et le Daemon, celui ci contiendra toute les options nécessaires(\texttt{OPEN ENDPOINT, CLOSE ENDPOINT, SEND BUNDLE, RECV BUNDLE}).
+    \item Définir le nouveau protocole de communication entre le hook et le Daemon, celui ci contiendra toutes les options nécessaires(\texttt{OPEN ENDPOINT, CLOSE ENDPOINT, SEND BUNDLE, RECV BUNDLE}).
 
     \item Ecrire le hook en lui même.
     
-    \item Ecrire un fichier qui gérera l'état des files descripteur créer par notre version de \texttt{socket}
+    \item Ecrire un fichier qui gérera l'état des files descripteur crées par notre version de \texttt{socket}
 
-    \item Modifier le daemon avec les nouvelles fonctions relatif au hook (\texttt{send bundle, connect, message})
+    \item Modifier le daemon avec les nouvelles fonctions relatives au hook (\texttt{send bundle, connect, message})
     
     \item Modifier \gls{ion} avec les nouvelles fonctions du Daemon.
 \end{itemize}
@@ -761,16 +761,16 @@ Il faut donc :
 Il y a beaucoup de code, donc pour rester dans le plus intéressant,
 présentons le fichier le plus intéressant, le hook. \label{Result_Hook}\ref{CodeHook}\\
 
-Dans les première ligne du fichier, on retrouve les signatures des fonctions \texttt{socket,close,bind,sendto}
+Dans les premières lignes du fichier, on retrouve les signatures des fonctions \texttt{socket,close,bind,sendto}
 avec le nom real avant leur nom. Ceci est à mettre en relation avec la fonction \texttt{attribute} juste en dessous.
 
-Cette fonctionne permet de dire grâce à \texttt{dlsym} : Si j'appelle, par exemple, \texttt{real\_socket},
+Cette fonction permet de dire grâce à \texttt{dlsym} : Si j'appelle, par exemple, \texttt{real\_socket},
 le dynamic loader ira chercher dans la glibC la fonction s'appelant socket.
 
-De cette manière nous on peut redéfinir socket, et choisir si oui ou non on appelle la vraie fonction.\\
+De cette manière nous pouvons redéfinir socket, et choisir si oui ou non on appelle la vraie fonction.\\
 
-On suit ensuite le schéma suivant, lorsqu'on appelle une fonction, on vérifie si le domaine du fd est \texttt{AF\_BP},
-si c'est le cas, là notre hook fait son job, sinon on appelle la vraie fonction de la glibC.\\
+On suit ensuite le schéma suivant: lorsqu'on appelle une fonction, on vérifie si le domaine du fd est \texttt{AF\_BP},
+si c'est le cas, notre hook a le bon comportement, sinon on appelle la vraie fonction de la glibC.\\
 
 \textbf{connect to daemon}: Etablit une connexion avec le Daemon via un Unix Socket.
 
@@ -811,8 +811,8 @@ Le sender est parfaitement fonctionnel, il permet d'envoyer des messsages d'\gls
 \subsubsection{Avenir}
 
 Il reste le fait de recevoir un message, qui inclut donc le fait de détruire un bundle une fois reçu et lu, mais
-par manque de temps nous ne pourrons pas le faire. Néanmoins, Monsieur De Jonckère à un collègue qui aimerait reprendre le travail
-donc nous lui transmettrons nos travaux dès que possible.
+par manque de temps nous ne pourrons pas le faire. Néanmoins, Monsieur De Jonckère est en lien avec collègue qui aimerait reprendre le travail
+donc nous lui transmettrons nos avancées dès que possible.
 
 
 \newpage
