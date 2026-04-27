@@ -7,6 +7,8 @@
 \usepackage{graphicx}
 \graphicspath{{Images/}}
 \usepackage{minted}
+\usepackage{longtable}
+\usepackage{array}
 \usepackage{titlesec}
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
@@ -753,10 +755,10 @@ Il faut donc :
 
     \item Modifier le daemon avec les nouvelles fonctions relatives au hook (\texttt{send bundle, connect, message})
     
-    \item Modifier \gls{ion} avec les nouvelles fonctions du Daemon.
+    \item Modifier \gls{ion} avec les nouvelles fonctions du Daemon.\\\\
 \end{itemize}
 
-\subsubsection{Application}
+
 
 Il y a beaucoup de code, donc pour rester dans le plus intéressant,
 présentons le fichier le plus intéressant, le hook. \label{Result_Hook}\ref{CodeHook}\\
@@ -937,6 +939,222 @@ de la librairie.\\
 Pour apporter un peu plus de détail, la question de comment benchmarker proprement et de manière fiable la
 libraire est une vraie problématique toujours en cours de recherche de la part de l'équipe de développement,
 des tentatives étaient déjà présentes à notre arrivée (c'est de là que provient le gros \gls{cp} en JSON).
+
+\subsection{Statistiques}
+
+\small
+\renewcommand{\arraystretch}{1.25}
+
+\begin{longtable}{|p{0.055\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.28\textwidth}|p{0.31\textwidth}|p{0.08\textwidth}|}
+\hline
+\textbf{PR} & \textbf{Auteur} & \textbf{Statut} & \textbf{Contribution principale} & \textbf{Impact sur le projet} & \textbf{Volume} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{PR} & \textbf{Auteur} & \textbf{Statut} & \textbf{Contribution principale} & \textbf{Impact sur le projet} & \textbf{Volume} \\
+\hline
+\endhead
+
+\#29 & Samy & Acceptée
+& Correction d’un bug dans \textbf{contact.rs}.
+& Corrige un comportement fautif localisé dans le module de contact.
+& +1 ligne \\
+\hline
+
+\#30 & Bastien & Acceptée
+& Ajout d’une CI avec \texttt{pre-commit}, \texttt{clippy}, \texttt{cargo test}, génération de coverage, et différenciation entre les Pull Requests et les lancements sur \texttt{main}.
+& Améliore la qualité, la robustesse et la maintenabilité du dépôt. Cette PR a nécessité de longs échanges pour aboutir à une version adaptée aux besoins du projet.
+& +90 lignes \\
+\hline
+
+\#35 & Samy & Acceptée
+& Mise à jour de la documentation des fonctions et correction d’un bug dans \textbf{pseg}.
+& Améliore la compréhension du module \textbf{PrioritySegmentation} et corrige un défaut fonctionnel.
+& +147 lignes \\
+\hline
+
+\#38 & Vincent & Acceptée
+& Ajout de \textbf{[x]} tests pour Node, Contact et Hybrid Parenting.
+& Renforce la couverture de tests du module de pathfinding et valide plusieurs variantes de l’algorithme de routage.
+& +886 lignes \\
+\hline
+
+\#44 & Vincent & Acceptée
+& Refactorisation et simplification des tests, mise en place d’un fichier \textbf{test\_helpers.rs} pour éviter la duplication, mise en conformité des fichiers avec \texttt{clippy} et \texttt{fmt} en vue de la CI.
+& Améliore fortement la maintenabilité des tests. La PR a demandé un travail de rebase et de fusion propre avec les refactorisations parallèles effectuées par Théo sur les erreurs A-SABR.
+& -409 lignes, +152 lignes \\
+\hline
+
+\#51 & Bastien & Acceptée
+& Ajout de \textbf{[x]} tests pour \textbf{PrioritySegmentation} avec légère retouche du code.
+& Augmente la couverture de tests de \textbf{pseg} et valide plusieurs comportements du module.
+& +556 lignes \\
+\hline
+
+\#52 & Samy & Acceptée
+& Ajout de \textbf{[x]} tests pour \texttt{try\_make\_hop} et harmonisation du fichier \textbf{test\_helpers.rs} pour le rendre réutilisable par plusieurs fichiers de tests.
+& Renforce les tests du pathfinding et améliore la réutilisabilité des outils de test.
+& +546 lignes \\
+\hline
+
+\#53 & Yassine & Acceptée
+& Ajout de \textbf{[x]} tests pour \textbf{Segmentation}.
+& Valide le comportement du module de segmentation, notamment la gestion des intervalles et des transmissions.
+& +300 lignes \\
+\hline
+
+\#54 & Samy & En cours
+& Ajout de \textbf{[x]} tests pour les Contact Managers Legacy.
+& Vise à compléter la couverture des anciens gestionnaires de contacts et à documenter leurs différences de comportement.
+& +502 lignes \\
+\hline
+
+\#56 & Bastien & En cours
+& Ajout d’une fonctionnalité d’agrégation pour \textbf{PrioritySegmentation} ainsi que des tests associés.
+& Réduit la fragmentation des bookings adjacents de même priorité et améliore la cohérence interne du module.
+& +44 lignes \\
+\hline
+
+\caption{Synthèse des contributions réalisées sur le dépôt A-SABR}
+\label{tab:contributions-asabr}
+\end{longtable}
+
+\newpage
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{0.055\textwidth}|p{0.075\textwidth}|p{0.095\textwidth}|p{0.075\textwidth}|p{0.31\textwidth}|p{0.30\textwidth}|p{0.075\textwidth}|}
+\hline
+\textbf{PR} & \textbf{Partie} & \textbf{Auteur} & \textbf{Statut} & \textbf{Contribution principale} & \textbf{Impact sur le projet} & \textbf{Volume} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{PR} & \textbf{Partie} & \textbf{Auteur} & \textbf{Statut} & \textbf{Contribution principale} & \textbf{Impact sur le projet} & \textbf{Volume} \\
+\hline
+\endhead
+
+\#6 & Backend & Vincent & Acceptée
+& Modification de \texttt{try\_init}, ajout d’une fonction \texttt{update}, ajout de méthodes pour compter le nombre de nodes et de contacts d’un Contact Plan chargé, et correction du backend pour correspondre au dépôt A-SABR.
+& Permet au backend de recharger dynamiquement la configuration utilisée par DT-Chat et de fournir des informations utiles au frontend lors du changement de Contact Plan.
+& +65 lignes \\
+\hline
+
+\#7 & Backend & Vincent & Acceptée
+& Correction du backend pour maintenir la compatibilité avec le dépôt A-SABR.
+& Assure la compatibilité du backend avec les évolutions de la bibliothèque A-SABR.
+& +5 lignes \\
+\hline
+
+\#8 & Backend & Bastien, Vincent & En cours
+& Ajout d’une CI dérivée de celle d’A-SABR avec \texttt{pre-commit}, \texttt{clippy}, \texttt{fmt} et vérification de la compilation. Correction du backend après la refactorisation des Contact Plans et mise en conformité du dépôt avec \texttt{clippy} et \texttt{fmt}.
+& Améliore la robustesse du backend, automatise les vérifications et prépare le dépôt à une meilleure intégration continue.
+& +111 lignes \\
+\hline
+
+\#13 & Frontend & Vincent & Acceptée
+& Ajout d’une vue Options permettant de changer à la volée l’algorithme ou le Contact Plan. Affichage dans l’App Event du nombre de contacts et de nodes trouvés dans le Contact Plan chargé.
+& Rend accessible depuis l’interface graphique le changement dynamique de configuration et permet de détecter plus facilement les Contact Plans mal interprétés.
+& +174 lignes \\
+\hline
+
+\#X & Frontend & Vincent, Bastien & À venir
+& Ajout d’une CI dérivée de celle d’A-SABR pour vérifier la bonne compilation entre le backend, le frontend et A-SABR, avec \texttt{pre-commit}, \texttt{clippy} et \texttt{fmt}. Mise en conformité du dépôt frontend avec \texttt{clippy} et \texttt{fmt}.
+& Doit fiabiliser le dépôt frontend et vérifier que les trois composants restent compatibles entre eux après modification.
+& À compléter \\
+\hline
+
+\caption{Synthèse des contributions réalisées sur DT-Chat}
+\label{tab:contributions-dtchat}
+\end{longtable}
+\end{center}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{longtable}{|p{0.34\textwidth}|p{0.20\textwidth}|p{0.20\textwidth}|p{0.16\textwidth}|}
+\hline
+\textbf{Élément dans \texttt{src/}} & \textbf{Lignes couvertes} & \textbf{Lignes couvrables} & \textbf{Coverage} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Élément dans \texttt{src/}} & \textbf{Lignes couvertes} & \textbf{Lignes couvrables} & \textbf{Coverage} \\
+\hline
+\endhead
+
+\texttt{src/} & 753 & 1993 & 37,8 \% \\
+\hline
+
+\texttt{pathfinding/} & 271 & 331 & 81,9 \% \\
+\hline
+
+\texttt{multigraph.rs} & 76 & 81 & 93,8 \% \\
+\hline
+
+\texttt{distance/} & 34 & 52 & 65,4 \% \\
+\hline
+
+\texttt{contact\_manager/} & 164 & 299 & 54,8 \% \\
+\hline
+
+\texttt{route\_storage/} & 41 & 97 & 42,3 \% \\
+\hline
+
+\texttt{vnode.rs} & 4 & 16 & 25,0 \% \\
+\hline
+
+\texttt{contact.rs} & 11 & 49 & 22,4 \% \\
+\hline
+
+\texttt{node.rs} & 4 & 20 & 20,0 \% \\
+\hline
+
+\texttt{contact\_plan/} & 54 & 319 & 16,9 \% \\
+\hline
+
+\texttt{routing/} & 73 & 436 & 16,7 \% \\
+\hline
+
+\texttt{route\_stage.rs} & 18 & 113 & 15,9 \% \\
+\hline
+
+\texttt{node\_manager/} & 3 & 20 & 15,0 \% \\
+\hline
+
+\texttt{bundle.rs} & 0 & 6 & 0,0 \% \\
+\hline
+
+\texttt{errors.rs} & 0 & 8 & 0,0 \% \\
+\hline
+
+\texttt{main.rs} & 0 & 25 & 0,0 \% \\
+\hline
+
+\texttt{parsing.rs} & 0 & 68 & 0,0 \% \\
+\hline
+
+\texttt{types.rs} & 0 & 11 & 0,0 \% \\
+\hline
+
+\texttt{utils/} & 0 & 25 & 0,0 \% \\
+\hline
+
+\texttt{vertex.rs} & 0 & 17 & 0,0 \% \\
+\hline
+
+\caption{Synthèse de la couverture de tests du dossier \texttt{src/} d'A-SABR}
+\label{tab:coverage-src-asabr}
+\end{longtable}
+
+\end{center}
+
 
 \newpage
 \section{Gestion du Projet}
