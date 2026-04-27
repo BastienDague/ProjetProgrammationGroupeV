@@ -619,8 +619,10 @@ Les tests mis en place couvrent les cas suivants :
     \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
 
+Tous ces tests ont fait l'objet d'une Pull Request acceptée de Samy pour 546 lignes de code ajoutées (PR \#52).
+
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
-Contact,Hybride et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
+Contact, Hybrid et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
 
 Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimale.
 Il trouve le chemin optimal selon la métrique choisie mais s'arrête dès que la destination est atteinte en mode Path,
@@ -884,7 +886,133 @@ S'il n'y a pas de fusion, on passe au segment suivant en faisant j+=1.
 
 Concernant la complexité, le temps de recherche est de l'ordre de \texttt{O(n)}. Les modifications faites pendant cette recherche comme \mintinline{rust}|Vec::insert()| et \mintinline{rust}|Vec::remove()| ont aussi un coût \texttt{O(n)}.
 On a donc dans le pire des cas, une complexité \texttt{O(n²)} pour \texttt{schedule\_tx}.
-\subsection{Hybrid Parenting}
+\subsection{HybridParenting}
+
+Dans cette partie, nous allons détailler le fonctionnement algorithmique du module \texttt{HybridParenting},
+qui constitue une variante avancée de l'algorithme de Dijkstra implémentant le \textit{Multi-Path Tracking} (MPT).
+
+\subsubsection*{Structures de données}
+
+Avant d'aborder les algorithmes, il est important de comprendre les structures utilisées.
+Le module repose sur le trait \texttt{HybridParentingOrd<NM, CM>}, qui impose deux méthodes à implémenter~:
+\begin{itemize}
+    \item \texttt{can\_retain(prop, known) -> bool}~: détermine si une proposition de route peut être conservée
+    même si elle est dominée sur le critère principal. Par exemple dans A-SABR, une route avec
+    un nombre de sauts plus faible peut être retenue même si son temps d'arrivée est plus tardif.
+    \item \texttt{must\_prune(prop, known) -> bool}~: détermine si une route connue doit être supprimée
+    suite à l'insertion d'une proposition.
+\end{itemize}
+
+
+La structure centrale est \texttt{HybridParentingWorkArea<NM, CM>}, qui sert de zone de travail pendant
+le calcul des routes. Contrairement au \texttt{PathFindingOutput} classique qui ne stocke qu'une seule
+route par destination via un \mintinline{rust}{Vec<Option<SharedRouteStage>>},
+la zone de travail maintient un \mintinline{rust}{Vec<Vec<SharedRouteStage>>}~: un vecteur de routes
+ordonné par préférence pour chaque destination. Cela permet de suivre plusieurs chemins candidats
+simultanément par nœud, ce qui est le principe du MPT. La méthode
+\texttt{into\_pathfinding\_output()} convertit ensuite cette structure en \texttt{PathFindingOutput}
+standard en ne conservant que le meilleur candidat (index 0) pour chaque destination.
+
+\subsubsection*{Algorithme \texttt{try\_insert}}
+
+La fonction \texttt{try\_insert} est le cœur du mécanisme MPT. Elle tente d'insérer une proposition
+de route dans la liste ordonnée des routes connues pour un nœud destination donné.
+Sa signature prend deux paramètres~:
+\begin{itemize}
+    \item \texttt{proposition: RouteStage<NM, CM>}~: la nouvelle proposition de route à évaluer.
+    \item \texttt{tree: \&mut HybridParentingWorkArea<NM, CM>}~: la zone de travail contenant
+    les listes de routes par destination.
+\end{itemize}
+Elle retourne un \texttt{Result<Option<SharedRouteStage<NM, CM>>, ASABRError>}.
+Le \mintinline{rust}{Option} vaut \mintinline{rust}{Some(route)} si la proposition a été insérée,
+\mintinline{rust}{None} sinon. En Rust, \texttt{Result<T, E>} est une énumération qui modélise
+la réussite (\mintinline{rust}{Ok(T)}) ou l'échec (\mintinline{rust}{Err(E)}), ici utilisée pour
+propager les erreurs d'emprunt (\texttt{ASABRError}).
+
+Passons au corps de l'algorithme. On commence par récupérer la liste des routes connues pour le nœud
+destination de la proposition~: \mintinline{rust}{let routes_for_rx_node = &mut tree.by_destination[proposition.to_node as usize]}.
+On initialise également deux variables~: \texttt{insert\_index} à la taille de la liste (cas d'insertion
+en fin de liste) et \texttt{insert} à \mintinline{rust}{false}.
+
+Si la liste est vide, on insère directement la proposition et on retourne. Sinon, on parcourt les routes
+existantes avec une boucle \texttt{for} selon trois cas via \mintinline{rust}{match D::cmp(&proposition, &route_borrowed)}~:
+\begin{itemize}
+    \item \mintinline{rust}{Ordering::Less}~: la proposition est strictement meilleure sur le critère
+    principal (par exemple, temps d'arrivée plus court). On fixe \texttt{insert\_index = idx} et
+    \texttt{insert = true} et on sort de la boucle.
+    \item \mintinline{rust}{Ordering::Equal}~: doublon détecté, on pose \texttt{insert = false}
+    et on sort.
+    \item \mintinline{rust}{Ordering::Greater}~: la proposition est moins bonne sur le critère principal.
+    On appelle alors \mintinline{rust}{D::can_retain(&proposition, &route_borrowed)}~: si vrai,
+    la proposition peut malgré tout être utile (critère lexicographique secondaire) et on continue
+    l'itération~; sinon, \texttt{insert = false} et on sort.
+\end{itemize}
+
+Si \texttt{insert} est vrai, on procède en trois étapes~:
+\begin{enumerate}
+    \item \textbf{Détection des routes à éliminer}~: on cherche le premier indice \texttt{truncate\_index}
+    à partir de \texttt{insert\_index} où \mintinline{rust}{D::must_prune(&proposition, route)} est vrai,
+    ce qui délimite les routes que la nouvelle proposition rend obsolètes.
+    \item \textbf{Désactivation}~: les routes à partir de \texttt{truncate\_index} sont marquées
+    \mintinline{rust}{is_disabled = true} via leur référence partagée \texttt{Rc<RefCell<...>>},
+    ce qui permet de les ignorer si elles se trouvent encore dans la file de priorité.
+    \item \textbf{Troncature et insertion}~: on tronque la liste avec \mintinline{rust}{truncate()}
+    puis on insère la proposition à \texttt{insert\_index} avec \mintinline{rust}{Vec::insert()}.
+\end{enumerate}
+
+Concernant la complexité de \texttt{try\_insert}~: le parcours de la liste est en \texttt{O(k)}
+avec $k$ le nombre de routes stockées pour la destination. Les opérations \mintinline{rust}{Vec::insert()}
+et \mintinline{rust}{Vec::truncate()} ont également un coût en \texttt{O(k)}. La complexité totale
+de \texttt{try\_insert} est donc en \texttt{O(k)}.
+
+\subsubsection*{Algorithme \texttt{get\_next}}
+
+La méthode \texttt{get\_next} implémente la boucle principale de Dijkstra MPT. Sa signature
+est identique à celle du trait \texttt{Pathfinding<NM, CM>} et prend quatre paramètres~:
+\begin{itemize}
+    \item \texttt{\&mut self}~: référence mutable vers l'instance, nécessaire pour emprunter le graphe.
+    \item \texttt{current\_time: Date}~: le temps courant à partir duquel démarrer le calcul.
+    \item \texttt{source: NodeID}~: l'identifiant du nœud source.
+    \item \texttt{bundle: \&Bundle}~: le paquet à router.
+    \item \texttt{excluded\_nodes\_sorted: \&[NodeID]}~: liste triée des nœuds à exclure.
+\end{itemize}
+
+L'algorithme débute par l'initialisation~: on crée un \texttt{HybridParentingWorkArea} et une
+\mintinline{rust}{BinaryHeap<Reverse<DistanceWrapper>>} servant de file de priorité min-heap.
+Le nœud source est ajouté à la fois dans \texttt{tree.by\_destination} et dans la file.
+
+La boucle principale \mintinline{rust}{while let Some(Reverse(DistanceWrapper(from_route, _))) = priority_queue.pop()}
+extrait la meilleure route courante. Si celle-ci est marquée \mintinline{rust}{is_disabled}, on la
+saute~: c'est le mécanisme de \textit{lazy deletion} évitant de retirer explicitement des éléments
+de la file. Si le mode \textit{path} (non-tree) est activé et que le nœud extrait est la destination,
+on s'arrête immédiatement.
+
+Pour chaque nœud \texttt{receiver} accessible depuis \texttt{from\_route}, on enchaîne trois
+appels en \textit{let-chain}~:
+\begin{enumerate}
+    \item \mintinline{rust}{receiver.lazy_prune_and_get_first_idx(current_time)}~: obtient le premier
+    contact non expiré vers ce récepteur.
+    \item \mintinline{rust}{try_make_hop(...)}~: construit la proposition de route en calculant le
+    temps d'arrivée via le contact sélectionné.
+    \item \mintinline{rust}{try_insert::<NM, CM, D>(route_proposition, &mut tree)}~: tente d'insérer
+    la proposition dans la zone de travail.
+\end{enumerate}
+Si les trois réussissent, la nouvelle route est ajoutée à la file de priorité.
+
+En fin de boucle, on tronque chaque liste de \texttt{by\_destination} à un seul élément~:
+\mintinline{rust}{v.truncate(1)}, puis on convertit la zone de travail en \texttt{PathFindingOutput}
+via \texttt{into\_pathfinding\_output()}.
+
+Concernant la complexité de \texttt{get\_next}~: le Dijkstra classique sur $V$ nœuds et $E$ arêtes
+avec une min-heap a une complexité de $O((V + E) \cdot \log E)$. Ici, chaque relaxation
+d'arête appelle \texttt{try\_insert} en $O(k)$, ce qui donne une complexité globale de
+$O((V \cdot k + E \cdot k) \cdot \log E)$ soit $O(k \cdot (V + E) \cdot \log E)$.
+En pratique, $k$ reste petit (le nombre de routes lexicographiquement non dominées par destination
+est généralement faible), ce qui rend l'algorithme très proche du Dijkstra standard.
+
+Le module expose trois variantes générées par la macro \mintinline{rust}{define_mpt!}~:
+\texttt{HybridParentingTreeExcl} (arbre complet avec exclusions), \texttt{HybridParentingPath}
+(chemin simple sans exclusions) et \texttt{HybridParentingPathExcl} (chemin simple avec exclusions).
 
 
 
