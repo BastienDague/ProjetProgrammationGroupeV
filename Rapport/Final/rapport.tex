@@ -26,7 +26,10 @@
 \makeglossaries
 
 \newacronym[
-    description={Delay-Tolerant Networking. Réseau tolérant aux délais et aux ruptures de connectivité, où les nœuds ne sont pas forcément connectés en permanence. Les données sont transmises de manière opportuniste via des contacts planifiés.}
+    description={Delay-Tolerant Networking. Réseau tolérant aux délais et aux ruptures de connectivité,
+    où les nœuds ne sont pas forcément connectés en permanence.un nœud peut stocker les données,
+    les conserver pendant une rupture de connectivité, puis les retransmettre quand un contact devient disponible.
+    Ces contacts peuvent être planifiés ou opportunistes selon le contexte}
 ]{dtn}{DTN}{Delay-Tolerant Networking}
 
 \newacronym[
@@ -35,7 +38,7 @@
 ]{cp}{CP}{Contact Plan}
 
 \newacronym[
-    description={Schedule-Aware Bundle Routing. Algorithme de routage pour réseaux DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds. \cite{sabr}}
+    description={Schedule-Aware Bundle Routing. Standard recommandé par la CCSDS pour le routage de bundles DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds. \cite{sabr}}
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
@@ -43,20 +46,21 @@
 ]{mg}{Multigraph}{Multigraph}
 
 \newacronym[
-    description={Equivalent du paquet dans les échanges tradionnels, se définit par sa source, sa ou ses destinations,
-    sa priorité,  sa taille et son délai d'expiration.}
+    description={Unité de données utilisée dans les réseaux DTN. Un bundle regroupe les données à transmettre et 
+    les informations nécessaires à leur acheminement, notamment la source, la ou les destinations, la priorité, 
+    la taille et le délai d'expiration}
 ]{bundle}{Bundle}{Bundle}
 
 \newacronym[
-    description={Mécanisme du Dynamic Loader des systèmes UNIX permettant de charger un module dont les fonctions seront utilisées en priorités avant celles de la glibC}
+    description={Force le dynamic loader à précharger une librairie avant les autres, ce qui permet de redéfinir/intercepter certaines fonctions de la Glibc.}
 ]{ldp}{PRELOAD}{LD\_PRELOAD}
 
 \newacronym[
-    description={Bundle Protocole Socket. Type spécifique de socket utilisée dans le cas des DTN \cite{bp}}
+    description={Bundle Protocol Socket. Type spécifique de socket utilisée dans le cas des DTN \cite{bp}}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
 \newacronym[
-    description={Interplanetary Overlay Network. implémentation de référence développée par la NASA pour les protocoles de réseaux tolérants aux délais }
+    description={Interplanetary Overlay Network. Implémentation Open Source de référence développée par la NASA pour les réseaux tolérants aux délais }
 ]{ion}{ION}{Interplanetary Overlay Network}
 
 \title{Contributions on Schedule-Aware Bundle Routing \\ \Large Projet de Programmation 2 }
@@ -73,7 +77,7 @@
 
 \newpage
 \section{Introduction}
-\subsection{A-SABR}
+\subsection{DTN}
 Notre projet de programmation se concentre sur la librairie A-SABR, portée par Mr. Olivier De Jonckère du LIRMM.
 
 Le réseau de communication spatial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effectue à l'aide d'algorithmes de type \gls{sabr}.\\
@@ -88,7 +92,7 @@ C'est également pour suivre ce choix de performance que celle-ci est programmé
     \label{fig:resume_asabr}
 \end{figure}
 
-\subsection{Sujet}
+\subsection{Rust}
 
 L'intérêt pour ce sujet a été immédiat au sein de notre groupe, motivé par la perspective de contribuer à un projet Open Source d'envergure réelle. 
 Ce cadre de travail nous a offert l'opportunité de nous initier au langage Rust, 
@@ -100,7 +104,7 @@ Le sujet présentait plusieurs point à aborder : \\
 \begin{itemize}
     \item Portage au no-std
     \item Divers tâche de DevOps (Tests, Pipeline)
-    \item Création d'un nouvel onglet dans l'interface graphique DT-Chat
+    \item Création d'un nouvel onglet dans l'interface graphique DT Chat
     \item Intégration dans le logiciel Hardy \\
 \end{itemize}
 
@@ -113,7 +117,7 @@ On commence une tâche, on l'accomplit, on lance une Pull Request, on discute, o
 Arrivés à la fin du projet voici les objectifs sur lesquelles nous avons travaillés :  \\
 
 \begin{description}
-    \item[Interface graphique DT-Chat :] Développement d'un volet « Options » dans l'interface graphique DT-Chat : 
+    \item[Interface graphique DT Chat :] Développement d'un volet « Options » dans l'interface graphique DT Chat : 
     Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, 
     l'algorithme de routage utilisé ou le \gls{cp} chargé. \\
     
@@ -136,18 +140,19 @@ Arrivés à la fin du projet voici les objectifs sur lesquelles nous avons trava
 La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
 
+\subsection{Open Source}
 
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
-\subsection{DT-Chat}
-DT-Chat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
+\subsection{DT Chat}
+DT Chat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
 Elle supporte UDP,TCP et \gls{bp}.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.49\textwidth]{DT_Message.png}
     \hfill 
     \includegraphics[width=0.49\textwidth]{DT_Network.png}
-    \caption{Onglet Message (gauche) et Events (droite) d'un terminal DT-Chat}
+    \caption{Onglet Message (gauche) et Events (droite) d'un terminal DT Chat}
     \label{fig:comparaison_dt}
 \end{figure}
 
@@ -167,7 +172,7 @@ de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois côt�
 
 Maintenant, détaillons le travail effectué sur chaque partie de cette interface.
 
-\subsubsection[DT-Chat Backend]{Backend}
+\subsubsection[DT Chat Backend]{Backend}
  \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
 Premièrement, on crée une fonction \texttt{update} tiré de la fonction \texttt{start} de l'interface, celle-ci prend en argument un \texttt{str} et un chemin de fichier.
 Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme \texttt{try\_init} pour qu'elle prenne également un \texttt{str} et un chemin de fichier, on récupère également les valeurs de 
@@ -187,7 +192,7 @@ l'ajout de Result remplaçant des Options dans la librairie. \\
 
 Toutes ces modifications sur la partie Backend ont fait l'objet de 2 Pull requests acceptées de Vincent pour 52 lignes de code ajoutées (PR \texttt{\#6} et \texttt{\#7}).
 
-\subsubsection[DT-Chat Frontend]{Frontend}
+\subsubsection[DT Chat Frontend]{Frontend}
 \label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
 
 L'interface DT Chat peut être vue comme un modèle MVC en programmation Web, le Modèle serait le Backend,
@@ -208,7 +213,7 @@ dans le code que la ComboBox s'adapte aux choix de features choisies lors de la 
     \includegraphics[width=0.49\textwidth]{DT_Algos.png}
     \hfill  
     \includegraphics[width=0.49\textwidth]{DT_Changes.png}
-    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptatif (droite) d'un terminal DT-Chat}
+    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptatif (droite) d'un terminal DT Chat}
     \label{fig:dt_changes}
 \end{figure}
 
@@ -685,17 +690,15 @@ Le fichier contient aussi des fonctions partagées par tous les routeurs, comme 
 
 Le dossier contient trois implémentations concrètes du trait \texttt{Router} : CGR, VolCGR et SPSN. Dans le cadre de notre projet, nous n'avons travaillé que sur VolCGR et SPSN. 
 
-VolCGR est une évolution de CGR qui est la méthode de la NASA, et Spsn qui est une implémentation toute nouvelle venant d'A-SABR.
+VolCGR est une évolution de CGR qui est la méthode de la NASA, et Spsn qui est une implémentation toute nouvelle venant d'A-SABR.\\
 
-\paragraph{Tests}~\\
-
-Bien que des tests aient été rédigés et soient en grande partie fonctionnels sur notre branche de 
-développement, une refactorisation majeure des Contact Plans ainsi que notre test helpers et nos anciens test ont rendu leur intégration complexe.
-L'effort de rebase nécessaire étant important par rapport au temps restant, nous avons privilégié de ne pas les inclures dans le rapport
-mais de laisser l'explication du module ci-dessus.
+Des premiers tests ont également été développés pour le module routing. 
+Cependant, par manque de temps et à la suite d’une PR récente ayant refactorisé la gestion des nœuds et des contacts,
+leur intégration propre dans la version finale du projet n’a pas pu être menée à terme. 
+Ces travaux ne sont donc pas présentés en détail dans ce rapport, mais restent disponibles sur une branche
+dédiée de notre dépôt afin de pouvoir être repris et finalisés ultérieurement.
 
 \subsection{BP-Socket}
-\subsubsection{Mise en situation}
 
 Le projet a pour objectif de fournir une interface socket pour \gls{bp},
 utilisée dans les réseaux \gls{dtn}. L'idée est de permettre à une application d'envoyer et
@@ -711,23 +714,10 @@ pour le futur de A-SABR.
 \label{fig:bp_kernel}
 \end{figure}
 
-Voici donc les problématiques du projet : \\
+L’environnement de test est relativement lourd à mettre en place, car il repose sur deux machines virtuelles 
+Vagrant : une pour \gls{ion} et une pour µD3TN. Son lancement nécessite également l’exécution de nombreuses commandes 
+de configuration, ce qui rend les expérimentations plus longues et moins directes qu’un simple test local.
 
-\begin{itemize}
-    \item Pour charger le module kernel, il faut utiliser \texttt{insmod}, ce qui nécessite les droits root.
-
-    \item Le module kernel doit être recompilé pour chaque version du noyau.
-
-    \item Un bug avec le module provoque un Kernel Panic! .
-
-    \item Avoir un module kernel rajoute une charge en plus pour lancer l'ensemnle, ce qui est déjà assez complexe.\\
-\end{itemize}
-
-Pour tester le tout, il faut bien suivre le README du projet qui utilise des VM Vagrant (une VM \gls{ion} et une VM µDTN) et beaucoup de commandes à taper.
-
-\subsubsection{Solution}
-
-La solution vient d'un mécanisme propre au C, le \gls{ldp}.
 Sans module kernel, un appel à \texttt{socket(AF,BP)} ne sera pas reconnu et ne retournera aucun file descripteur,
 L'idée ici sera de créer un module spécifique qui interceptera l'appel au principales fonctions (\texttt{socket,bind,send,recv,close})
 puis d'envoyer les informations nécessaires au Daemon.
@@ -757,7 +747,7 @@ Il faut donc :
 
     \item Modifier le daemon avec les nouvelles fonctions relatives au hook (\texttt{send bundle, connect, message})
     
-    \item Modifier \gls{ion} avec les nouvelles fonctions du Daemon.\\\\
+    \item Modifier l'interface \gls{ion} avec les nouvelles fonctions du Daemon.\\\\
 \end{itemize}
 
 
@@ -812,7 +802,7 @@ Attend la réponse OK ou ERR et retourne le nombre de bytes envoyés si succès.
 
 Le sender est parfaitement fonctionnel, il permet d'envoyer des messsages d'\gls{ion} vers µDTN et ceux sans module kernel.
 
-\subsubsection{Avenir}
+
 
 Il reste le fait de recevoir un message, qui inclut donc le fait de détruire un bundle une fois reçu et lu, mais
 par manque de temps nous ne pourrons pas le faire. Néanmoins, Monsieur De Jonckère est en lien avec collègue qui aimerait reprendre le travail
@@ -1168,7 +1158,7 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 
 \#6 & Backend & Vincent & Acceptée
 & Modification de \texttt{try\_init}, ajout d’une fonction \texttt{update}, ajout de méthodes pour compter le nombre de nodes et de contacts d’un Contact Plan chargé, et correction du backend pour correspondre au dépôt A-SABR.
-& Permet au backend de recharger dynamiquement la configuration utilisée par DT-Chat et de fournir des informations utiles au frontend lors du changement de Contact Plan.
+& Permet au backend de recharger dynamiquement la configuration utilisée par DT Chat et de fournir des informations utiles au frontend lors du changement de Contact Plan.
 & +65 lignes \\
 \hline
 
@@ -1196,7 +1186,7 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 & À compléter \\
 \hline
 
-\caption{Synthèse des contributions réalisées sur DT-Chat}
+\caption{Synthèse des contributions réalisées sur DT Chat}
 \label{tab:contributions-dtchat}
 \end{longtable}
 \end{center}
@@ -1365,9 +1355,8 @@ de la bibliothèque.\\
 \begin{itemize}
     \item Mise en place d'une pipeline CI/CD spécifique pour la librairie.
     \item Mises en places de nombreux test unitaires pour la librairie.
-    \item Refactorisation et ajout d'un onglet pour l'interface graphique DT-Chat.
-    \item Correction de bug dans la librairie.
-    \item Ajout d'un système d'agrégat dans PrioritySegmentation.
+    \item Refactorisation et ajout d'un onglet pour l'interface graphique DT Chat.
+    \item Correction de bugs dans la librairie.
     \item Expérimentation d'interception d'appel système via LD\_PRELOAD pour BP-Socket.\\
 \end{itemize}
 
