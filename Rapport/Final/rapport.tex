@@ -78,12 +78,11 @@
 \newpage
 \section{Introduction}
 \subsection{DTN}
-Notre projet de programmation se concentre sur la librairie A-SABR, portée par Mr. Olivier De Jonckère du LIRMM.
+Les réseaux \gls{dtn} sont conçus pour fonctionner dans des environnements où une connexion continue entre les nœuds ne peut pas être garantie. Contrairement aux réseaux classiques, où l’on suppose souvent qu’un chemin de bout en bout existe entre l’émetteur et le récepteur, les réseaux DTN acceptent les délais importants, les interruptions de connexion et les périodes d’indisponibilité.
 
-Le réseau de communication spatial repose sur le \gls{dtn}. Avec ce type de protocole, le routage s'effectue à l'aide d'algorithmes de type \gls{sabr}.\\
+Dans ce type de réseau, les données sont transmises selon un principe de stockage puis retransmission : un nœud peut conserver temporairement un message, appelé \gls{bundle}, puis le transmettre plus tard lorsqu’un contact avec un autre nœud devient disponible. Ce fonctionnement est particulièrement adapté aux communications spatiales, où les distances sont importantes, les délais de propagation élevés et les fenêtres de communication limitées.
 
-La librairie A-SABR implémente donc ce type d'algorithme en proposant une grande modularité et une bonne performance.\cite{sabr}
-C'est également pour suivre ce choix de performance que celle-ci est programmée en Rust, langage connu pour son compilateur strict et sa fine gestion de la mémoire.
+Dans le contexte d’A-SABR, ces fenêtres de communication sont décrites à l’avance dans un \gls{cp}. Celui-ci indique quels nœuds peuvent communiquer, à quels moments, pendant quelle durée, avec quel débit et quel délai. La bibliothèque A-SABR exploite ensuite ces informations pour calculer des routes adaptées au contexte DTN, en tenant compte des contraintes temporelles et des ressources disponibles. Ainsi, le routage ne consiste pas seulement à trouver un chemin dans un graphe, mais à déterminer une succession de contacts compatibles dans le temps.
 
 \begin{figure}[h]
     \centering
@@ -94,53 +93,24 @@ C'est également pour suivre ce choix de performance que celle-ci est programmé
 
 \subsection{Rust}
 
-L'intérêt pour ce sujet a été immédiat au sein de notre groupe, motivé par la perspective de contribuer à un projet Open Source d'envergure réelle. 
-Ce cadre de travail nous a offert l'opportunité de nous initier au langage Rust, 
-dont la montée en puissance dans l'industrie logicielle souligne son importance actuelle. 
-Pour plusieurs membres de l'équipe aspirant à se spécialiser en informatique système (bas niveau) ou en 
-réseaux, ce projet constituait une application concrète et exigeante de nos ambitions professionnelles.\\
+Rust est un langage particulièrement adapté au développement d’une bibliothèque comme A-SABR, car il combine performance, sûreté mémoire et contrôle fin des ressources. Dans le contexte du routage DTN, la bibliothèque manipule de nombreuses structures de données, comme les nœuds, les contacts, les \gls{bundle}, les \gls{cp} ou encore le \gls{mg}. Ces éléments doivent être parcourus, modifiés et partagés efficacement lors du calcul des routes.
 
-Le sujet présentait plusieurs point à aborder : \\
-\begin{itemize}
-    \item Portage au no-std
-    \item Divers tâche de DevOps (Tests, Pipeline)
-    \item Création d'un nouvel onglet dans l'interface graphique DT Chat
-    \item Intégration dans le logiciel Hardy \\
-\end{itemize}
+L’un des intérêts majeurs de Rust est son système de possession et d’emprunts, qui permet d’éviter une grande partie des erreurs mémoire classiques, comme les accès invalides, les doubles libérations ou les conflits de modification. Cette contrainte rend parfois le développement plus exigeant, notamment lors de la manipulation de structures complexes ou partagées, mais elle renforce la fiabilité du code produit.
 
+Dans A-SABR, Rust est utilisé pour implémenter les différents modules de la bibliothèque : gestion des contacts, parsing des \gls{cp}, calcul de routes, stockage des chemins, tests et benchmarks. Le langage permet aussi d’exprimer explicitement les cas d’échec grâce à des types comme \texttt{Option} et \texttt{Result}. Une fonction peut ainsi indiquer clairement qu’un chemin n’existe pas, qu’un contact ne permet pas une transmission ou qu’une erreur de parsing est survenue. L’opérateur \texttt{?} permet ensuite de propager simplement ces erreurs sans alourdir le code avec de nombreux tests intermédiaires.
 
-Au final, les tâches à effectuer se sont vues être en partie modifiées, le no-std a été abandonné et l'intégration dans Hardy jugée peu intéressante. \\
-
-Nous avons surtout compris qu'on ne dépendait pas seulement de nous, mais qu'il s'agissait d'un immense travail d'équipe.
-On commence une tâche, on l'accomplit, on lance une Pull Request, on discute, on modifie. Tout ça prend un certain temps et nécessite beaucoup de coordination.\\
-
-Arrivés à la fin du projet voici les objectifs sur lesquelles nous avons travaillés :  \\
-
-\begin{description}
-    \item[Interface graphique DT Chat :] Développement d'un volet « Options » dans l'interface graphique DT Chat : 
-    Ce module permet désormais de modifier dynamiquement, au cours de l'exécution, 
-    l'algorithme de routage utilisé ou le \gls{cp} chargé. \\
-    
-    \item[Automatisation de test unitaires :] 
-    Mise en place d'une pipeline CI/CD robuste pour assurer la pérennité de la bibliothèque. Ce travail a été complété par la mise en place de plusieurs tests unitaires couvrant les modules principaux du projet.
-    La pipeline teste la compilation, l'éxecution des tests ainsi que la rédaction de la coverage sous forme d'HTML\\
-
-    \item[Expérimentation Système (BP Socket) :] 
-    Pendant le dernier mois du projet, nous avons travaillé sur \gls{bp}.
-
-    \gls{bp}, telle qu'elle a été développée, utilise un module kernel nécessitant 
-    les droits root pour être utilisée.
-    L'objectif est de permettre l'usage de \gls{bp} sur des systèmes embarqués contraints où les privilèges « root » ne sont pas disponibles. L'expérimentation du mécanisme \gls{ldp}
-    vise à intercepter les appels système pour s'affranchir de la dépendance au module noyau actuel.
-
-    Ce dernier objectif est une totale découverte de ce mécanisme offert par le Dynamic Loader et 
-    toute avancée même non complète intéresse Mr De Jonckère.
-\end{description}
+Rust est également utile dans A-SABR grâce à son système de traits et de généricité. Plusieurs composants, comme les gestionnaires de contacts ou les variantes d’algorithmes de routage, peuvent partager une interface commune tout en ayant des comportements différents. Les macros sont aussi utilisées pour éviter la duplication de code, notamment lorsque plusieurs implémentations suivent une structure similaire ou lorsqu’un même ensemble de tests doit être décliné sur plusieurs modules. Ces spécificités rendent le code plus structuré, plus réutilisable et plus sûr, tout en conservant de bonnes performances.
 
 La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
 
 \subsection{Open Source}
+
+Le projet s’inscrit également dans un contexte open source, ce qui a fortement influencé notre manière de travailler. Contrairement à un projet strictement scolaire, les contributions ne sont pas simplement ajoutées à un dépôt privé : elles doivent s’intégrer proprement dans un écosystème existant, être relues, discutées, corrigées puis validées par les mainteneurs du projet. Dans notre cas, les modifications apportées à A-SABR, DT-Chat ou BP-Socket ont donc été réalisées sous forme de branches puis de Pull Requests, avec des échanges réguliers autour de la qualité du code, de la maintenabilité et de la cohérence avec l’existant.
+
+A-SABR, DT-Chat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DT-Chat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
+
+Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif. Il ne suffisait pas d’écrire du code fonctionnel : il fallait aussi respecter les conventions du projet, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
 
 \newpage
 \section{Développements Logiciel : Conception, Modélisation, Implémentation}
@@ -189,9 +159,6 @@ si Err, on retourne l'erreur et on l'affiche dans l'App Event.
 
 Etant basé sur A-SABR, il faut régulièrement faire de légères modifications dûes à des refactorisations de fonctions ou de
 l'ajout de Result remplaçant des Options dans la librairie. \\
-
-Toutes ces modifications sur la partie Backend ont fait l'objet de 2 Pull requests acceptées de Vincent pour 52 lignes de code ajoutées (PR \texttt{\#6} et \texttt{\#7}).
-
 \subsubsection[DT Chat Frontend]{Frontend}
 \label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
 
@@ -266,9 +233,6 @@ et qu'ils peuvent être différent sau sein du même \gls{cp}.
 
 Pour régler le soucis, il aurait fallu développer tout un parser qui s'adapte au type de \gls{cp} chargé. Dans les faits, il était réalisable 
 mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc nous avons juste rajouté le compteur de noeuds et de contacts.\\
-
-Toutes ces modifications sur le FrontEnd ont fait l'objet d'une Pull Request de Vincent acceptée pour 145 lignes de codes ajoutée (PR \texttt{\#13}). 
-
 \subsection[Pipeline]{Pipeline CI/CD}
 \subsubsection{Première version du fichier:}
 
@@ -402,9 +366,6 @@ Pour conclure cette partie, nous avons su au fur et à mesure de l'avancée du t
 relever nos erreurs et les corriger tout en prenant en compte les remarques et besoins des autres collaborateurs du projet
 ce qui nous a permis de découvrir de nouvelles notions et de consolider nos connaissances déjà existantes dans ce domaine.
 
-Notre travail a finalement été accepté dans le dépôt de Monsieur De Jonckère (PR\texttt{\#30}) et peut maintenant servir à toute l'équipe.
-
-
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
 
@@ -419,9 +380,9 @@ Tous les gestionnaires de contacts implémentent une interface commune reposant 
 Plusieurs implémentations de \textit{Contact Manager} coexistent dans le projet afin de proposer différents niveaux de précision et de modélisation. Elles sont regroupées en deux grandes familles : les gestionnaires \textit{Legacy}, reposant sur des modèles historiques plus simples, et les gestionnaires basés sur la segmentation, offrant une représentation plus fine des contacts.
 
 \paragraph{Legacy :}~\\\\
-Les gestionnaires \textit{Legacy} correspondent aux premières implémentations de gestionnaires de contacts présentes dans A-SABR. Ils sont considérés comme dépréciés car ils reposent sur une modélisation plus simple du contact, avec moins de granularité que les approches plus récentes comme la segmentation. Ils restent présents dans la librairie pour des raisons de compatibilité et de comparaison, mais ne constituent plus l’approche principale utilisée pour représenter finement les transmissions.
+Les gestionnaires \textit{Legacy} correspondent aux premières implémentations de gestionnaires de contacts présentes dans A-SABR. Ils sont considérés comme le standard actuelle. Ils restent présents dans la librairie pour des raisons de compatibilité et de comparaison, mais ne constituent pas l’approche principale utilisée pour représenter finement les transmissions.
 
-Ces gestionnaires restent néanmoins importants à tester, car ils font encore partie du code existant et peuvent être utilisés comme référence pour vérifier le comportement d’autres modules.
+Ces gestionnaires restent néanmoins importants à tester, car ils font encore partie du code existant et sont utilisés comme référence pour nos tests.
 
 \begin{figure}[H]
 \centering
@@ -467,9 +428,6 @@ Pour \texttt{EVL}, les tests permettent de confirmer que l’occupation de la fi
 Enfin, pour \texttt{QD}, les tests valident que l’occupation de la file peut décaler la date effective de début de transmission. Ils vérifient également qu’une transmission peut devenir impossible si ce décalage repousse la fin de transmission au-delà de la fenêtre du contact.
 
 L’ajout de ces tests spécifiques permet donc de compléter la couverture existante sur les gestionnaires \textit{Legacy}, tout en documentant plus clairement les différences de comportement entre \texttt{ETO}, \texttt{EVL} et \texttt{QD}.\\
-
-Toute ces modifications sur la partie Legacy ont fait l'objet de 1 Pull request en attente d'acceptation de Samy/Yassine pour 502 lignes de code ajoutées (PR \texttt{\#54})
-
 \paragraph{Segmentation :}~\\\\
 
 Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en découpant un contact en plusieurs intervalles temporels indépendants. Chaque segment peut ainsi posséder ses propres caractéristiques de transmission, comme le débit ou le délai.
@@ -520,9 +478,6 @@ La gestion des cas limites s’est également révélée délicate, notamment po
 Enfin, des contraintes liées aux outils d’intégration continue ont été rencontrées. Les hooks \textit{pre-commit}, incluant \texttt{cargo fmt} et \texttt{cargo clippy}, ont empêché certains commits en raison de problèmes de formatage ou de warnings. Ces difficultés ont été résolues en appliquant les corrections nécessaires et en respectant les règles imposées par le projet.
 
 Ces difficultés ont permis de mieux comprendre les invariants du modèle et de renforcer la robustesse des tests implémentés.\\
-
-Toute ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})
-
 \paragraph{PrioritySegmentation :}~\\\\
 Le module \texttt{PrioritySegmentation} abrégé en \texttt{pseg}, quant à lui, reprend exactement le même principe 
 que le module \texttt{Segmentation} mais ajoute, comme son nom l'indique, une gestion de la priorité des paquets.
@@ -623,9 +578,6 @@ Les tests mis en place couvrent les cas suivants :
 
     \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
-
-Tous ces tests ont fait l'objet d'une Pull Request acceptée de Samy pour 546 lignes de code ajoutées (PR \#52).
-
 \paragraph{Contact,Hybrid et Node parenting :}~\\\\
 Contact, Hybrid et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
 
@@ -639,7 +591,8 @@ ce qui peut trouver des routes avec moins de saut dans certains cas.\\
 Hybrid est la plus complète mais également la plus complexe, il va maintenir une liste de potentiel route optimal
 tous le long du parcours, puis, grâce au fonction "can\_retain" et "must\_prune", va décider laquelle garder.\\
 
-Chacunes de ces variantes possédent les 3 mêmes macros :
+Chaque algorithme de parenting possède les trois mêmes variantes, générées sous forme de macros. Comme il existe trois approches principales, Node, Contact et Hybrid, cela donne donc neuf variantes possibles au total :
+
 \begin{itemize}
     \item Path : Chemin simple vers une destination, s'arrête dès qu'elle est atteinte.
     \item PathExcl : Si l'on veut exclure un noeud précis.
@@ -675,10 +628,6 @@ puis nous lui appliquons notre fonction de test.\\
 \end{itemize}
 
 Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour détecter une erreur de la librarie.\\
-
-Cette partie a fait l'objet de 2 Pull Requests acceptées de Vincent pour 629 lignes rajoutée 
-correspondant aux tests dans les 3 fichiers + la création du test\_helpers du module Pathfinding. (PR \texttt{\#38} et \texttt{\#44})
-
 
 \subsubsection[Module : Routing]{Routing}
 
