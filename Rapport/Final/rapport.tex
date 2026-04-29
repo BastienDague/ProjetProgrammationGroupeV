@@ -34,7 +34,7 @@
 
 \newacronym[
     description={Contact Plan. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.
-    Lu par la bibliothèque, il est transformé en \gls{mg}}
+    Lu par la bibliothèque, il est transformé en graphe temportel (\gls{mg})}
 ]{cp}{CP}{Contact Plan}
 
 \newacronym[
@@ -42,7 +42,10 @@
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
-    description={Structure de données centrale du projet représentant le réseau. Contient les nœuds (senders/receivers) et les contacts. Permet plusieurs contacts entre une même paire de nœuds à des moments différents, d'où le préfixe "multi"}
+    description={Structure de données centrale du projet représentant le réseau.
+Elle contient les nœuds, qui jouent le rôle d'émetteurs ou de récepteurs, ainsi que les contacts, c'est-à-dire les fenêtres temporelles pendant lesquelles deux nœuds peuvent communiquer avec un débit et un délai donnés.
+Elle permet de représenter plusieurs contacts entre une même paire de nœuds à des moments différents.
+L'objet théorique le plus proche d'une telle structure est le carquois, c'est-à-dire un graphe orienté pouvant contenir plusieurs flèches entre deux mêmes sommets.}
 ]{mg}{Multigraph}{Multigraph}
 
 \newacronym[
@@ -56,7 +59,7 @@
 ]{ldp}{PRELOAD}{LD\_PRELOAD}
 
 \newacronym[
-    description={Bundle Protocol Socket. Type spécifique de socket utilisée dans le cas des DTN \cite{bp}}
+    description={Bundle Protocol Socket. Type spécifique de socket Linux reposant sur la création d'une nouvelle famille de sockets, \texttt{AF\_BP}, afin de permettre l'envoi et la réception de bundles dans un environnement DTN}
 ]{bp}{BP Socket}{Bundle Protocole Socket}
 
 \newacronym[
@@ -77,46 +80,74 @@
 
 \newpage
 \section{Introduction}
-\subsection{DTN}
-Les réseaux \gls{dtn} sont conçus pour fonctionner dans des environnements où une connexion continue entre les nœuds ne peut pas être garantie. Contrairement aux réseaux classiques, où l’on suppose souvent qu’un chemin de bout en bout existe entre l’émetteur et le récepteur, les réseaux DTN acceptent les délais importants, les interruptions de connexion et les périodes d’indisponibilité.
+\subsection{Contribution Open Source DTN-MTP}
+Le projet s’inscrit dans un contexte open source, ce qui a fortement influencé notre manière de travailler. Contrairement à un projet strictement scolaire, les contributions ne sont pas simplement ajoutées à un dépôt privé : elles doivent s’intégrer proprement dans un écosystème existant, être relues, discutées, corrigées puis validées par les mainteneurs du projet. Dans notre cas, les modifications apportées à A-SABR, DT-Chat ou BP-Socket ont donc été réalisées sous forme de branches puis de Pull Requests, avec des échanges réguliers autour de la qualité du code, de la maintenabilité et de la cohérence avec l’existant.
+
+A-SABR, DTChat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DT-Chat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
+
+Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif. Il ne suffisait pas d’écrire du code fonctionnel : il fallait aussi respecter les conventions du projet, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
+\subsubsection{DTN}
+Les réseaux \gls{dtn} constituent encore une approche relativement récente par rapport aux réseaux classiques, mais ils sont déjà utilisés dans des contextes réels, notamment pour le rapatriement de certaines données scientifiques depuis l'ISS. Leur intérêt est particulièrement fort dans le domaine spatial, où une connexion continue entre les nœuds ne peut pas toujours être garantie. Contrairement aux réseaux traditionnels, qui supposent souvent l'existence d'un chemin de bout en bout entre l'émetteur et le récepteur, les réseaux DTN acceptent les délais importants, les interruptions de connexion et les périodes d'indisponibilité. Les réseaux spatiaux du futur reposeront de plus en plus sur ce type de technologie.
 
 Dans ce type de réseau, les données sont transmises selon un principe de stockage puis retransmission : un nœud peut conserver temporairement un message, appelé \gls{bundle}, puis le transmettre plus tard lorsqu’un contact avec un autre nœud devient disponible. Ce fonctionnement est particulièrement adapté aux communications spatiales, où les distances sont importantes, les délais de propagation élevés et les fenêtres de communication limitées.
 
 Dans le contexte d’A-SABR, ces fenêtres de communication sont décrites à l’avance dans un \gls{cp}. Celui-ci indique quels nœuds peuvent communiquer, à quels moments, pendant quelle durée, avec quel débit et quel délai. La bibliothèque A-SABR exploite ensuite ces informations pour calculer des routes adaptées au contexte DTN, en tenant compte des contraintes temporelles et des ressources disponibles. Ainsi, le routage ne consiste pas seulement à trouver un chemin dans un graphe, mais à déterminer une succession de contacts compatibles dans le temps.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1.1\textwidth]{resume_asabr.png}
-    \caption{Schéma récapitulatif d'A-SABR}
-    \label{fig:resume_asabr}
-\end{figure}
+\subsubsection{Rust}
 
-\subsection{Rust}
+\subsubsection{Rust}
 
-Rust est un langage particulièrement adapté au développement d’une bibliothèque comme A-SABR, car il combine performance, sûreté mémoire et contrôle fin des ressources. Dans le contexte du routage DTN, la bibliothèque manipule de nombreuses structures de données, comme les nœuds, les contacts, les \gls{bundle}, les \gls{cp} ou encore le \gls{mg}. Ces éléments doivent être parcourus, modifiés et partagés efficacement lors du calcul des routes.
+Rust est un langage particulièrement adapté à A-SABR, car la bibliothèque manipule de nombreuses structures de données liées au routage : nœuds, contacts, \gls{bundle}, \gls{cp} et \gls{mg}. Ces objets doivent être parcourus, modifiés et parfois partagés entre plusieurs composants, tout en conservant de bonnes performances.
 
-L’un des intérêts majeurs de Rust est son système de possession et d’emprunts, qui permet d’éviter une grande partie des erreurs mémoire classiques, comme les accès invalides, les doubles libérations ou les conflits de modification. Cette contrainte rend parfois le développement plus exigeant, notamment lors de la manipulation de structures complexes ou partagées, mais elle renforce la fiabilité du code produit.
+Un premier intérêt de Rust est la gestion explicite des cas d'échec avec les types \texttt{Option} et \texttt{Result}. Dans A-SABR, une fonction peut par exemple échouer parce qu'aucun contact ne permet une transmission, ou parce qu'un \gls{cp} ne peut pas être correctement parsé :
 
-Dans A-SABR, Rust est utilisé pour implémenter les différents modules de la bibliothèque : gestion des contacts, parsing des \gls{cp}, calcul de routes, stockage des chemins, tests et benchmarks. Le langage permet aussi d’exprimer explicitement les cas d’échec grâce à des types comme \texttt{Option} et \texttt{Result}. Une fonction peut ainsi indiquer clairement qu’un chemin n’existe pas, qu’un contact ne permet pas une transmission ou qu’une erreur de parsing est survenue. L’opérateur \texttt{?} permet ensuite de propager simplement ces erreurs sans alourdir le code avec de nombreux tests intermédiaires.
+\begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
+fn route(...) -> Result<Option<RoutingOutput>, ASABRError> {
+    ...
+}
+\end{minted}
 
-Rust est également utile dans A-SABR grâce à son système de traits et de généricité. Plusieurs composants, comme les gestionnaires de contacts ou les variantes d’algorithmes de routage, peuvent partager une interface commune tout en ayant des comportements différents. Les macros sont aussi utilisées pour éviter la duplication de code, notamment lorsque plusieurs implémentations suivent une structure similaire ou lorsqu’un même ensemble de tests doit être décliné sur plusieurs modules. Ces spécificités rendent le code plus structuré, plus réutilisable et plus sûr, tout en conservant de bonnes performances.
+Ici, \texttt{Result} permet de représenter une erreur technique, tandis que \texttt{Option} permet d'indiquer qu'aucune route n'a été trouvée. L'opérateur \texttt{?} permet ensuite de propager simplement les erreurs :
+
+\begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
+let contact_plan = parse_contact_plan(path)?;
+let graph = Multigraph::new(contact_plan)?;
+\end{minted}
+
+Rust est aussi utile grâce à son système de traits et de généricité. Dans A-SABR, plusieurs composants peuvent partager une même interface tout en ayant des comportements différents. Par exemple, les gestionnaires de contacts implémentent une interface commune permettant de simuler ou de planifier une transmission :
+
+\begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
+trait ContactManager {
+    fn dry_run_tx(...) -> Option<ContactManagerTxData>;
+    fn schedule_tx(...) -> Option<ContactManagerTxData>;
+}
+\end{minted}
+
+Enfin, les macros permettent d'éviter la duplication de code lorsque plusieurs variantes suivent une même structure. Elles sont notamment utilisées dans A-SABR pour générer des implémentations proches ou décliner une même logique de test sur plusieurs modules.
 
 La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
 
-\subsection{Open Source}
+\subsection{Ecosystème DTN-MTP}
+\subsubsection{A-SABR}
+A-SABR est la bibliothèque centrale sur laquelle porte notre projet. Elle implémente des mécanismes de routage pour les réseaux \gls{dtn}, en s’appuyant sur les principes du \gls{sabr}. Son rôle est de déterminer comment acheminer un \gls{bundle} d’un nœud source vers une ou plusieurs destinations, non pas à partir d’une connexion permanente, mais à partir des contacts disponibles dans le temps.
 
-Le projet s’inscrit également dans un contexte open source, ce qui a fortement influencé notre manière de travailler. Contrairement à un projet strictement scolaire, les contributions ne sont pas simplement ajoutées à un dépôt privé : elles doivent s’intégrer proprement dans un écosystème existant, être relues, discutées, corrigées puis validées par les mainteneurs du projet. Dans notre cas, les modifications apportées à A-SABR, DT-Chat ou BP-Socket ont donc été réalisées sous forme de branches puis de Pull Requests, avec des échanges réguliers autour de la qualité du code, de la maintenabilité et de la cohérence avec l’existant.
+Pour cela, A-SABR lit un \gls{cp}, qui décrit les fenêtres de communication prévues entre les nœuds du réseau. Ces informations sont ensuite transformées en \gls{mg}, structure sur laquelle les algorithmes de routage peuvent travailler. La bibliothèque peut alors calculer des routes compatibles avec les contraintes temporelles du réseau, comme les dates de début et de fin des contacts, les délais de propagation, les débits disponibles ou encore la priorité des bundles.
 
-A-SABR, DT-Chat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DT-Chat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
+L’intérêt d’A-SABR est aussi sa modularité. Elle permet de comparer différentes stratégies de gestion des contacts, différentes variantes de pathfinding et plusieurs méthodes de routage. Cette architecture rend la bibliothèque adaptée à l’expérimentation : on peut tester plusieurs modèles de transmission, mesurer leurs performances, vérifier leur comportement par des tests, puis les intégrer progressivement dans l’écosystème open source DTN-MTP.
 
-Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif. Il ne suffisait pas d’écrire du code fonctionnel : il fallait aussi respecter les conventions du projet, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
+Le projet A-SABR est mené par Monsieur Olivier de Jonckère au sein du LIRMM. Il s’agit d’un projet entièrement open source, ce qui signifie que son développement repose sur un dépôt public, des contributions externes et un processus de validation par Pull Requests. Ce cadre nous a permis de travailler sur un projet réel, maintenu en dehors du contexte strictement universitaire, et d’inscrire nos contributions dans un écosystème logiciel existant.
 
-\newpage
-\section{Développements Logiciel : Conception, Modélisation, Implémentation}
-\subsection{DT Chat}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{resume_asabr.png}
+    \caption{Schéma récapitulatif d'A-SABR}
+    \label{fig:resume_asabr}
+\end{figure}
+
+\subsubsection{DTChat}
 DT Chat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
-Elle supporte UDP,TCP et \gls{bp}.
+Elle supporte UDP, TCP et \gls{bp}.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.49\textwidth]{DT_Message.png}
@@ -134,14 +165,26 @@ l'application prédise et indique le moment où le message devrait être reçu p
 A droite nous voyons l'onglet Event, celui ci récapitule de manière textuelle toute interaction de l'interface.
 A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, nous remarquons bien les différents messages envoyés et reçus.
 
-Sur cet exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP, 1 \gls{bp}.
-\gls{bp} dans le network Event est marqué comme UDP car il s'agit d'une variante d'UDP.\\
+Sur cet exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP et  1 tentative \gls{bp}.
 
-L'objectif sur cette interface graphique est de créer un nouvel onglet Options permettant de changer à la volée 
-de \gls{cp} et/ou d'algorithme. Cela nécessite donc un travail à la fois côté Backend et FrontEnd\\
+\gls{bp} nécessite le chargement d'un module kernel spécifique. Dans l'exemple présenté, ce module n'a pas été chargé : l'application ne peut donc pas utiliser la socket \texttt{AF\_BP} et le message est finalement envoyé via UDP.
 
-Maintenant, détaillons le travail effectué sur chaque partie de cette interface.
+\subsubsection{Bp-socket}
 
+BP-Socket est un projet visant à fournir une interface de type socket Linux pour le Bundle Protocol, utilisé dans les réseaux \gls{dtn}. L’idée est de permettre à une application d’envoyer et de recevoir des \gls{bundle} avec une API proche de celle utilisée pour des communications classiques en UDP ou TCP.
+
+Dans son fonctionnement initial, BP-Socket repose sur la création d’une nouvelle famille de sockets, \texttt{AF\_BP}, afin de représenter les communications Bundle Protocol au niveau du système. Une application peut alors manipuler une socket BP comme une socket réseau classique, tandis que l’implémentation se charge de transmettre les données sous forme de bundles.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{bp_kernel.png}
+\caption{Architecture de BP-Socket.}
+\label{fig:bp_kernel_intro}
+\end{figure}
+
+\newpage
+\section{Développements Logiciel : Conception, Modélisation, Implémentation}
+\subsection{DT Chat}
 \subsubsection[DT Chat Backend]{Backend}
  \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
 Premièrement, on crée une fonction \texttt{update} tiré de la fonction \texttt{start} de l'interface, celle-ci prend en argument un \texttt{str} et un chemin de fichier.
@@ -1129,10 +1172,10 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 & +174 lignes \\
 \hline
 
-\#X & Frontend & Vincent, Bastien & À venir
+\#14 & Frontend & Vincent, Bastien & En cours
 & Ajout d’une CI dérivée de celle d’A-SABR pour vérifier la bonne compilation entre le backend, le frontend et A-SABR, avec \texttt{pre-commit}, \texttt{clippy} et \texttt{fmt}. Mise en conformité du dépôt frontend avec \texttt{clippy} et \texttt{fmt}.
 & Doit fiabiliser le dépôt frontend et vérifier que les trois composants restent compatibles entre eux après modification.
-& À compléter \\
+& +115 -99 lignes \\
 \hline
 
 \caption{Synthèse des contributions réalisées sur DT Chat}
@@ -1219,6 +1262,7 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 
 \end{center}
 
+La couverture globale du dossier \texttt{src/} reste modérée, mais elle met en évidence une progression ciblée sur les modules sur lesquels nous avons principalement travaillé. Les modules liés au pathfinding, au multigraph et aux gestionnaires de contacts sont ainsi mieux couverts que d'autres parties du projet. À l'inverse, certains modules comme le parsing, le routing ou le stockage des routes restent peu testés, ce qui constitue une piste d'amélioration claire pour la suite. Il faut également noter que cette mesure ne prend pas en compte les Pull Requests encore en attente d'intégration.
 
 \newpage
 \section{Gestion du Projet}
