@@ -95,7 +95,6 @@ Dans le contexte d’A-SABR, ces fenêtres de communication sont décrites à l�
 
 \subsubsection{Rust}
 
-\subsubsection{Rust}
 
 Rust est un langage particulièrement adapté à A-SABR, car la bibliothèque manipule de nombreuses structures de données liées au routage : nœuds, contacts, \gls{bundle}, \gls{cp} et \gls{mg}. Ces objets doivent être parcourus, modifiés et parfois partagés entre plusieurs composants, tout en conservant de bonnes performances.
 
@@ -471,6 +470,24 @@ Pour \texttt{EVL}, les tests permettent de confirmer que l’occupation de la fi
 Enfin, pour \texttt{QD}, les tests valident que l’occupation de la file peut décaler la date effective de début de transmission. Ils vérifient également qu’une transmission peut devenir impossible si ce décalage repousse la fin de transmission au-delà de la fenêtre du contact.
 
 L’ajout de ces tests spécifiques permet donc de compléter la couverture existante sur les gestionnaires \textit{Legacy}, tout en documentant plus clairement les différences de comportement entre \texttt{ETO}, \texttt{EVL} et \texttt{QD}.\\
+
+Nous avons aussi corrigé des bugs dans la macro principale qui génère les trois implémentations \textit{Legacy}. 
+
+Avant, lorsqu'un \gls{bundle} avec priorités utilisait les fonctions
+\texttt{get\_queue\_size}, \texttt{enqueue} ou encore \texttt{dequeue}
+avec un Contact Manager qui ne prend pas en compte les priorités,
+le code paniquait.
+Désormais, une variante qui ne s'occupe pas des priorités traite
+les \glspl{bundle} avec priorités comme s'ils n'en avaient pas.
+
+De plus, dans la variante budgétée de \texttt{generate\_struct\_management!},
+le tableau d'initialisation des budgets dans \texttt{build\_parsing\_output}
+était hardcodé à 3, ce qui provoquait une erreur de
+compilation lorsque la macro était instanciée avec un nombre de priorités
+différent de \texttt{3}.
+Cela a été corrigé afin qu'il s'adapte correctement au nombre de priorités
+avec lequel on l'instancie.
+
 \paragraph{Segmentation :}~\\\\
 
 Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en découpant un contact en plusieurs intervalles temporels indépendants. Chaque segment peut ainsi posséder ses propres caractéristiques de transmission, comme le débit ou le délai.
