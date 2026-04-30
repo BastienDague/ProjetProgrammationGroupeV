@@ -102,28 +102,57 @@ Rust est un langage particulièrement adapté à A-SABR, car la bibliothèque ma
 Un premier intérêt de Rust est la gestion explicite des cas d'échec avec les types \texttt{Option} et \texttt{Result}. Dans A-SABR, une fonction peut par exemple échouer parce qu'aucun contact ne permet une transmission, ou parce qu'un \gls{cp} ne peut pas être correctement parsé :
 
 \begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
-fn route(...) -> Result<Option<RoutingOutput>, ASABRError> {
-    ...
+pub trait Router<NM: NodeManager, CM: ContactManager> {
+    fn route(
+        &mut self,
+        source: NodeID,
+        bundle: &Bundle,
+        curr_time: Date,
+        excluded_nodes: &[NodeID],
+    ) -> Result<Option<RoutingOutput<NM, CM>>, ASABRError>;
 }
 \end{minted}
 
-Ici, \texttt{Result} permet de représenter une erreur technique, tandis que \texttt{Option} permet d'indiquer qu'aucune route n'a été trouvée. L'opérateur \texttt{?} permet ensuite de propager simplement les erreurs :
+L'opérateur \texttt{?} permet ensuite de propager simplement une erreur à la fonction appelante :
 
 \begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
-let contact_plan = parse_contact_plan(path)?;
 let graph = Multigraph::new(contact_plan)?;
 \end{minted}
 
-Rust est aussi utile grâce à son système de traits et de généricité. Dans A-SABR, plusieurs composants peuvent partager une même interface tout en ayant des comportements différents. Par exemple, les gestionnaires de contacts implémentent une interface commune permettant de simuler ou de planifier une transmission :
+Si \texttt{Multigraph::new} retourne une erreur, celle-ci est automatiquement renvoyée par la fonction courante ; sinon, la valeur construite est récupérée dans \texttt{graph}. Cela permet de garder un code lisible tout en conservant une gestion explicite des erreurs.
+
+Rust est aussi utile grâce à son système de traits et de généricité. Dans A-SABR, plusieurs composants partagent une même interface tout en ayant des comportements différents. C'est le cas des gestionnaires de contacts, qui implémentent le trait \texttt{ContactManager}. Celui-ci définit notamment une méthode de simulation, \texttt{dry\_run\_tx}, et une méthode de planification réelle, \texttt{schedule\_tx}.
 
 \begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
-trait ContactManager {
-    fn dry_run_tx(...) -> Option<ContactManagerTxData>;
-    fn schedule_tx(...) -> Option<ContactManagerTxData>;
+pub trait ContactManager: Debug {
+    fn dry_run_tx(
+        &self,
+        contact_data: &ContactInfo,
+        at_time: Date,
+        bundle: &Bundle,
+    ) -> Option<ContactManagerTxData>;
+
+    fn schedule_tx(
+        &mut self,
+        contact_data: &ContactInfo,
+        at_time: Date,
+        bundle: &Bundle,
+    ) -> Option<ContactManagerTxData>;
+
+    fn get_original_volume(&self) -> Volume;
+    fn try_init(&mut self, contact_data: &ContactInfo) -> bool;
 }
 \end{minted}
 
-Enfin, les macros permettent d'éviter la duplication de code lorsque plusieurs variantes suivent une même structure. Elles sont notamment utilisées dans A-SABR pour générer des implémentations proches ou décliner une même logique de test sur plusieurs modules.
+Cette signature est particulièrement intéressante : \texttt{dry\_run\_tx} prend \texttt{\&self}, ce qui correspond à une simulation sans modification de l'état interne du contact, tandis que \texttt{schedule\_tx} prend \texttt{\&mut self}, ce qui indique que la planification modifie réellement l'état du gestionnaire. Les deux méthodes retournent une \texttt{Option<ContactManagerTxData>}, ce qui exprime directement qu'une transmission peut échouer.
+
+Enfin, les macros illustrent la métaprogrammation en Rust : elles permettent de générer du code à la compilation afin d'éviter la duplication. Dans A-SABR, elles sont notamment utilisées pour créer des variantes proches d'un même comportement ou pour décliner une même logique de test sur plusieurs modules.
+
+\begin{minted}[fontsize=\small,breaklines,frame=single]{rust}
+macro_rules! create_new_alternative_path_variant {
+    ($struct_name:ident, $better_fn:ident) => { ... };
+}
+\end{minted}
 
 La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
@@ -177,7 +206,7 @@ Dans son fonctionnement initial, BP-Socket repose sur la création d’une nouve
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{bp_kernel.png}
+\includegraphics[width=0.70\textwidth]{bp_kernel.png}
 \caption{Architecture de BP-Socket.}
 \label{fig:bp_kernel_intro}
 \end{figure}
@@ -403,6 +432,24 @@ Pour \texttt{EVL}, les tests permettent de confirmer que l’occupation de la fi
 Enfin, pour \texttt{QD}, les tests valident que l’occupation de la file peut décaler la date effective de début de transmission. Ils vérifient également qu’une transmission peut devenir impossible si ce décalage repousse la fin de transmission au-delà de la fenêtre du contact.
 
 L’ajout de ces tests spécifiques permet donc de compléter la couverture existante sur les gestionnaires \textit{Legacy}, tout en documentant plus clairement les différences de comportement entre \texttt{ETO}, \texttt{EVL} et \texttt{QD}.\\
+
+Nous avons aussi corrigé des bugs dans la macro principale qui génère les trois implémentations \textit{Legacy}. 
+
+Avant, lorsqu'un \gls{bundle} avec priorités utilisait les fonctions
+\texttt{get\_queue\_size}, \texttt{enqueue} ou encore \texttt{dequeue}
+avec un Contact Manager qui ne prend pas en compte les priorités,
+le code paniquait.
+Désormais, une variante qui ne s'occupe pas des priorités traite
+les \glspl{bundle} avec priorités comme s'ils n'en avaient pas.
+
+De plus, dans la variante budgétée de \texttt{generate\_struct\_management!},
+le tableau d'initialisation des budgets dans \texttt{build\_parsing\_output}
+était hardcodé à 3, ce qui provoquait une erreur de
+compilation lorsque la macro était instanciée avec un nombre de priorités
+différent de \texttt{3}.
+Cela a été corrigé afin qu'il s'adapte correctement au nombre de priorités
+avec lequel on l'instancie.
+
 \paragraph{Segmentation :}~\\\\
 
 Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en découpant un contact en plusieurs intervalles temporels indépendants. Chaque segment peut ainsi posséder ses propres caractéristiques de transmission, comme le débit ou le délai.
@@ -1313,6 +1360,23 @@ Cela à nécessité un certain temps d'adaptation et de modifications de nos hab
 pour produire quelque chose de sérieux et professionnel. C'était extraordinaire à faire, apprendre
 le système de Pull Request, apprendre à produire du code fiable et maintenable, manier Git dans les détails
 et surtout avoir son nom dans les contributeurs d'un projet important.
+\vfill
+\begin{thebibliography}{3} 
+
+\bibitem{sabr} 
+J. A. Fraire, O. De Jonckère, and S. Burleigh \textit{Routing in the space internet: A
+contact graph routing tutorial.}, Journal of Network and Computer Applications, 174, 102884.
+
+\bibitem{a-sabr} 
+O. De Jonckère, L. Ma, and J. A. Fraire. \textit{ A-SABR: The Adaptive Library for Schedule-Aware Bundle
+Routing.}, WiSEE 2025 - IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025,
+Halifax, Canada.
+
+\bibitem{bp} 
+Sylvain Pierrot, Olivier de Jonckère, Scott Burleigh, Charley Geoffroy.\textit{ Design and Implementation of a Native Socket Interface for the Bundle Protocol.}
+, WiSEE 2025 - 13th Annual IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025, Halifax, Canada.
+
+\end{thebibliography}
 \newpage
 \section{Annexe de codes}
 
@@ -1986,21 +2050,6 @@ ssize_t sendto(int sockfd, const void* buf, size_t len, int flags,
 \end{minted}
 
 
-\newpage
-\begin{thebibliography}{3} 
 
-\bibitem{sabr} 
-J. A. Fraire, O. De Jonckère, and S. Burleigh \textit{Routing in the space internet: A
-contact graph routing tutorial.}, Journal of Network and Computer Applications, 174, 102884.
 
-\bibitem{a-sabr} 
-O. De Jonckère, L. Ma, and J. A. Fraire. \textit{ A-SABR: The Adaptive Library for Schedule-Aware Bundle
-Routing.}, WiSEE 2025 - IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025,
-Halifax, Canada.
-
-\bibitem{bp} 
-Sylvain Pierrot, Olivier de Jonckère, Scott Burleigh, Charley Geoffroy.\textit{ Design and Implementation of a Native Socket Interface for the Bundle Protocol.}
-, WiSEE 2025 - 13th Annual IEEE International Conference on Wireless for Space and Extreme Environments, Oct 2025, Halifax, Canada.
-
-\end{thebibliography}
 \end{document}
