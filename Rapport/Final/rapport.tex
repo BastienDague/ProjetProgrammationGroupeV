@@ -9,6 +9,7 @@
 \usepackage{minted}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{caption}
 \usepackage{titlesec}
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
@@ -27,25 +28,25 @@
 
 \newacronym[
     description={Delay-Tolerant Networking. Réseau tolérant aux délais et aux ruptures de connectivité,
-    où les nœuds ne sont pas forcément connectés en permanence.un nœud peut stocker les données,
+    où les nœuds ne sont pas forcément connectés en permanence. Un nœud peut stocker les données,
     les conserver pendant une rupture de connectivité, puis les retransmettre quand un contact devient disponible.
     Ces contacts peuvent être planifiés ou opportunistes selon le contexte}
 ]{dtn}{DTN}{Delay-Tolerant Networking}
 
 \newacronym[
     description={Contact Plan. Fichier de configuration décrivant les fenêtres de communication planifiées entre nœuds : qui communique avec qui, à quelle heure, pendant combien de temps, avec quel débit et quel délai.
-    Lu par la bibliothèque, il est transformé en graphe temportel (\gls{mg})}
+    Lu par la bibliothèque, il est transformé en graphe temporel (\gls{mg})}
 ]{cp}{CP}{Contact Plan}
 
 \newacronym[
-    description={Schedule-Aware Bundle Routing. Standard recommandé par la CCSDS pour le routage de bundles DTN qui utilise des métriques de distance (temps d'arrivée, nombre de hops) pour trouver les meilleures routes entre nœuds. \cite{sabr}}
+    description={Schedule-Aware Bundle Routing. Standard recommandé par le CCSDS pour le routage de bundles dans les réseaux DTN. Il s’appuie sur un Contact Plan décrivant les contacts planifiés entre nœuds afin de calculer des routes compatibles avec les contraintes temporelles du réseau}
 ]{sabr}{SABR}{Schedule-Aware Bundle Routing}
 
 \newacronym[
     description={Structure de données centrale du projet représentant le réseau.
 Elle contient les nœuds, qui jouent le rôle d'émetteurs ou de récepteurs, ainsi que les contacts, c'est-à-dire les fenêtres temporelles pendant lesquelles deux nœuds peuvent communiquer avec un débit et un délai donnés.
 Elle permet de représenter plusieurs contacts entre une même paire de nœuds à des moments différents.
-L'objet théorique le plus proche d'une telle structure est le carquois, c'est-à-dire un graphe orienté pouvant contenir plusieurs flèches entre deux mêmes sommets.}
+L'objet théorique le plus proche d'une telle structure est le carquois, c'est-à-dire un graphe orienté pouvant contenir plusieurs flèches entre deux mêmes sommets}
 ]{mg}{Multigraph}{Multigraph}
 
 \newacronym[
@@ -55,7 +56,7 @@ L'objet théorique le plus proche d'une telle structure est le carquois, c'est-�
 ]{bundle}{Bundle}{Bundle}
 
 \newacronym[
-    description={Force le dynamic loader à précharger une librairie avant les autres, ce qui permet de redéfinir/intercepter certaines fonctions de la Glibc.}
+    description={Mécanisme du chargeur dynamique permettant de précharger une bibliothèque partagée avant les bibliothèques standards, afin de redéfinir ou d’intercepter certaines fonctions de la Glibc}
 ]{ldp}{PRELOAD}{LD\_PRELOAD}
 
 \newacronym[
@@ -85,15 +86,14 @@ Le projet s’inscrit dans un contexte open source, ce qui a fortement influenc�
 
 A-SABR, DTChat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DT-Chat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
 
-Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif. Il ne suffisait pas d’écrire du code fonctionnel : il fallait aussi respecter les conventions du projet, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
+Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif que nous découvrions en grande partie. La difficulté était renforcée par le fait que nous arrivions sur un projet déjà commencé, bien fourni, avec une architecture existante, des conventions de code, plusieurs dépôts liés entre eux et des choix techniques déjà établis. Il ne suffisait donc pas d’écrire du code fonctionnel : il fallait d’abord comprendre la base de code, identifier où intervenir sans casser l’existant, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
+
 \subsubsection{DTN}
 Les réseaux \gls{dtn} constituent encore une approche relativement récente par rapport aux réseaux classiques, mais ils sont déjà utilisés dans des contextes réels, notamment pour le rapatriement de certaines données scientifiques depuis l'ISS. Leur intérêt est particulièrement fort dans le domaine spatial, où une connexion continue entre les nœuds ne peut pas toujours être garantie. Contrairement aux réseaux traditionnels, qui supposent souvent l'existence d'un chemin de bout en bout entre l'émetteur et le récepteur, les réseaux DTN acceptent les délais importants, les interruptions de connexion et les périodes d'indisponibilité. Les réseaux spatiaux du futur reposeront de plus en plus sur ce type de technologie.
 
 Dans ce type de réseau, les données sont transmises selon un principe de stockage puis retransmission : un nœud peut conserver temporairement un message, appelé \gls{bundle}, puis le transmettre plus tard lorsqu’un contact avec un autre nœud devient disponible. Ce fonctionnement est particulièrement adapté aux communications spatiales, où les distances sont importantes, les délais de propagation élevés et les fenêtres de communication limitées.
 
 Dans le contexte d’A-SABR, ces fenêtres de communication sont décrites à l’avance dans un \gls{cp}. Celui-ci indique quels nœuds peuvent communiquer, à quels moments, pendant quelle durée, avec quel débit et quel délai. La bibliothèque A-SABR exploite ensuite ces informations pour calculer des routes adaptées au contexte DTN, en tenant compte des contraintes temporelles et des ressources disponibles. Ainsi, le routage ne consiste pas seulement à trouver un chemin dans un graphe, mais à déterminer une succession de contacts compatibles dans le temps.
-
-\subsubsection{Rust}
 
 \subsubsection{Rust}
 
@@ -186,12 +186,10 @@ Elle supporte UDP, TCP et \gls{bp}.
     \label{fig:comparaison_dt}
 \end{figure}
 
-A gauche nous pouvons observer l'onglet principal, nous voyons un graphique des différents messages envoyés,
-un rectangle vert signifie un message envoyé et reçu avec confirmation. En bas il y a la possibilité de choisir 
-entre UDP,TCP et \gls{bp}. Egalement, il y a la possibilité de cocher la méthode A-SABR, ceci permet qu'à l'envoi d'un message
-l'application prédise et indique le moment où le message devrait être reçu par le récepteur.\\
+L'onglet message affiche un graphique des messages envoyés. Un rectangle vert indique qu’un message a été envoyé puis reçu avec confirmation.\\
 
-A droite nous voyons l'onglet Event, celui ci récapitule de manière textuelle toute interaction de l'interface.
+À droite, l’onglet Event récapitule textuellement les interactions de l’interface et du réseau.
+
 A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, nous remarquons bien les différents messages envoyés et reçus.
 
 Sur cet exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP et  1 tentative \gls{bp}.
@@ -216,17 +214,14 @@ Dans son fonctionnement initial, BP-Socket repose sur la création d’une nouve
 \subsection{DT Chat}
 \subsubsection[DT Chat Backend]{Backend}
  \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
-Premièrement, on crée une fonction \texttt{update} tiré de la fonction \texttt{start} de l'interface, celle-ci prend en argument un \texttt{str} et un chemin de fichier.
-Il faut aussi modifier la fonction de lancement de l'interface, qui ici se nomme \texttt{try\_init} pour qu'elle prenne également un \texttt{str} et un chemin de fichier, on récupère également les valeurs de 
-départ qu'on met dans l'appel de la fonction. \texttt{try\_init} à aussi été modifie pour retourner le nombre de node et de contact trouvée dans le \gls{cp} chargé.\\
+Nous avons d’abord extrait une fonction \texttt{update} à partir de la logique de démarrage de l’interface. Cette fonction prend en entrée le nom de l’algorithme à utiliser ainsi que le chemin du Contact Plan à charger. La fonction \texttt{try\_init} a également été modifiée afin d’accepter ces paramètres et de retourner le nombre de nœuds et de contacts détectés dans le Contact Plan chargé.\\
 
-La fonction \texttt{update} prend donc en entrée un \texttt{str} qui correspond au nom de l'algorithme utilisé, et 
-un Path sous forme de string qui correspondra au chemin jusqu'au \gls{cp}.
+La fonction \texttt{update} prend donc en entréele nom de l’algorithme et le chemin du \gls{cp} à charger.
 
 Elle va ensuite faire un match sur \texttt{"PredictionConfig::try\_init(path.clone(), algo)"} qui retournera donc un Result,
-pour empêcher un crash total de l'interface au moindre soucis.
+pour empêcher un crash total de l'interface au moindre souci.
 
-Si Ok alors on met à jour la configuration qu'on envoie au Frontent et on l'affiche dans l'App Event,
+Si Ok alors on met à jour la configuration qu'on envoie au frontend et on l'affiche dans l'App Event,
 si Err, on retourne l'erreur et on l'affiche dans l'App Event.
 
 Etant basé sur A-SABR, il faut régulièrement faire de légères modifications dûes à des refactorisations de fonctions ou de
@@ -234,10 +229,9 @@ l'ajout de Result remplaçant des Options dans la librairie. \\
 \subsubsection[DT Chat Frontend]{Frontend}
 \label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
 
-L'interface DT Chat peut être vue comme un modèle MVC en programmation Web, le Modèle serait le Backend,
-la Vue toute les interactions possibles avec l'interface, et le contrôleur le code qui résulte de ces interactions.
+L’interface DT-Chat peut être rapprochée d’une organisation de type MVC : le backend joue le rôle de modèle, la vue correspond aux éléments graphiques affichés, et le code réagissant aux interactions utilisateur joue le rôle de contrôleur.
 
-Ici le but est donc d'afficher ce fameux onglet Options et d'envoyer les différents ordre au Backend suivant les actions faites.
+Ici le but est donc d'afficher l'onglet Options et d'envoyer les différents ordre au Backend suivant les actions faites.
 
 Le raccourci ci-dessus permet d'accéder au code de la vue Options, il se résume simplement en un bouton qui ouvre un explorateur
 pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisée pour un ou pour l'autre,
@@ -252,19 +246,17 @@ dans le code que la ComboBox s'adapte aux choix de features choisies lors de la 
     \includegraphics[width=0.49\textwidth]{DT_Algos.png}
     \hfill  
     \includegraphics[width=0.49\textwidth]{DT_Changes.png}
-    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptatif (droite) d'un terminal DT Chat}
+    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptative (droite) d'un terminal DT Chat}
     \label{fig:dt_changes}
 \end{figure}
 
 L'interface graphique a, sur cet exemple illustré, été compilé avec la feature \texttt{contact\_work\_area}, 
-donc la ComboBox s'est adaptée. J'ai ensuite sélectionnée l'algorithme \texttt{VolCgrNodeParenting} ainsi que
+donc la ComboBox s'est adaptée. Nous avons ensuite sélectionné l’algorithme \texttt{VolCgrNodeParenting} ainsi que
 chargé le \gls{cp} \texttt{ion\_format.cp} et nous voyons bien dans l'App Event que le changement est effectif
-et que le nombre de node et de contacts à bien été détecté.\\
+et que le nombre de noeuds et de contacts à bien été détecté.\\
 
-Dans les faits, l'algorithme choisi ne change pas réellement ce que l'interface nous montre lors de la réception
+En pratique, l'algorithme choisi ne change pas réellement ce que l'interface nous montre lors de la réception
 ou l'envoi de message, il s'agit surtout ici de préparer de possible futur ajout car le Backend lui comprend totalement les changements effectués.\\
-
-Pour finir, un soucis à été détecté en ce qui concerne le changement de \gls{cp}.
 
 \begin{figure}[h]
     \centering
@@ -285,21 +277,8 @@ et ainsi de suite jusqu'à 30 000 octets/s pour 5→6.
 Les lignes range définissent le délai de propagation physique du signal sur chaque lien
  — 10 secondes entre les nœuds 1 et 2, 15 entre 2 et 3, jusqu'à 30 secondes pour 5→6,
   simulant des distances croissantes entre les nœuds
- comme on pourrait en trouver en situation réelle.
+ comme on pourrait en trouver en situation réelle.\\
 
-Or il existe plusieurs autres formats. 
-A l'origine, il n'y avait pas l'affichage du nombre de nodes et de contact détectés lors du chargement d'un contact plan,
-mais j'ai trouvé étrange que l'application prenne sans erreur tout type de fichiers et donc, après recherche et discussion, on a décidé
-de faire afficher le nombre de contacts et de noeuds. La plupart des contact plans qui ne sont pas en format "ION" comme ci-dessus
-ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contact et 0 noeud.
-
-
-
-Ci-dessus un exemple de contact plan au format ASABR qui n'est pas lu. Nous observons que les contacts précisent le contact Manager à adopter
-et qu'ils peuvent être différent sau sein du même \gls{cp}.
-
-Pour régler le soucis, il aurait fallu développer tout un parser qui s'adapte au type de \gls{cp} chargé. Dans les faits, il était réalisable 
-mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc nous avons juste rajouté le compteur de noeuds et de contacts.\\
 \subsection[Pipeline]{Pipeline CI/CD}
 \subsubsection{Outils de qualité logicielle}
 Durant notre travail, l'une de nos tâches a été d'offrir aux différents dépôts des pipelines robustes et utiles aux développeurs de l'équipe.
@@ -572,7 +551,7 @@ La fonction parcourt chaque contact fourni en entrée à partir d'un \texttt{fir
 
 \texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. On trouve ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi.
 
-\paragraph{Tests de try\_make\_hop :}~\\\\
+
 
 Afin de tester cette fonction, nous avons créé un \textit{mock} de \texttt{NodeManager} dans le fichier \texttt{test\_helpers} du dossier pathfinding. En effet, nos tests doivent contrôler le comportement des nœuds émetteurs et récepteurs avec les features \texttt{node\_tx} et \texttt{node\_rx}, contrairement aux autres fichiers qui n'ont besoin que de \texttt{NoManagement}. Ce mock permet d'implémenter et de contrôler un \texttt{NodeManager} avec quatre fonctions : \texttt{accepting()} qui accepte toujours, \texttt{refusing\_rx()} et \texttt{refusing\_tx()} qui rejettent la transmission d'un côté, et \texttt{processing(delay)} qui simule un délai de traitement du bundle. Les fonctions helpers telles que \texttt{make\_node}, \texttt{make\_contact}, \texttt{make\_source} et \texttt{make\_bundle} ont été rendues génériques sur \texttt{NM} pour pouvoir être partagées entre les deux types de manager.
 
@@ -593,56 +572,55 @@ Les tests mis en place couvrent les cas suivants :
 
     \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
-\paragraph{Contact,Hybrid et Node parenting :}~\\\\
-Contact, Hybrid et Node sont 3 variantes de l'algorithme de Dijkstra qui sont utilisés pour le routage :\\
 
-Node est le plus simple, il explore le \gls{mg} crée noeud par noeud, et ne maintient qu'une seule route optimale.
-Il trouve le chemin optimal selon la métrique choisie mais s'arrête dès que la destination est atteinte en mode Path,
-contrairement aux autres variantes qui continuent d'explorer.\\
+\subsubsection{Contact, Hybrid et Node parenting}
 
-Contact explore lui le \gls{mg} par contact plutôt que par noeud, il va utiliser une "Work Area", permettant d'explorer les contacts directement sans passer par la logique nœud par nœud, 
-ce qui peut trouver des routes avec moins de saut dans certains cas.\\
+Le module de pathfinding propose trois variantes de parenting : \texttt{Node}, \texttt{Contact} et \texttt{Hybrid}. Ces variantes reposent toutes sur une logique de recherche de chemin de type Dijkstra, mais elles ne manipulent pas le \gls{mg} avec la même granularité. Leur différence principale vient de la manière dont elles représentent les états explorés et conservent les routes candidates pendant le parcours.
 
-Hybrid est la plus complète mais également la plus complexe, il va maintenir une liste de potentiel route optimal
-tous le long du parcours, puis, grâce au fonction "can\_retain" et "must\_prune", va décider laquelle garder.\\
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
 
-Chaque algorithme de parenting possède les trois mêmes variantes, générées sous forme de macros. Comme il existe trois approches principales, Node, Contact et Hybrid, cela donne donc neuf variantes possibles au total :
+\begin{tabular}{|p{0.17\textwidth}|p{0.35\textwidth}|p{0.38\textwidth}|}
+\hline
+\textbf{Variante} & \textbf{Principe} & \textbf{Conséquence sur le routage} \\
+\hline
 
-\begin{itemize}
-    \item Path : Chemin simple vers une destination, s'arrête dès qu'elle est atteinte.
-    \item PathExcl : Si l'on veut exclure un noeud précis.
-    \item TreeExcl : Explore l'entièreté du \gls{mg} avec exclusion.\\
-\end{itemize}
+\textbf{Node Parenting}
+& Explore le \gls{mg} principalement nœud par nœud.
+& Conserve une seule meilleure route par nœud selon la métrique choisie. Cette approche est plus simple, mais peut éliminer certaines routes alternatives trop tôt. \\
+\hline
 
-Les tests sonts simples, on crée plusieurs \gls{mg} auquel on applique chacune des macros,
-on utilise le manager le plus simple possible pour ne pas rendre le test trop lourd, on applique en dernier la méthode Hop (le moins de saut) ou la méthode SABR (le plus rapide) 
-pour avoir le plus de données de test possibles.
+\textbf{Contact Parenting}
+& Explore le \gls{mg} au niveau des contacts plutôt qu'au niveau des nœuds.
+& Permet de distinguer plusieurs contacts entre deux mêmes nœuds et peut donc identifier des routes différentes lorsque plusieurs fenêtres de communication existent. \\
+\hline
 
-Les résultats attendus sont le nombre de sauts réalisés, et le temps d'arrivée.
-Pour les cas d'exclusion, on donne comme objectif par exemple le noeud 3 en excluant le noeud 2 et l'on doit avoir en retour un échec du au noeud exclu.\\
+\textbf{Hybrid Parenting}
+& Combine les deux approches en conservant plusieurs routes candidates dans une zone de travail.
+& Permet de garder des routes alternatives pertinentes grâce aux fonctions \texttt{can\_retain} et \texttt{must\_prune}, au prix d'une logique plus complexe. \\
+\hline
 
-Dans un soucis de lisibilité et de maintenabilité du code, toutes les fonctions de création d'objets (noeud,contact,bundle,multigraph)
-sont réunies dans un fichier à part (test\_helpers). De cette manière, seuls les tests sont présents dans leurs fichiers cibles. \\
+\end{tabular}
 
-Prenons un test en particulier et décryptons le : \label{testPathFinding} \ref{CodetestPathFinding} (Cliquer sur le numéro pour être envoyé à l'annexe correspondant) \\
+\captionof{table}{Comparaison des variantes de parenting du module \texttt{pathfinding}}
+\label{tab:parenting-comparison}
+\end{center}
 
-Nous avons donc une première fonction qui va créer le \gls{mg} auquel on va appliquer nos tests, le multigraph crée possède
-5 noeuds qui ont un manager neutre (qui ne fait rien) pour faire au plus simple et de 5 contacts.
+Chaque variante peut être instanciée avec une métrique de distance différente. La métrique \texttt{Hop} cherche à minimiser le nombre de sauts, tandis que la métrique \texttt{SABR} cherche à minimiser le temps d'arrivée. Ainsi, un même réseau peut produire des routes différentes selon la variante de parenting et la métrique utilisée.
 
-Exemple : le premier contact émet du noeud 0 au noeud 1, début du contact à 0 et fin à 10, 
-débit de 1 unité/seconde et aucun délai de propagation.
-
-Ensuite nous créeons un \gls{bundle} à destination du noeud 4, sans priorité et sans taille précise.
-
-On contruit les deux chemin, un avec la méthode SABR, l'autre avec la méthode Hop, 
-puis nous lui appliquons notre fonction de test.\\
+Chaque algorithme de parenting possède également trois déclinaisons générées par macros. Comme il existe trois approches principales, cela donne neuf variantes possibles au total :
 
 \begin{itemize}
-    \item Hop : On attend 3 sauts en 50 unité de temps.
-    \item SABR : On attend 4 sauts en 50 unité de temps.\\
+    \item \texttt{Path} : calcule un chemin vers une destination et s'arrête lorsque celle-ci est atteinte ;
+    \item \texttt{PathExcl} : calcule un chemin vers une destination en excluant un nœud précis ;
+    \item \texttt{TreeExcl} : explore l'ensemble du \gls{mg} en tenant compte d'une exclusion.
 \end{itemize}
 
-Le fait que le nombre de saut diverge entre Hop et \gls{sabr} permet une plus grand couverture pour détecter une erreur de la librarie.\\
+Le principe des tests est volontairement systématique : plusieurs \gls{mg} sont construits, puis chaque variante est exécutée avec les métriques \texttt{Hop} et \texttt{SABR}. Les résultats attendus sont principalement le nombre de sauts, le temps d'arrivée et, pour les variantes avec exclusion, l'échec attendu lorsqu'un nœud indispensable est exclu.
+
+Dans un souci de lisibilité et de maintenabilité, les fonctions de création des objets de test, comme les nœuds, contacts, bundles et multigraphs, ont été regroupées dans un fichier \textbf{test\_helpers.rs}. Les fichiers de tests peuvent ainsi se concentrer sur les scénarios à vérifier plutôt que sur la construction répétée des données.\\
 
 \subsubsection[Module : Routing]{Routing}
 
@@ -664,113 +642,52 @@ dédiée de notre dépôt afin de pouvoir être repris et finalisés ultérieure
 
 \subsection{BP-Socket}
 
-Le projet a pour objectif de fournir une interface socket pour \gls{bp},
-utilisée dans les réseaux \gls{dtn}. L'idée est de permettre à une application d'envoyer et
-recevoir des bundles BP exactement comme elle enverrait des paquets UDP ou TCP, en utilisant la même API socket.
+Le projet BP-Socket a pour objectif de fournir une interface de type socket pour le Bundle Protocol, utilisé dans les réseaux \gls{dtn}. L’idée est de permettre à une application d’envoyer et de recevoir des \gls{bundle} avec une API proche de celle utilisée pour des communications classiques en UDP ou TCP.
 
-Il s'agit ici de voir autre chose que la librairie A-SABR, tout en travaillant sur quelque chose de très important
-pour le futur de A-SABR.
+Dans son architecture initiale, BP-Socket repose sur un module kernel ajoutant une nouvelle famille de sockets, \texttt{AF\_BP}. Sans ce module, un appel à \texttt{socket(AF\_BP, ...)} n’est pas reconnu par le système et ne permet donc pas d’obtenir un descripteur de fichier utilisable. Or, maintenir et charger un module kernel complexifie fortement l’installation et les tests.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.70\textwidth]{bp_kernel.png}
-\caption{Architecture original de BP-Socket.}
-\label{fig:bp_kernel}
+    \centering
+    \includegraphics[width=0.75\textwidth]{bp_kernel.png}
+    \caption{Architecture initiale de BP-Socket avec module kernel}
+    \label{fig:bp-kernel}
 \end{figure}
 
-L’environnement de test est relativement lourd à mettre en place, car il repose sur deux machines virtuelles 
-Vagrant : une pour \gls{ion} et une pour µD3TN. Son lancement nécessite également l’exécution de nombreuses commandes 
-de configuration, ce qui rend les expérimentations plus longues et moins directes qu’un simple test local.
-
-Sans module kernel, un appel à \texttt{socket(AF,BP)} ne sera pas reconnu et ne retournera aucun file descripteur,
-L'idée ici sera de créer un module spécifique qui interceptera l'appel au principales fonctions (\texttt{socket,bind,send,recv,close})
-puis d'envoyer les informations nécessaires au Daemon.
-
-L'intêret du \gls{ldp} ici vient du fait qu'il force le dynamic loader à charger nos fonctions contenues dans le module
-avant celle de la glibC.
+L’objectif de notre travail a donc été de remplacer cette partie kernel par une solution en espace utilisateur, fondée sur \texttt{LD\_PRELOAD}. Ce mécanisme permet de charger une bibliothèque partagée avant les bibliothèques standards, comme la \texttt{glibc}. Les fonctions définies dans cette bibliothèque peuvent alors intercepter certains appels utilisés par l’application, comme \texttt{socket}, \texttt{bind}, \texttt{sendto}, \texttt{recv} ou \texttt{close}.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.70\textwidth]{bp_interceptor.png}
-\caption{Architecture finale désirée de BP-Socket.}
-\label{fig:bp_preload}
+    \centering
+    \includegraphics[width=0.75\textwidth]{bp_interceptor.png}
+    \caption{Architecture visée de BP-Socket sans module kernel}
+    \label{fig:bp-preload}
 \end{figure}
 
-Il faut donc : 
+Pour atteindre cet objectif, plusieurs modifications étaient nécessaires :
 
 \begin{itemize}
-    \item Supprimer tous les fichiers kernel et nettoyer les Makefile.
-
-    \item Nettoyer le daemon et supprimer tous les fichiers du General Netlink.
-
-    \item Définir le nouveau protocole de communication entre le hook et le Daemon, celui ci contiendra toutes les options nécessaires(\texttt{OPEN ENDPOINT, CLOSE ENDPOINT, SEND BUNDLE, RECV BUNDLE}).
-
-    \item Ecrire le hook en lui même.
-    
-    \item Ecrire un fichier qui gérera l'état des files descripteur crées par notre version de \texttt{socket}
-
-    \item Modifier le daemon avec les nouvelles fonctions relatives au hook (\texttt{send bundle, connect, message})
-    
-    \item Modifier l'interface \gls{ion} avec les nouvelles fonctions du Daemon.\\\\
+    \item supprimer les fichiers liés au module kernel et nettoyer les \textbf{Makefile} ;
+    \item nettoyer le daemon et supprimer les fichiers liés à General Netlink ;
+    \item définir un nouveau protocole de communication entre le hook et le daemon, incluant notamment les opérations \texttt{OPEN\_ENDPOINT}, \texttt{CLOSE\_ENDPOINT}, \texttt{SEND\_BUNDLE} et \texttt{RECV\_BUNDLE} ;
+    \item écrire le hook chargé d’intercepter les appels aux fonctions concernées ;
+    \item écrire un fichier chargé de gérer l’état des descripteurs de fichier créés par notre version de \texttt{socket} ;
+    \item modifier le daemon avec les nouvelles fonctions relatives au hook, notamment l’envoi de bundles, la connexion et les messages internes ;
+    \item modifier l’interface \gls{ion} afin qu’elle utilise les nouvelles fonctions du daemon.
 \end{itemize}
 
+Le cœur de cette nouvelle architecture repose sur le hook chargé d’intercepter les appels aux fonctions réseau. Le schéma suivant résume le principe général de ce mécanisme.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{schemaPreload.png}
+    \caption{Principe d’interception des appels avec \texttt{LD\_PRELOAD}}
+    \label{fig:ld-preload}
+\end{figure}
 
-Il y a beaucoup de code, donc pour rester dans le plus intéressant,
-présentons le fichier le plus intéressant, le hook. \label{Result_Hook}\ref{CodeHook}\\
+Comme illustré dans la figure~\ref{fig:ld-preload}, lorsqu’une application effectue un appel lié à \texttt{AF\_BP}, celui-ci est intercepté par la bibliothèque préchargée. Le hook peut alors appliquer un comportement spécifique à BP-Socket, par exemple en transmettant les informations nécessaires au daemon via une socket Unix. À l’inverse, les appels qui ne concernent pas \texttt{AF\_BP} sont simplement redirigés vers les fonctions standards de la \texttt{glibc}. Cette séparation permet de conserver le comportement normal de l’application pour les sockets classiques, tout en redéfinissant uniquement les appels propres à BP-Socket.
 
-Dans les premières lignes du fichier, on retrouve les signatures des fonctions \texttt{socket,close,bind,sendto}
-avec le nom real avant leur nom. Ceci est à mettre en relation avec la fonction \texttt{attribute} juste en dessous.
+Concrètement, le hook maintient une table interne associant les descripteurs de fichier créés pour BP-Socket à leurs informations de connexion. Lorsqu’une application ouvre une socket \texttt{AF\_BP}, le hook crée en réalité une connexion vers le daemon. Les opérations suivantes, comme l’ouverture d’un endpoint ou l’envoi d’un bundle, sont alors traduites en messages internes envoyés à ce daemon, qui se charge ensuite d’interagir avec \gls{ion}.
 
-Cette fonction permet de dire grâce à \texttt{dlsym} : Si j'appelle, par exemple, \texttt{real\_socket},
-le dynamic loader ira chercher dans la glibC la fonction s'appelant socket.
-
-De cette manière nous pouvons redéfinir socket, et choisir si oui ou non on appelle la vraie fonction.\\
-
-On suit ensuite le schéma suivant: lorsqu'on appelle une fonction, on vérifie si le domaine du fd est \texttt{AF\_BP},
-si c'est le cas, notre hook a le bon comportement, sinon on appelle la vraie fonction de la glibC.\\
-
-\textbf{connect to daemon}: Etablit une connexion avec le Daemon via un Unix Socket.
-
-Crée un socket Unix avec la vraie \texttt{socket()}de la glibc, puis se connecte au fichier \texttt{/tmp/bp\_daemon.sock} .
-Retourne le fd de connexion si succès, -1 sinon. Cette fonction est appelée uniquement depuis \texttt{socket()}
-quand une socket BP est ouverte.\\
-
-\textbf{socket} :  Intercepte la création d'un socket BP et le redirige vers le daemon au lieu du kernel.
-
-Fonctionnement : Si la famille d'adresse n'est pas \texttt{AF\_BP}, laisse passer normalement à la glibc. 
-Sinon, appelle \texttt{connect\_to\_daemon()} pour ouvrir une connexion vers le daemon, 
-enregistre ce fd dans \texttt{fd\_table} pour le reconnaître plus tard, et le retourne à l'application.
-L'app croit avoir un vrai socket kernel alors qu'elle a en réalité un fd de connexion Unix vers le daemon.\\
-
-\textbf{bind} : Intercepte l'association d'une adresse BP à une socket et demande au daemon d'ouvrir l'endpoint correspondant dans \gls{ion}.
-
-Si le fd n'est pas BP, comportement normal. Sinon, récupère le \textbf{node\_id} et \textbf{service\_id} depuis \texttt{sockaddr\_bp},
-les stocke dans \texttt{fd\_table}, puis envoie un message \textbf{BP\_IPC\_OPEN\_ENDPOINT} au daemon.
-Attend la réponse OK ou ERR. Si OK, \gls{ion} a ouvert l'endpoint et est prêt à envoyer/recevoir sur \textbf{ipn:node\_id.service\_id}.\\
-
-\textbf{close} : Intercepte la fermeture d'un socket BP et demande au daemon de fermer l'endpoint dans \gls{ion}.
-
-Si le fd n'est pas BP, comportement normal. Sinon, envoie \textbf{BP\_IPC\_CLOSE\_ENDPOINT} au daemon avec le \textbf{node\_id} et \textbf{service\_id} stockés dans \texttt{fd\_table}. 
-Attend la confirmation, puis supprime l'entrée de \texttt{fd\_table} et ferme le fd Unix socket vers le daemon. 
-Sans ce \texttt{close()}, ION garderait l'endpoint ouvert indéfiniment et bloquerait les prochains \texttt{bind()},
-ce qui nous ait arrivée lors du développement.\\
-
-\textbf{sendto} :  Intercepte l'envoi d'un bundle BP et le transmet au daemon qui le passera à ION.
-
-Si le fd n'est pas BP, comportement normal. Sinon, construit un message \textbf{BP\_IPC\_SEND\_BUNDLE} contenant les adresses
-source et destination (\textbf{src\_node\_id, src\_service\_id, dst\_node\_id, dst\_service\_id}),
-les flags BP (\textbf{MSG\_ACK\_REQUESTED etc.}) et la taille du payload. 
-Envoie d'abord ce header au daemon, puis le payload (le contenu du message) juste après. 
-Attend la réponse OK ou ERR et retourne le nombre de bytes envoyés si succès.\\
-
-Le sender est parfaitement fonctionnel, il permet d'envoyer des messsages d'\gls{ion} vers µDTN et ceux sans module kernel.
-
-
-
-Il reste le fait de recevoir un message, qui inclut donc le fait de détruire un bundle une fois reçu et lu, mais
-par manque de temps nous ne pourrons pas le faire. Néanmoins, Monsieur De Jonckère est en lien avec collègue qui aimerait reprendre le travail
-donc nous lui transmettrons nos avancées dès que possible.
+Cette approche a permis de rendre la partie émission fonctionnelle dans l’environnement testé : des messages peuvent être envoyés depuis \gls{ion} vers \textmu D3TN sans passer par le module kernel. La partie réception reste cependant à finaliser, notamment pour gérer correctement la réception des bundles et la libération des ressources associées après traitement.
 
 
 \newpage
@@ -980,12 +897,11 @@ le routage DTN implique une chaîne complète de composants interdépendants
 — le parsing du Contact Plan, la construction du Multigraph, le pathfinding, et la gestion des routes — 
 ce qui rend difficile l'isolation d'un composant précis pour en mesurer les performances.
 
-Des tentatives de benchmarks réalisés avec Criterion souffrent également du bruit inhérent aux runners GitHub Actions partagés,
+Les tentatives de benchmarks réalisées avec \texttt{Criterion} souffrent également du bruit inhérent aux runners GitHub Actions partagés,
 où les variations entre deux runs peuvent atteindre ±15\% sans aucun changement de code.
 Cela rend la détection de régressions fines impossible en CI.
 
-Une autre tentative, toujours avec critérion mais cette fois ci en local, qui elle génères des schémas
-violin plots, bien que lisibles, manquent de conclusivité. Les distributions sont larges et se chevauchent 
+Une autre tentative, toujours avec \texttt{Criterion} mais exécutée localement, génère des violin plots. Bien que ces graphiques soient lisibles, ils restent peu conclusifs. Les distributions sont larges et se chevauchent 
 partiellement, rendant difficile l'affirmation catégorique qu'une variante est strictement meilleure qu'une autre.
 Par exemple la comparaison entre Node, Hybrid et Contact Parenting montre des tendances cohérentes avec la théorie,
 mais les intervalles de confiance se superposent trop pour conclure avec certitude.
@@ -1016,13 +932,11 @@ de la librairie.\\
     \label{fig:ci_Criterion}
 \end{figure}
 
-
-
-Pour apporter un peu plus de détail, la question de comment benchmarker proprement et de manière fiable la
-libraire est une vraie problématique toujours en cours de recherche de la part de l'équipe de développement,
-des tentatives étaient déjà présentes à notre arrivée (c'est de là que provient le gros \gls{cp} en JSON).
+Pour ces raisons, les résultats de benchmark doivent être interprétés avec prudence. Ils permettent d'observer certaines tendances, par exemple entre les variantes Node, Contact et Hybrid Parenting, ou entre VolCGR et SPSN, mais ils ne suffisent pas à établir une hiérarchie définitive entre les approches. La mise en place de benchmarks fiables pour A-SABR reste donc une problématique ouverte, notamment parce qu'elle nécessite de varier les Contact Plans, les couples source/destination, les tailles de bundles et les métriques utilisées.
 
 \subsection{Statistiques}
+
+Afin de compléter l'analyse technique, nous avons synthétisé les contributions réalisées sous forme de Pull Requests. Ces tableaux permettent de distinguer les contributions intégrées, celles encore en cours, ainsi que leur impact sur les différents dépôts. Ils montrent que le travail réalisé ne s'est pas limité à l'ajout de fonctionnalités, mais a aussi porté sur la correction de bugs, la mise en place d'outils de qualité, l'ajout de tests et l'amélioration de la maintenabilité.
 
 \small
 \renewcommand{\arraystretch}{1.25}
@@ -1057,7 +971,7 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 \hline
 
 \#38 & Vincent & Acceptée
-& Ajout de \textbf{[x]} tests pour Node, Contact et Hybrid Parenting.
+& Ajout de tests pour Node, Contact et Hybrid Parenting.
 & Renforce la couverture de tests du module de pathfinding et valide plusieurs variantes de l’algorithme de routage.
 & +886 lignes \\
 \hline
@@ -1069,25 +983,25 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 \hline
 
 \#51 & Bastien & Acceptée
-& Ajout de \textbf{[x]} tests pour \textbf{PrioritySegmentation} avec légère retouche du code.
+& Ajout de  tests pour \textbf{PrioritySegmentation} avec légère retouche du code.
 & Augmente la couverture de tests de \textbf{pseg} et valide plusieurs comportements du module.
 & +556 lignes \\
 \hline
 
 \#52 & Samy & Acceptée
-& Ajout de \textbf{[x]} tests pour \texttt{try\_make\_hop} et harmonisation du fichier \textbf{test\_helpers.rs} pour le rendre réutilisable par plusieurs fichiers de tests.
+& Ajout de tests pour \texttt{try\_make\_hop} et harmonisation du fichier \textbf{test\_helpers.rs} pour le rendre réutilisable par plusieurs fichiers de tests.
 & Renforce les tests du pathfinding et améliore la réutilisabilité des outils de test.
 & +546 lignes \\
 \hline
 
 \#53 & Yassine & Acceptée
-& Ajout de \textbf{[x]} tests pour \textbf{Segmentation}.
+& Ajout de  tests pour \textbf{Segmentation}.
 & Valide le comportement du module de segmentation, notamment la gestion des intervalles et des transmissions.
 & +300 lignes \\
 \hline
 
 \#54 & Samy & Acceptée
-& Ajout de \textbf{[x]} tests pour les Contact Managers Legacy.
+& Ajout de tests pour les Contact Managers Legacy.
 & Vise à compléter la couverture des anciens gestionnaires de contacts et à documenter leurs différences de comportement.
 & +502 lignes \\
 \hline
@@ -1139,7 +1053,7 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 \hline
 
 \#13 & Frontend & Vincent & Acceptée
-& Ajout d’une vue Options permettant de changer à la volée l’algorithme ou le Contact Plan. Affichage dans l’App Event du nombre de contacts et de nodes trouvés dans le Contact Plan chargé.
+& Ajout d’une vue Options permettant de changer à la volée l’algorithme ou le Contact Plan. Affichage dans l’App Event du nombre de contacts et de noeuds trouvés dans le Contact Plan chargé.
 & Rend accessible depuis l’interface graphique le changement dynamique de configuration et permet de détecter plus facilement les Contact Plans mal interprétés.
 & +174 lignes \\
 \hline
@@ -1234,7 +1148,9 @@ des tentatives étaient déjà présentes à notre arrivée (c'est de là que pr
 
 \end{center}
 
-La couverture globale du dossier \texttt{src/} reste modérée, mais elle met en évidence une progression ciblée sur les modules sur lesquels nous avons principalement travaillé. Les modules liés au pathfinding, au multigraph et aux gestionnaires de contacts sont ainsi mieux couverts que d'autres parties du projet. À l'inverse, certains modules comme le parsing, le routing ou le stockage des routes restent peu testés, ce qui constitue une piste d'amélioration claire pour la suite. Il faut également noter que cette mesure ne prend pas en compte les Pull Requests encore en attente d'intégration.
+La couverture globale du dossier \texttt{src/} atteint 30,2 \%. Cette valeur reste modérée, mais elle doit être replacée dans le contexte initial du projet : à notre arrivée, A-SABR ne disposait pratiquement d’aucune couverture de tests automatisés exploitable. Cette absence ralentissait le développement, car chaque modification importante demandait des vérifications manuelles et augmentait le risque de régression. Les tests ajoutés pendant le projet ont donc eu un impact concret : ils ont sécurisé plusieurs modules critiques, facilité les refactorisations et permis aux mainteneurs de reprendre un rythme de développement plus régulier. Ils ont aussi été utiles en situation réelle, en détectant des erreurs lors de modifications récentes du code.
+
+Ainsi, même si la couverture reste perfectible, elle représente une progression importante pour la fiabilité d’A-SABR. Elle met également en évidence les modules encore peu couverts, comme \texttt{routing/} ou \texttt{route\_storage/}.
 
 \newpage
 \section{Gestion du Projet}
@@ -1309,50 +1225,30 @@ qui ont le mieux fonctionné pour nous. Même si une petite sensation de désord
 elle nous a permis de devenir par la suite plus performants avec les outils Git et de faire preuve d'une meilleure flexibilité
 face à un environnement inconnu.
 \newpage
-\section{Bilan et Conclusions}
-Bien que les orientations initiales aient évolué pour s'adapter aux contraintes techniques rencontrées, 
-les jalons majeurs de développement ont été atteints.
+\section{Bilan et conclusion}
 
-Notre effort s'est concentré sur la fiabilisation de l'existant et l'extension des capacités 
-de la bibliothèque.\\
+\subsection{Travaux futurs}
 
+Même si les objectifs principaux du projet ont été atteints, plusieurs pistes restent ouvertes pour poursuivre le travail réalisé.
 
-\begin{itemize}
-    \item Mise en place d'une pipeline CI/CD spécifique pour la librairie.
-    \item Mises en places de nombreux test unitaires pour la librairie.
-    \item Refactorisation et ajout d'un onglet pour l'interface graphique DT Chat.
-    \item Correction de bugs dans la librairie.
-    \item Expérimentation d'interception d'appel système via LD\_PRELOAD pour BP-Socket.\\
-\end{itemize}
+Un premier axe concerne le module \texttt{routing}. Des premiers tests ont été développés sur une branche de notre dépôt, mais leur intégration n’a pas pu être finalisée dans la version principale du projet. Une refactorisation récente de la gestion des nœuds et des contacts a rendu leur rebase plus complexe que prévu. Ces tests constituent néanmoins une base de travail utile pour renforcer à terme la couverture du module \texttt{routing}, qui reste aujourd’hui l’un des modules les moins couverts par les tests automatisés.
 
-\begin{table}[h!]
-\centering
-\begin{tabular}{|l|c|l|}
-\hline
-\textbf{Composant} & \textbf{Nombre de tests} & \textbf{Cible technique} \\ \hline
-Module Legacy & 39 & Stabilité des fonctions historiques \\ \hline
-Parenting (Node, Contact, Hybrid) & 18 & Logiques de routage et filiation \\ \hline
-Fonction \texttt{Try\_Make\_Hop} & 12 & Précision du calcul de prochain saut \\ \hline
-Segmentation (Standard \& Priority) & 10 & Intégrité et agrégation des données \\ \hline
-\textbf{Total au 13 Avril} & \textbf{79} & \textbf{Couverture des modules les plus bas} \\ \hline
-\end{tabular}
-\caption{Répartition de l'effort de test par module.}
-\end{table}
+Un deuxième axe concerne la couverture de tests globale d’A-SABR. Les tests ajoutés pendant le projet ont permis de sécuriser plusieurs modules importants, notamment les Contact Managers, la segmentation et le pathfinding. Cependant, certains modules restent encore peu couverts, comme \texttt{routing/}, \texttt{route\_storage/}, \texttt{contact\_plan/} ou \texttt{utils/}. Une poursuite logique du projet consisterait donc à étendre progressivement la couverture de tests à ces parties de la bibliothèque.
 
-La pertinence de notre suite de tests a été confirmée lors de récente modifications de la librairie par Mr De Jonckère.
-Nos tests ont agi comme un filet de sécurité critique, permettant d'identifier immédiatement
-les régressions et facilitant ainsi une évolution rapide du code et évitant la casse de la librairie.
+Le travail sur DT Chat pourrait également être prolongé. L’onglet Options permet désormais de changer dynamiquement d’algorithme ou de Contact Plan, mais l’application ne prend pas encore correctement en charge tous les formats de Contact Plan supportés par A-SABR. Une amélioration future consisterait à rendre le chargement plus robuste, en adaptant le parsing au format du fichier fourni ou en signalant plus clairement les erreurs à l’utilisateur.
 
-La librairie évoluant rapidement, nos tests ont été refactorisées et n'apparaissent plus telle que nous les avions écrits.
-Le nombre inscrit ci-dessus n'est donc plus valide dans la version la plus récente d'A-SABR.\\
+Enfin, BP-Socket constitue une autre piste importante. Le remplacement du module kernel par une solution fondée sur \texttt{LD\_PRELOAD} a permis de rendre la partie émission fonctionnelle dans l’environnement testé. La réception des bundles reste cependant à finaliser, notamment pour gérer correctement la lecture des messages et la libération des ressources associées. Ces travaux ne sont toutefois pas perdus : ils seront transmis à un collègue de Monsieur de Jonckère, qui reprend le sujet afin de poursuivre activement le développement de cette solution.
+\subsection{Conclusion}
 
-Pour résumé l'état d'esprit du projet, on débarque sur quelque chose de déjà en partie construit, dans un
-language moderne, nouveau et d'autant plus Open Source.
+Ce projet nous a permis de contribuer à un écosystème open source réel autour des réseaux \gls{dtn}, en travaillant sur A-SABR, DT-Chat et BP-Socket. Les contributions réalisées ont porté à la fois sur la fiabilisation de l’existant, l’ajout de tests, la mise en place d’outils de qualité logicielle, l’évolution de l’interface graphique et l’expérimentation d’une nouvelle architecture pour BP-Socket.
 
-Cela à nécessité un certain temps d'adaptation et de modifications de nos habitudes scolaires 
-pour produire quelque chose de sérieux et professionnel. C'était extraordinaire à faire, apprendre
-le système de Pull Request, apprendre à produire du code fiable et maintenable, manier Git dans les détails
-et surtout avoir son nom dans les contributeurs d'un projet important.
+Au-delà des aspects purement techniques, ce projet a été particulièrement formateur. Nous sommes arrivés sur une base de code déjà existante, active et maintenue, ce qui nous a obligés à adapter nos habitudes de travail. Il a fallu comprendre l’architecture du projet, respecter les conventions existantes, travailler avec des Pull Requests, répondre aux retours des mainteneurs et produire du code suffisamment fiable pour être intégré dans un dépôt public. Cette expérience nous a rapprochés d’un fonctionnement professionnel, bien différent d’un projet universitaire développé isolément.
+
+Voir nos noms apparaître parmi les contributeurs d’un projet open source comme A-SABR représente pour nous une réelle fierté. Au-delà de la validation académique du projet, cela montre que notre travail a pu s’inscrire dans une bibliothèque existante et être utile à son développement. C’est également un honneur d’avoir pu participer, même à notre échelle, à un projet de recherche et de développement lié aux réseaux DTN.
+
+Nous continuerons à suivre l’évolution d’A-SABR et de l’écosystème DTN-MTP avec intérêt. Les travaux réalisés pendant ce projet nous donnent désormais une meilleure compréhension de la bibliothèque, et il n’est pas exclu que nous puissions proposer de nouvelles contributions à l’avenir, notamment sur les tests, le routage ou l’intégration avec les autres outils de l’écosystème.
+
+Nous tenons enfin à remercier Monsieur Olivier de Jonckère pour son encadrement, sa disponibilité et ses retours tout au long du projet. Nous remercions également Théo et Nathanael, qui participent eux aussi au développement du projet, pour leurs échanges, leurs retours techniques et leur aide lors de notre prise en main de l’écosystème DTN-MTP.
 \vfill
 \begin{thebibliography}{3} 
 
