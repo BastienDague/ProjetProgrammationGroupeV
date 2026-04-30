@@ -264,12 +264,7 @@ mais j'ai trouvé étrange que l'application prenne sans erreur tout type de fic
 de faire afficher le nombre de contacts et de noeuds. La plupart des contact plans qui ne sont pas en format "ION" comme ci-dessus
 ne sont pas du tous compris par l'application. Elle ne crash pas mais affiche simplement 0 contact et 0 noeud.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.55\textwidth]{Contact_Plan_ASABR.png}
-    \caption{Contact plan "A-SABR/examples/contact\_plans/asabr\_format\_dynamic.cp"}
-    \label{fig:dt_cp_asabr}
-\end{figure}
+
 
 Ci-dessus un exemple de contact plan au format ASABR qui n'est pas lu. Nous observons que les contacts précisent le contact Manager à adopter
 et qu'ils peuvent être différent sau sein du même \gls{cp}.
@@ -277,138 +272,75 @@ et qu'ils peuvent être différent sau sein du même \gls{cp}.
 Pour régler le soucis, il aurait fallu développer tout un parser qui s'adapte au type de \gls{cp} chargé. Dans les faits, il était réalisable 
 mais cela prenait beaucoup de temps sachant que le coeur du sujet est A-SABR donc nous avons juste rajouté le compteur de noeuds et de contacts.\\
 \subsection[Pipeline]{Pipeline CI/CD}
-\subsubsection{Première version du fichier:}
+\subsubsection{Outils de qualité logicielle}
+Durant notre travail, l'une de nos tâches a été d'offrir aux différents dépôts des pipelines robustes et utiles aux développeurs de l'équipe.
+Pour cela, il a fallu dans un premier temps définir les choses à vérifier grâce au travail de pipelines.
+Après discussion avec Monsieur De Jonckère, nous avons décidé de travailler sur le format du code, ses failles de logique ou de sécurité et sur le lancement des tests puis de leur couverture.
+Nous présenterons donc dans cette partie, les outils utilisés pour mener à bien cette tâche.
 
-L'une des tâches principales de notre projet était d'apporter des pipelines d'automatisation pour faciliter le travail futur de l'équipe. 
-Pour ce faire, il a fallu déterminer ce dont le projet avait besoin et comment le mettre en place grâce aux outils propres au langage Rust. 
-Après en avoir discuté avec Monsieur De Jonckère, nous avons décidé de travailler sur 4 aspects principaux: le format du code, la validité, l'optimisation et son bon fonctionnement grâce aux tests.
-Commençons par détailler la première version de notre travail (à noter que le fichier présenté ensuite est commun à \texttt{A-SABR}, \texttt{dtchat-egui} et \texttt{dtchat-backend}).
-\label{CI/CD} (Code en annexe \ref{CodeCIv1})
+Comme tout projet Rust, nous utilisons ici \texttt{Cargo}. \texttt{Cargo} est l'outil de construction et le gestionnaire de paquets officiel de Rust, 
+il permet de gérer les dépendances, compiler le code en offrant un retour intuitif au développeur en cas d'erreur ou encore de standardiser la structure d'un projet Rust.
+\texttt{Cargo} possède beaucoup de commandes utiles comme \texttt{cargo build} pour compiler ou \texttt{cargo check} pour vérifier la compilation sans générer de binaire.
 
-Ce fichier ci.yml crée dans le dossier \texttt{.github/workflows} se présente de la manière suivante:
-
+Dans le cadre de nos pipelines, nous utilisons d'autres commandes de \texttt{Cargo} dont voici leur explication:
 \begin{itemize}
-    \item Les déclencheurs: comme nous pouvons le voir, il est précisé que le fichier doit se lancer
-          dans les branches \texttt{main}, \texttt{develop} et toutes les branches commençant par \texttt{feature/} afin d'offrir à notre équipe
-          localement le travail de cette Pipeline. 
-    \item L'environnement: afin d'effectuer notre travail, il nous faut utiliser un environnement Linux. Nous utilisons donc \texttt{ubuntu-latest} pour la richesse de ses outils.
-          Cependant, un problème est rapidement apparu: utiliser cet environnement tel quel fait appel à bien trop de ressources, ainsi nous
-          avons décidé d'utiliser le container \texttt{rust-slim} car c'est un bon compromis entre légèreté et la présence des outils nécessaires.
-    \item La préparation du travail: il nous faut configurer tous les outils que nous utiliserons ensuite.
-    
-          Tout d'abord, \texttt{actions/checkout@v4} s'occupe de récupérer le code source du projet, ensuite pour avoir
-          la version stable du compilateur Rust nous utilisons \texttt{dtolnay/rust-toolchain@stable} avec deux outils supplémentaires indispensables: \texttt{rustfmt} et \texttt{clippy} dont nous reparlerons.
-          Enfin, pour avoir de meilleurs performances et un temps d'exécution réduit nous utilisons \texttt{swatinem/rust-cache@v2}, cela nous permet sauvegarder les dépendances téléchargées pour les réutiliser ensuite.
-    \item Le travail effectué: maintenant que tout est prêt, nous pouvons utiliser nos commandes pour faire le travail attendu. 
-    
-          Pour commencer, \texttt{cargo fmt --all -- --check} est l'outil qui vérifie
-          si le code respecte bien le format standard Rust, nous remarquons que l'appel de cette commande est suivi par \texttt{continue-on-error: true} 
-          cela veut dire que si une erreur de format est détectée elle est signalée mais n'arrête pas le workflow.
-
-
-          Le second outil utilisé est \texttt{cargo clippy}. Il nous permet de vérifier beaucoup de choses cruciales pour le projet:
-          la bonne compilation du code et si malgré une compilation réussie il reste des erreurs de logique. Ces erreurs peuvent être de différents types:
-          trop d'arguments dans une fonction, code inutile ou encore des erreurs de sécurité. 
-          Pour terminer, nous ajoutons \texttt{cargo test} pour, comme son nom l'indique, lancer nos tests implémentés.
-
-
-          On y ajoute les cibles \texttt{--lib}, \texttt{--bins} et \texttt{--tests} afin de tester respectivement
-          la partie bibliothèque du code, les exécutables et les fichiers du dossier \texttt{tests/}.
+    \item \texttt{cargo fmt --check}: au lancement de cette commande, une vérification de format est lancée pour vérifier si le code respecte les standards de style de la communauté.
+    L'ajout de \texttt{--check} impose de faire uniquement une vérification sans modifier le code.
+    \item \texttt{cargo clippy -D warnings}: cet outil est le "linter" de Rust, il permet de trouver des erreurs de logique ou des mauvaises pratiques de programmation comme une fonction possédant trop de paramètres.
+    En ajoutant \texttt{-D warnings}, on permet de rendre les avertissements bloquants.
+    \item \texttt{cargo test}: grâce à cette commande, l'ensemble des tests du projet sont lancés. Les tests unitaires précédés du module \mintinline{rust}|#[cfg(test)]| et les tests d'intégration contenus dans le dossier \texttt{/tests}
+\end{itemize}
+\subsubsection{Intégration continue (CI)}
+Pour ce projet, afin d'utiliser des outils de CI adaptés, nous avons utilisé GitHub Actions, un outil d'automatisation intégré à GitHub qui permet d'effectuer des vérifications sur les travaux poussés vers le dépôt.
+Cet outil se base sur 3 choses essentielles:
+\begin{itemize}
+    \item Le déclencheur: quel événement va déclencher le travail de vérification (\texttt{git push} ou une PR).
+    \item Le plan: le fichier crée en \texttt{.yml} permettant d'orchestrer le travail à faire.
+    \item Le runner: serveur distant intégré à GitHub qui offre un environnement pour lancer nos vérifications.
 \end{itemize}
 
+Afin de rendre notre travail moins permissif à différents types d'erreurs, nous avons couplé les outils de GitHub Actions avec un autre principe, celui des pre-commit.
+Nous mettons en place un outil qui nous permet de faire des vérifications avant la création du commit donc en local. Ce qui rend ce principe très utile est sa possibilité d'annuler un commit s'il ne respecte pas 
+les règles dictées par le fichier \texttt{.pre-commit-config.yaml}. Si un développeur tente de commit des fichiers contenant des mauvaises pratiques de programmation (erreur clippy),
+au moment de taper la commande \texttt{git commit}, l'outil pre-commit annulera la commande.
 
-Avec cette première version, nous répondons bien aux problèmes évoqués plus tôt. 
-Cependant, après discussion lors de l'ouverture de la Pull Request, il était clair que ce fichier manquait d'optimisation et n'était pas assez strict (les erreurs fmt et clippy sont tolérées). 
-Tout est rassemblé en un seul job rendant plus difficile le diagnostic d'une potentielle erreur et aucun commentaire ne permet aux personnes ne connaissant pas cette syntaxe de comprendre le fonctionnement du fichier.
-
-\subsubsection{Optimisation du fichier de base:}
-
-Après avoir reçu les premiers retours, voici ce qui en est ressorti: la manque de clarté du fichier,
-le fait d'autoriser certaines erreurs, un temps d'installation des dépendances pouvant être raccourcis et
-la possibilité de rajouter un job de coverage. Afin de répondre aux attentes, voici comment le fichier a été corrigé (à noter qu'ici les modifications ne concernent que le fichier lié à \texttt{A-SABR}, nous reparlerons de \texttt{dtchat} dans la section suivante):
-\label{CI/CD} (Code en annexe \ref{CodeCIv2})
-
+Pour enrichir notre travail, nous utilisons des \texttt{hooks} qui sont des outils téléchargeables nous permettant de mettre en place de nouvelles vérifications et modifications utiles au projet:
 \begin{itemize}
-    \item Grâce à la partie \texttt{concurrency}, nous permettons à Github d'arrêter l'exécution 
-          en cours de la Pipeline si un nouveau commit est poussé pendant l'exécution de la Pipeline afin que seul ce dernier profite des vérifications. 
-          Cela permet de gagner un peu de temps si on pousse un commit avec une erreur puis qu'on la corrige directement dans le commit suivant.
-    \item Pour répondre aux problèmes de clarté, nous avons extrait les différentes vérifications en 4 jobs: \texttt{fmt}, \texttt{clippy}, \texttt{tests} et \texttt{coverage}.
-          De plus, grâce à la balise \texttt{name}, nous ajoutons un titre à chaque nouvelle commande afin de permettre à d'autres de mieux comprendre le travail effectué.
-    \item Il fallait également rendre la Pipeline moins permissive, nous avons donc retiré la mention \texttt{continue-on-error: true} dans le job \texttt{fmt} afin de faire en sorte que les erreurs de format
-          deviennent bloquantes. Concernant clippy, on lui ajoute les cibles \texttt{--all-targets}, \texttt{--all-features} et \texttt{-- -D warnings}.
-          Ces ajouts permettent respectivement de lancer clippy sur l'intégralité du code, d'utiliser toutes les features disponibles et de rendre les avertissements bloquants.
-    \item Concernant la partie test, nous avons juste ajouté la cible \texttt{--verbose} à \texttt{cargo test} afin d'avoir des messages d'erreurs plus détaillés.
-    \item Enfin, nous avons ajouté un job de coverage. Le but de ce travail est de générer un fichier html qui permettra de voir où en est la couverture de code globale du projet.
-          Pour ce faire, nous utilisons l'outil tarpaulin. Le fichier généré est mis dans les artefacts GitHub et sauvegardé pendant 7 jours. 
-          Ce job étant le plus demandant en ressources, nous avons décidé avec Monsieur De Jonckère de ne l'exécuter que lorsqu'il est appelé sur la branche main grâce à \texttt{if: github.ref == 'refs/github/main}
-          Dans les captures d'écran suivantes, nous pouvons voir le poucentage de couverture pour chaque dossier et fichier.
-          Quand nous cliquons sur un fichier, les lignes couvertes apparaissent en vertes et celles non couvertes en rouge afin de mieux guider le développeur implémentant les tests.
+    \item \texttt{trailing-whitespace}: retire les espaces en trop dans le code.
+    \item \texttt{end-of-file-fixer}: rajoute un saut de ligne unique vide à la fin de chaque fichier.
+    \item  \texttt{check-yaml}: vérifie l'intégrité de nos fichiers de configuration de pipelines.
+    \item \texttt{check-added-large-files}: bloque le commit si celui si contient des fichiers trop lourds.
 \end{itemize}
 
-Il est intéressant de remarquer également les lignes du type \verb|if: ${{ !env.ACT }}|.
-ACT est un outil installé localement permettant de lancer le fichier ci.yml directement sur notre machine sans l'envoyer vers GitHub permettant de garder un historique plus propre sur le dépôt.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.55\textwidth]{CoverageHomePage.png}
-    \includegraphics[width=0.55\textwidth]{CoverageExemple.png}
-    \caption{Captures d'écrans du fichier de coverage géneré}
-    \label{fig:CoveragePage}
-\end{figure}
-
-Grâce à ces ajouts, nous avons implémenté un travail de meilleure qualité tout en ajoutant des fonctionnalités non prévues au début.
-Cependant, la bonne utilisation de ces fonctionnalités dépend d'un envoi vers le serveur GitHub. Nous avons bien essayé de contourner ce problème via ACT
-mais cet outil est soumis au même temps d'exécution que celui sur le serveur ce qui peut devenir très chronophage lorsqu'il faut le tester plusieurs fois.
-
-\subsubsection{Implémentation de hooks pour la pipeline}
-
-Lors de la suite de nos discussions, Mr De Jonckère nous a suggéré d'utiliser le principe de pre-commit grâce aux hooks.
-C'était à ce moment du travail une notion que nous ne maîtrisions pas, ce qui nous a pris un temps de recherche pour bien adapter cette solution au projet.
-Le principe est simple, comme le nom "pre-commit" l'indique l'analyse interviendra juste avant de préparer le commit du travail effectué et pourra le bloquer s'il ne respecte pas certaines règles. 
-On procèdera donc à une analyse locale avant envoi puis une analyse après envoi.
-Pour cela, il nous a fallu créer un fichier \texttt{.pre-commit-config.yaml} et modifier notre \texttt{ci.yml}.
-Voyons plus en détail ces nouveaux fichiers en
-commençant par le fichier de pre-commit: \label{CI/CD} (Code du fichier de pre-commit en annexe \ref{CodeCIprecommit})
-
-\begin{itemize}
-    \item Pour travailler nous utiliserons 2 repositories, le premier utilise des outils disponibles via un dépôt GitHub, le second utilise notre système local.
-    
-          Le premier repo, nous permet l'utilisation de 4 outils: \texttt{trailing-whitespace} qui supprime les grands espaces dans le code,
-          \texttt{end-of-file-fixer} met à la fin de tous les fichiers un unique saut de ligne,
-          \texttt{check-yaml} vérifie la bonne syntaxe des fichiers .yml et .yaml et
-          \texttt{check-added-large-files} empêche de faire des commits trop lourds (ajout accidental d'un dossier de fichiers compilés).
-
-          Le second repo est utilisé afin de pouvoir se servir des outils Rust avec lesquels nous avons travaillé jusqu'ici
-          à savoir cargo fmt et cargo clippy, l'appel des ces outils reste le même que précedemment. 
-          Nous pouvons relever un détail qui a son importance qui est la ligne \texttt{language: system}.
-          En effet, cette ligne précise que le fichier devra aller chercher les outils Rust dans la toolchain locale de l'utilisateur,
-          nous pouvions également demander d'aller chercher les outils dans un dépôt en ligne cependant nous avons
-          considéré que nos machines étaient régulièrement mises à jour donc les problèmes de différences de versions ne gêneront pas et
-          que ce serait plus simple à maintenir si le dépôt venait à ne pas plus être mis à jour.
-\end{itemize}
-
-Pour profiter des fonctionnalités de ce fichier, on peut utiliser la commande \texttt{pre-commit run --all-files} qui lancera tous les jobs de pre-commit sur l'ensemble des fichiers.
+Quand tout cela a été mis en place, nous pouvons ajouter nos outils Rust présentés plus tôt. 
+Dans la structure décidée avec Monsieur De Jonckère, nous avons fait le choix de faire 3 vérifications avant le commit:
+les hooks précedemment cités, le format du code (\texttt{cargo fmt --check}) et les erreurs de logique et pratiques (\texttt{cargo clippy -D warnings}).
+Il est important de noter un détail sur ce travail de pre-commit, nous avions 2 choix pour la maintenabilité: utiliser un dépôt en ligne contenant les outils Rust ou
+utiliser les toolchains locales des développeurs. Nous avons fait le choix d'utiliser les toolchain locales en considérant que toute l'équipe mettait cargo régulièrement à jour, de plus
+il nous apparaissait plus logique d'utiliser un outil stable en local plutôt qu'un dépôt en ligne pouvant devenir déprécié.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.55\textwidth]{run-pre-commit-fail.png}
-    \caption{Exemple d'un résultat de lancement de la commande avec détection d'erreurs}
-    \label{fig:PreCommitFail}
+    \caption{Exemple de cas où une erreur est détectée par pre-commit}
+    \label{fig:pre-commit-fail}
 \end{figure}
 
-Mais le plus intéressant avec cet outil est la possibilité de bloquer un commit défectueux.
-Après avoir installé pre-commit sur sa machine, les jobs se lanceront sur les fichiers qui ont été staged au moment de taper \texttt{git commit ...}
-Ainsi, grâce à cela il est impossible d'envoyer sur le dépôt un commit qui ne respecte pas les règles établies.
+Après avoir mis le travail de vérification locale en place, nous avons fait le choix d'effectuer également des vérifications après envoi du travail vers le dépôt distant.
+Pour cela, nous demandons au fichier \texttt{ci.yml} d'aller chercher les outils utilisés en pre-commit et de les relancer, de cette manière les vérifications locales et distantes restent alignées. Ainsi, nous effectuons une double vérification
+au cas où un développeur oublie d'installer pre-commit sur sa machine.
 
-Concernant le fichier \texttt{ci.yml}\label{CI/CD} (Code du fichier ci.yml en annexe \ref{CodeCIyml}), un changement majeur est à relever: 
-les jobs lancés localement par le fichier de pre commit sont rappelés par la ligne \texttt{uses: pre-commit/action@v3.0.1}
-dans un job nommé "lint". Grâce à cela on assure une stabilité plus importante du code 
-et une meilleure optimisation future car le fichier \texttt{ci.yml} utilise le contenu du fichier de pre-commit.
+Nous remarquons que l'outil \texttt{cargo test} n'a pas été utilisé dans les vérifications locales, c'est également un choix. En effet, cette commande lance les tests de l'ensemble du projet, un développeur travaillant 
+sur un module indépendant n'a pas d'intérêt à perdre du temps en lançant une vérification sur l'ensemble du projet à chaque fois qu'il fait un commit.
+C'est pour cette raison que les tests (et la génération du fichier de coverage) sont lancés uniquement sur le dépôt distant.
 
-Le reste du fichier présente peu de changements par rapport à la version précédente, nous lançons les tests dans un job dédié suivi du job de couverture des tests.
-\\[1cm]
-Pour conclure cette partie, nous avons su au fur et à mesure de l'avancée du travail
-relever nos erreurs et les corriger tout en prenant en compte les remarques et besoins des autres collaborateurs du projet
-ce qui nous a permis de découvrir de nouvelles notions et de consolider nos connaissances déjà existantes dans ce domaine.
 
+Pour résumer, nous avons des vérifications locales relancées en distant en plus de nos tests. Tout cela a été accepté sur le dépôt d'origine et profite maintenant à l'équipe de développement.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.55\textwidth]{pre-commit-exemple.png}
+    \caption{Résultats des vérifications du commit du 28 avril de Monsieur De Jonckère}
+    \label{fig:pre-commit-exemple}
+\end{figure}
 \subsection{Test A-SABR}
 \subsubsection[Module : Contact Manager]{Contact Manager}
 
