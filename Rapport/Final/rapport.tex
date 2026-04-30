@@ -573,7 +573,7 @@ Les tests mis en place couvrent les cas suivants :
     \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
 
-\subsubsection{Contact, Hybrid et Node parenting}
+\paragraph{Contact, Hybrid et Node parenting}
 
 Le module de pathfinding propose trois variantes de parenting : \texttt{Node}, \texttt{Contact} et \texttt{Hybrid}. Ces variantes reposent toutes sur une logique de recherche de chemin de type Dijkstra, mais elles ne manipulent pas le \gls{mg} avec la même granularité. Leur différence principale vient de la manière dont elles représentent les états explorés et conservent les routes candidates pendant le parcours.
 
