@@ -61,7 +61,7 @@ L'objet théorique le plus proche d'une telle structure est le carquois, c'est-�
 
 \newacronym[
     description={Bundle Protocol Socket. Type spécifique de socket Linux reposant sur la création d'une nouvelle famille de sockets, \texttt{AF\_BP}, afin de permettre l'envoi et la réception de bundles dans un environnement DTN}
-]{bp}{BP Socket}{Bundle Protocole Socket}
+]{bp}{BP Socket}{Bundle Protocol Socket}
 
 \newacronym[
     description={Interplanetary Overlay Network. Implémentation Open Source de référence développée par la NASA pour les réseaux tolérants aux délais }
@@ -196,7 +196,7 @@ Sur cet exemple, il y a eu 3 envois du même terminal, 1 UDP, 1 TCP et  1 tentat
 
 \gls{bp} nécessite le chargement d'un module kernel spécifique. Dans l'exemple présenté, ce module n'a pas été chargé : l'application ne peut donc pas utiliser la socket \texttt{AF\_BP} et le message est finalement envoyé via UDP.
 
-\subsubsection{Bp-socket}
+\subsubsection{BP-Socket}
 
 BP-Socket est un projet visant à fournir une interface de type socket Linux pour le Bundle Protocol, utilisé dans les réseaux \gls{dtn}. L’idée est de permettre à une application d’envoyer et de recevoir des \gls{bundle} avec une API proche de celle utilisée pour des communications classiques en UDP ou TCP.
 
@@ -534,9 +534,9 @@ sans avoir à réecrire à chaque fois les mêmes principes de tests.
 
 
 \subsubsection[Module : Pathfinding]{Pathfinding}
-Le rôle de ce module est de calculer, à partir d'un \gls{bundle} et d'un instant donnée, la meilleurs route vers
-une destination en tenant compte des contraites temporelles de chaque contact.
-Il expose un Trait, \texttt{PathFinding}, implémentée par trois variantes : Node, Contact et Hybride, détaillée ci-après,
+Le rôle de ce module est de calculer, à partir d'un \gls{bundle} et d'un instant donné, la meilleure route vers
+une destination en tenant compte des contraintes temporelles de chaque contact.
+Il expose un Trait, \texttt{PathFinding}, implémentée par trois variantes : Node, Contact et Hybrid, détaillée ci-après,
 ainsi qu'un sous module \texttt{limiting\_contact} qui permet de supprimer temporairement le contact le plus limitant d'une route 
 pour forcer la découverte de routes alternatives. 
 
@@ -571,7 +571,8 @@ Les tests mis en place couvrent les cas suivants :
     \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. Nous vérifions que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
 
-\paragraph{Contact, Hybrid et Node parenting}
+\newpage
+\paragraph{Contact, Hybrid et Node parenting}~\\
 
 Le module de pathfinding propose trois variantes de parenting : \texttt{Node}, \texttt{Contact} et \texttt{Hybrid}. Ces variantes reposent toutes sur une logique de recherche de chemin de type Dijkstra, mais elles ne manipulent pas le \gls{mg} avec la même granularité. Leur différence principale vient de la manière dont elles représentent les états explorés et conservent les routes candidates pendant le parcours.
 
@@ -700,7 +701,7 @@ Dans cette partie, nous allons détailler le fonctionnement algorithmique du mod
 \begin{description}
     \item[Les paramètres d'entrée :] La fonction prend 4 paramètres :
     \begin{itemize}
-        \item \mintinline{rust}{&self} : la référence vers l'instance du \texttt{PSegmentationManager} contenant toute la logique. Un détail a son importance ici : comme la fonction ne fait qu'une simulation, nsou limitons l'attribut à une lecture seule en ne mettant pas le mot-clé \mintinline{rust}{mut}, indiquant à Rust que cette variable n'est pas mutable.
+        \item \mintinline{rust}{&self} : la référence vers l'instance du \texttt{PSegmentationManager} contenant toute la logique. Un détail a son importance ici : comme la fonction ne fait qu'une simulation, nous limitons l'attribut à une lecture seule en ne mettant pas le mot-clé \mintinline{rust}{mut}, indiquant à Rust que cette variable n'est pas mutable.
         \item \mintinline{rust}{contact_data: &ContactInfo} : c'est une structure contenant des attributs \texttt{source} et \texttt{dest} de type \texttt{NodeID}, et deux attributs \texttt{start} et \texttt{end} de type \texttt{Date}. Cette structure représente les limitations physiques : \texttt{source} et \texttt{dest} sont les nœuds concernés par le contact, et \texttt{start} et \texttt{end} représentent la fenêtre temporelle du contact.
         \item \mintinline{rust}{at_time: Date} : c'est l'instant t à partir duquel nous souhaitons insérer le paquet.
         \item \mintinline{rust}{bundle: &Bundle} : la référence vers le paquet que nous souhaitons transmettre.
@@ -727,12 +728,12 @@ Dans cette partie, nous allons détailler le fonctionnement algorithmique du mod
         \end{itemize}
     \end{itemize}
     \item[La complexité en temps :]
-    Dans le pire des cas, nous avons une complexité de l'ordre de \texttt{O(N * r)} avec N le nombres de segments \texttt{booking} er r le nombre de segments de débit.
+    Dans le pire des cas, nous avons une complexité de l'ordre de \texttt{O(N * r)} avec N le nombres de segments \texttt{booking} et r le nombre de segments de débit.
     En effet, à chaque fois qu'un créneau potentiellement libre est trouvé, le calcul de la fin de transmission est relancé par \mintinline{rust}|super::get_tx_end|, cette fonction doit reparcourir les r intervalles de débit.
     Donc dans le pire cas, cette sous-recherche est lancée à chaque nouveau segment libre soit une complexité \texttt{O(N * r)}.
 
     Cependant, il est intéressant de noter que physiquement le délai est une valeur qui reste souvent fixe, il sera donc représenté dans la majorité des cas par un segment unique.
-    Donc la plupart du temps, nous aurons plutôt une compelexité de l'ordre de \texttt{O(N)}.
+    Donc la plupart du temps, nous aurons plutôt une complexité de l'ordre de \texttt{O(N)}.
     
 \end{description}
 
@@ -755,7 +756,7 @@ Dans cette partie, nous allons détailler le fonctionnement algorithmique du mod
             \item La coupe à gauche avec \mintinline{rust}{seg.start < tx_start}: si le segment commence avant le début de la fenêtre, il est scindé en deux parties.
             Nous insèrons un "nouveau" segment gauche intact grâce à \mintinline{rust}{insert(i)} et nous repoussons le début du segment actuel à \texttt{tx\_start}.
             \item La coupe à droite avec \mintinline{rust}{seg.end > tx_end}: le principe est très similaire au cas précédent mais avec le côté droit. Si le segment s'arrête après la fin de notre fenêtre,
-            nous créeons un "nouveau" segment droit et nous raccourcissons la fin du segment à \texttt{tx\_end}.
+            nous créons un "nouveau" segment droit et nous raccourcissons la fin du segment à \texttt{tx\_end}.
             \item L'écrasement: maintenant que nous possèdons un segment qui rentre dans notre fenêtre, nous pouvons simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \\ \mintinline{rust}{self.booking[i].val = bundle.priority}
         \end{itemize}
         \item L'agrégat des segments: après le travail de segmentation, nous parcourons les segments crées par paire (i,j), nous les fusionnons s'ils ont la même priorité et si i se termine quand j commence.
@@ -1343,7 +1344,7 @@ let pred_res = PredictionConfig::try_init(cp_path_unwrapped,"VolCgrHybridParenti
 
 La fonction de création d'un \gls{mg} \texttt{exemple\_2\_graph} provient de A-SABR \texttt{"src/pathfinding/test\_helpers.rs"} ligne 229.
 
-La fonction \texttt{test\_exemple\_2} qui permet de tester le \gls{mg} précedemment créer grâce à la fonction 
+La fonction \texttt{test\_exemple\_2} qui permet de tester le \gls{mg} précédemment créer grâce à la fonction 
 ci dessus est présente dans les trois fichiers \texttt{Node,Contact et Hybrid Parenting} dans A-SABR \texttt{"src/pathfinding"}.
 
 \begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
