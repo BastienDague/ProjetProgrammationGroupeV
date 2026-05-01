@@ -465,8 +465,7 @@ Enfin, des contraintes liées aux outils d’intégration continue ont été ren
 
 Ces difficultés ont permis de mieux comprendre les invariants du modèle et de renforcer la robustesse des tests implémentés.\\
 
-Toutes ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})\\
-\paragraph{PrioritySegmentation :}~\\\\
+\paragraph{PrioritySegmentation :}~\\
 Le module \texttt{PrioritySegmentation} abrégé en \texttt{pseg}, quant à lui, reprend exactement le même principe 
 que le module \texttt{Segmentation} mais ajoute une gestion de la priorité des paquets.
 Le principe central de ce module est le suivant: un paquet de plus haute priorité peut remplacer un segment occupé par un paquet
@@ -605,7 +604,11 @@ Chaque algorithme de parenting possède également trois déclinaisons généré
     \item \texttt{TreeExcl} : explore l'ensemble du \gls{mg} en tenant compte d'une exclusion.
 \end{itemize}
 
-Le principe des tests est volontairement systématique : plusieurs \gls{mg} sont construits, puis chaque variante est exécutée avec les métriques \texttt{Hop} et \texttt{SABR}. Les résultats attendus sont principalement le nombre de sauts, le temps d'arrivée et, pour les variantes avec exclusion, l'échec attendu lorsqu'un nœud indispensable est exclu.
+Le principe des tests est volontairement systématique : plusieurs \gls{mg} de petite taille sont construits afin de représenter différents scénarios de routage. Ces graphes contiennent des nœuds, des contacts et des fenêtres temporelles choisies pour produire des comportements attendus précis. Chaque variante de parenting est ensuite exécutée sur ces mêmes graphes avec les métriques \texttt{Hop} et \texttt{SABR}. Cette approche permet de vérifier que les algorithmes produisent des routes cohérentes selon l’objectif choisi : minimiser le nombre de sauts pour \texttt{Hop}, ou minimiser le temps d’arrivée pour \texttt{SABR}.
+
+Les résultats attendus portent principalement sur le nombre de sauts, le temps d’arrivée final et la réussite ou non du calcul de route. Pour les variantes avec exclusion, les tests vérifient également qu’un nœud explicitement exclu n’est jamais utilisé dans le chemin retourné. Dans certains cas, l’exclusion d’un nœud indispensable doit donc entraîner un échec, ce qui permet de valider le comportement des variantes \texttt{PathExcl} et \texttt{TreeExcl}.
+
+Cette stratégie de test permet de comparer les différentes variantes dans des conditions identiques. Elle facilite aussi la détection de divergences entre \texttt{Node}, \texttt{Contact} et \texttt{Hybrid}, notamment lorsque plusieurs contacts existent entre les mêmes nœuds ou lorsque les métriques \texttt{Hop} et \texttt{SABR} ne conduisent pas au même chemin optimal.
 
 Dans un souci de lisibilité et de maintenabilité, les fonctions de création des objets de test, comme les nœuds, contacts, bundles et multigraphs, ont été regroupées dans un fichier \textbf{test\_helpers.rs}. Les fichiers de tests peuvent ainsi se concentrer sur les scénarios à vérifier plutôt que sur la construction répétée des données.\\
 
