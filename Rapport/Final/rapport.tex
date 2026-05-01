@@ -363,17 +363,16 @@ Tous les gestionnaires de contacts implémentent une interface commune reposant 
 Plusieurs implémentations de \textit{Contact Manager} coexistent dans le projet afin de proposer différents niveaux de précision et de modélisation. Elles sont regroupées en deux grandes familles : les gestionnaires \textit{Legacy}, reposant sur des modèles historiques plus simples, et les gestionnaires basés sur la segmentation, offrant une représentation plus fine des contacts.
 
 \paragraph{Legacy :}~\\\\
-Les gestionnaires \textit{Legacy} correspondent aux premières implémentations de gestionnaires de contacts présentes dans A-SABR. Ils sont considérés comme le standard actuelle. Ils restent présents dans la librairie pour des raisons de compatibilité et de comparaison, mais ne constituent pas l’approche principale utilisée pour représenter finement les transmissions.
+Les gestionnaires \textit{Legacy} correspondent aux premières implémentations de gestionnaires de contacts présentes dans A-SABR. Ils correspondent à une approche plus ancienne de gestion des contacts car ils reposent sur une modélisation plus simple du contact, avec moins de granularité que les approches plus récentes comme la segmentation. Ils restent présents dans la librairie pour des raisons de compatibilité et de comparaison, mais ne constituent plus l’approche principale utilisée pour représenter finement les transmissions.
 
-Ces gestionnaires restent néanmoins importants à tester, car ils font encore partie du code existant et sont utilisés comme référence pour nos tests.
+Ces gestionnaires restent néanmoins importants à tester, car ils font encore partie du code existant et peuvent être utilisés comme référence pour vérifier le comportement d’autres modules.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{Images/legacy_managers_comparison.png}
-\caption{Comparaison des comportements des gestionnaires Legacy (ETO, EVL, QD).}- \\
+\caption{Comparaison des comportements des gestionnaires Legacy (ETO, EVL, QD).}
 \label{fig:legacy_managers_comparison}
 \end{figure}
-
 
 Le sous-module contient trois implémentations : EVL, QD et ETO. Ces implémentations sont générées à l'aide d'une macro qui prend différents paramètres :
 
@@ -412,61 +411,47 @@ Enfin, pour \texttt{QD}, les tests valident que l’occupation de la file peut d
 
 L’ajout de ces tests spécifiques permet donc de compléter la couverture existante sur les gestionnaires \textit{Legacy}, tout en documentant plus clairement les différences de comportement entre \texttt{ETO}, \texttt{EVL} et \texttt{QD}.\\
 
-Nous avons aussi corrigé des bugs dans la macro principale qui génère les trois implémentations \textit{Legacy}. 
-
-Avant, lorsqu'un \gls{bundle} avec priorités utilisait les fonctions
-\texttt{get\_queue\_size}, \texttt{enqueue} ou encore \texttt{dequeue}
-avec un Contact Manager qui ne prend pas en compte les priorités,
-le code paniquait.
-Désormais, une variante qui ne s'occupe pas des priorités traite
-les \glspl{bundle} avec priorités comme s'ils n'en avaient pas.
-
-De plus, dans la variante budgétée de \texttt{generate\_struct\_management!},
-le tableau d'initialisation des budgets dans \texttt{build\_parsing\_output}
-était hardcodé à 3, ce qui provoquait une erreur de
-compilation lorsque la macro était instanciée avec un nombre de priorités
-différent de \texttt{3}.
-Cela a été corrigé afin qu'il s'adapte correctement au nombre de priorités
-avec lequel on l'instancie.
+Toute ces modifications sur la partie Legacy ont fait l'objet de 1 Pull request en attente d'acceptation de Samy/Yassine pour 502 lignes de code ajoutées (PR \texttt{\#54})
 
 \paragraph{Segmentation :}~\\\\
+Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en représentant les ressources disponibles sous forme d’intervalles temporels exploitables dynamiquement lors de la planification. Cette approche permet de gérer précisément l’occupation progressive d’un contact au fil des transmissions.
 
-Le module \textit{Segmentation} propose une modélisation plus fine des contacts que les gestionnaires \textit{Legacy}, en découpant un contact en plusieurs intervalles temporels indépendants. Chaque segment peut ainsi posséder ses propres caractéristiques de transmission, comme le débit ou le délai.
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{Images/legacy_vs_segmentation.png}
-\caption{Illustration du découpage d’un contact en segments temporels indépendants.}
-\label{fig:segmentation_vs_legacy}
-\end{figure}
-
-Le gestionnaire de segmentation repose sur trois structures principales : les segments de débit (\texttt{rate\_intervals}), les segments de délai (\texttt{delay\_intervals}) et les intervalles libres (\texttt{free\_intervals}), représentant les portions du contact encore disponibles pour la transmission. Chaque segment est défini par un intervalle temporel et une valeur associée.
-
-Deux opérations principales sont utilisées :
+Le gestionnaire de segmentation repose sur trois structures principales :
 \begin{itemize}
-    \item \texttt{dry\_run\_tx} : simulation d’une transmission sans modification de l’état interne,
-    \item \texttt{schedule\_tx} : planification effective de la transmission avec mise à jour des intervalles libres.
+    \item les segments de débit (\texttt{rate\_intervals}),
+    \item les segments de délai (\texttt{delay\_intervals}),
+    \item les intervalles libres (\texttt{free\_intervals}), représentant les portions du contact encore disponibles pour de futures transmissions.
 \end{itemize}
 
-Lorsqu’une transmission est demandée, le gestionnaire recherche un intervalle libre compatible avec l’instant considéré (\texttt{at\_time}). Si cet instant est situé avant le début du contact, la transmission démarre au début du premier intervalle valide ; sinon, elle commence à \texttt{at\_time}. La durée de transmission est ensuite calculée en tenant compte des segments de débit traversés, ce qui permet à une transmission de s’étendre sur plusieurs segments successifs si nécessaire.
+Chaque segment est défini par un intervalle temporel et une valeur associée, permettant de modéliser localement les caractéristiques du contact.
+
+Deux opérations principales sont exposées :
+\begin{itemize}
+    \item \texttt{dry\_run\_tx} : simulation d’une transmission sans modification de l’état interne ;
+    \item \texttt{schedule\_tx} : planification effective d’une transmission avec mise à jour des intervalles libres.
+\end{itemize}
+
+Lorsqu’une transmission est demandée, le gestionnaire recherche un intervalle libre compatible avec l’instant considéré (\texttt{at\_time}). Si l’insertion est possible, la durée de transmission est calculée en tenant compte des segments de débit traversés. Une même transmission peut ainsi s’étendre sur plusieurs segments successifs si nécessaire.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{Images/free_intervals_evolution.png}
-\caption{Découpage d’un intervalle libre après planification d’un bundle.}
+\includegraphics[width=0.65\textwidth]{Images/segmentation_figure.png}
+\caption{Évolution des intervalles libres lors de la planification successive de plusieurs bundles.}
 \label{fig:free_intervals}
 \end{figure}
 
-La planification d’un bundle entraîne une mise à jour dynamique des intervalles libres. Comme illustré ci-dessus, un intervalle initial peut être découpé en plusieurs sous-intervalles afin de conserver une représentation cohérente des ressources disponibles pour les transmissions futures.
+Comme illustré ci-dessus, chaque nouvelle planification entraîne une mise à jour dynamique des intervalles libres. Lorsqu’un bundle est inséré dans un intervalle disponible, celui-ci peut être réduit ou découpé en plusieurs sous-intervalles afin de conserver une représentation cohérente de l’espace restant. Ce mécanisme permet de maintenir un état précis du contact après chaque réservation.
 
 Les tests implémentés dans le fichier \texttt{seg.rs} ont permis de valider plusieurs comportements essentiels :
 \begin{itemize}
-    \item insertion d’un bundle dans un intervalle libre,
-    \item enchaînement de plusieurs transmissions successives,
-    \item gestion de débits variables,
-    \item prise en compte correcte de l’instant \texttt{at\_time}.
+    \item insertion correcte d’un bundle dans un intervalle libre ;
+    \item enchaînement de plusieurs planifications successives ;
+    \item mise à jour cohérente des intervalles libres après réservation ;
+    \item gestion correcte de l’instant \texttt{at\_time} ;
+    \item prise en compte de transmissions traversant plusieurs segments de débit.
 \end{itemize}
 
-Ces tests garantissent la cohérence entre les fonctions \texttt{dry\_run\_tx} et \texttt{schedule\_tx}, ainsi que la mise à jour correcte des intervalles libres après chaque planification.
+Ces tests garantissent la cohérence entre les fonctions \texttt{dry\_run\_tx} et \texttt{schedule\_tx}, ainsi que la robustesse de la mise à jour des intervalles libres après chaque planification.
 
 \vspace{0.3cm}
 
@@ -479,6 +464,8 @@ La gestion des cas limites s’est également révélée délicate, notamment po
 Enfin, des contraintes liées aux outils d’intégration continue ont été rencontrées. Les hooks \textit{pre-commit}, incluant \texttt{cargo fmt} et \texttt{cargo clippy}, ont empêché certains commits en raison de problèmes de formatage ou de warnings. Ces difficultés ont été résolues en appliquant les corrections nécessaires et en respectant les règles imposées par le projet.
 
 Ces difficultés ont permis de mieux comprendre les invariants du modèle et de renforcer la robustesse des tests implémentés.\\
+
+Toute ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})\\
 \paragraph{PrioritySegmentation :}~\\\\
 Le module \texttt{PrioritySegmentation} abrégé en \texttt{pseg}, quant à lui, reprend exactement le même principe 
 que le module \texttt{Segmentation} mais ajoute une gestion de la priorité des paquets.
