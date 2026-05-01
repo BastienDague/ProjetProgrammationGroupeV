@@ -84,7 +84,7 @@ L'objet théorique le plus proche d'une telle structure est le carquois, c'est-�
 \subsection{Contribution Open Source DTN-MTP}
 Le projet s’inscrit dans un contexte open source, ce qui a fortement influencé notre manière de travailler. Contrairement à un projet strictement scolaire, les contributions ne sont pas simplement ajoutées à un dépôt privé : elles doivent s’intégrer proprement dans un écosystème existant, être relues, discutées, corrigées puis validées par les mainteneurs du projet. Dans notre cas, les modifications apportées à A-SABR, DT-Chat ou BP-Socket ont donc été réalisées sous forme de branches puis de Pull Requests, avec des échanges réguliers autour de la qualité du code, de la maintenabilité et de la cohérence avec l’existant.
 
-A-SABR, DTChat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DT-Chat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
+A-SABR, DTChat et BP-Socket font partie de l’écosystème DTN-MTP, qui regroupe plusieurs outils liés aux réseaux tolérants aux délais. A-SABR constitue la bibliothèque de routage, DTChat sert d’interface graphique permettant d’expérimenter et de visualiser des communications DTN, tandis que BP-Socket vise à fournir une interface socket adaptée au Bundle Protocol. Ces différents dépôts ne sont donc pas indépendants : ils participent à un ensemble logiciel plus large, où les évolutions d’un composant peuvent avoir des conséquences sur les autres.
 
 Ce contexte open source nous a confrontés à des problématiques concrètes de développement collaboratif que nous découvrions en grande partie. La difficulté était renforcée par le fait que nous arrivions sur un projet déjà commencé, bien fourni, avec une architecture existante, des conventions de code, plusieurs dépôts liés entre eux et des choix techniques déjà établis. Il ne suffisait donc pas d’écrire du code fonctionnel : il fallait d’abord comprendre la base de code, identifier où intervenir sans casser l’existant, maintenir la compatibilité avec les autres dépôts, documenter les changements, répondre aux retours et parfois adapter notre travail à des refactorisations récentes. Cette organisation nous a permis de mieux comprendre le fonctionnement d’un projet logiciel réel, dans lequel la qualité d’intégration est aussi importante que la fonctionnalité développée.
 
@@ -157,13 +157,13 @@ macro_rules! create_new_alternative_path_variant {
 La compilation de la librairie et de l'interface graphique nécessitant divers paquets Linux, notre travail a été 
 réalisé soit par WSL, soit directement depuis une distribution Linux.
 
-\subsection{Ecosystème DTN-MTP}
+\subsection{Écosystème DTN-MTP}
 \subsubsection{A-SABR}
 A-SABR est la bibliothèque centrale sur laquelle porte notre projet. Elle implémente des mécanismes de routage pour les réseaux \gls{dtn}, en s’appuyant sur les principes du \gls{sabr}. Son rôle est de déterminer comment acheminer un \gls{bundle} d’un nœud source vers une ou plusieurs destinations, non pas à partir d’une connexion permanente, mais à partir des contacts disponibles dans le temps.
 
 Pour cela, A-SABR lit un \gls{cp}, qui décrit les fenêtres de communication prévues entre les nœuds du réseau. Ces informations sont ensuite transformées en \gls{mg}, structure sur laquelle les algorithmes de routage peuvent travailler. La bibliothèque peut alors calculer des routes compatibles avec les contraintes temporelles du réseau, comme les dates de début et de fin des contacts, les délais de propagation, les débits disponibles ou encore la priorité des bundles.
 
-L’intérêt d’A-SABR est aussi sa modularité. Elle permet de comparer différentes stratégies de gestion des contacts, différentes variantes de pathfinding et plusieurs méthodes de routage. Cette architecture rend la bibliothèque adaptée à l’expérimentation : on peut tester plusieurs modèles de transmission, mesurer leurs performances, vérifier leur comportement par des tests, puis les intégrer progressivement dans l’écosystème open source DTN-MTP.
+L’intérêt d’A-SABR est aussi sa modularité. Elle permet de comparer différentes stratégies de gestion des contacts, différentes variantes de pathfinding et plusieurs méthodes de routage. Cette architecture rend la bibliothèque adaptée à l’expérimentation : nous pouvons tester plusieurs modèles de transmission, mesurer leurs performances, vérifier leur comportement par des tests, puis les intégrer progressivement dans l’écosystème open source DTN-MTP.
 
 Le projet A-SABR est mené par Monsieur Olivier de Jonckère au sein du LIRMM. Il s’agit d’un projet entièrement open source, ce qui signifie que son développement repose sur un dépôt public, des contributions externes et un processus de validation par Pull Requests. Ce cadre nous a permis de travailler sur un projet réel, maintenu en dehors du contexte strictement universitaire, et d’inscrire nos contributions dans un écosystème logiciel existant.
 
@@ -175,20 +175,20 @@ Le projet A-SABR est mené par Monsieur Olivier de Jonckère au sein du LIRMM. I
 \end{figure}
 
 \subsubsection{DTChat}
-DT Chat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
+DTChat est une application graphique codée en Rust permettant d'illustrer une communication DTN. 
 Elle supporte UDP, TCP et \gls{bp}.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.49\textwidth]{DT_Message.png}
     \hfill 
     \includegraphics[width=0.49\textwidth]{DT_Network.png}
-    \caption{Onglet Message (gauche) et Events (droite) d'un terminal DT Chat}
+    \caption{Onglet Message (gauche) et Events (droite) d'un terminal DTChat}
     \label{fig:comparaison_dt}
 \end{figure}
 
 L'onglet message affiche un graphique des messages envoyés. Un rectangle vert indique qu’un message a été envoyé puis reçu avec confirmation.\\
 
-À droite, l’onglet Event récapitule textuellement les interactions de l’interface et du réseau.
+À droite, l’onglet Events récapitule textuellement les interactions de l’interface et du réseau.
 
 A gauche le recapitulatif de l'interaction logicielle et à droite celle du reseau, nous remarquons bien les différents messages envoyés et reçus.
 
@@ -216,29 +216,29 @@ Dans son fonctionnement initial, BP-Socket repose sur la création d’une nouve
  \label{DTBackend} (Code en annexe \ref{CodeDTBackend})\\\\
 Nous avons d’abord extrait une fonction \texttt{update} à partir de la logique de démarrage de l’interface. Cette fonction prend en entrée le nom de l’algorithme à utiliser ainsi que le chemin du Contact Plan à charger. La fonction \texttt{try\_init} a également été modifiée afin d’accepter ces paramètres et de retourner le nombre de nœuds et de contacts détectés dans le Contact Plan chargé.\\
 
-La fonction \texttt{update} prend donc en entréele nom de l’algorithme et le chemin du \gls{cp} à charger.
+La fonction \texttt{update} prend donc en entrée le nom de l’algorithme et le chemin du \gls{cp} à charger.
 
 Elle va ensuite faire un match sur \texttt{"PredictionConfig::try\_init(path.clone(), algo)"} qui retournera donc un Result,
 pour empêcher un crash total de l'interface au moindre souci.
 
-Si Ok alors on met à jour la configuration qu'on envoie au frontend et on l'affiche dans l'App Event,
-si Err, on retourne l'erreur et on l'affiche dans l'App Event.
+Si Ok alors nous mettons à jour la configuration que nous envoyons au frontend et nous l'affichons dans l'App Event,
+si Err, nous retournons l'erreur et nous l'affichons dans l'App Event.
 
-Etant basé sur A-SABR, il faut régulièrement faire de légères modifications dûes à des refactorisations de fonctions ou de
+Étant basé sur A-SABR, il faut régulièrement faire de légères modifications dûes à des refactorisations de fonctions ou de
 l'ajout de Result remplaçant des Options dans la librairie. \\
 \subsubsection[DT Chat Frontend]{Frontend}
 \label{DTFrontend} (Code en annexe \ref{CodeDTFrontend})\\
 
-L’interface DT-Chat peut être rapprochée d’une organisation de type MVC : le backend joue le rôle de modèle, la vue correspond aux éléments graphiques affichés, et le code réagissant aux interactions utilisateur joue le rôle de contrôleur.
+L’interface DTChat peut être rapprochée d’une organisation de type MVC : le backend joue le rôle de modèle, la vue correspond aux éléments graphiques affichés, et le code réagissant aux interactions utilisateur joue le rôle de contrôleur.
 
-Ici le but est donc d'afficher l'onglet Options et d'envoyer les différents ordre au Backend suivant les actions faites.
+Ici le but est donc d'afficher l'onglet Options et d'envoyer les différents ordres au Backend suivant les actions faites.
 
 Le raccourci ci-dessus permet d'accéder au code de la vue Options, il se résume simplement en un bouton qui ouvre un explorateur
-pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisée pour un ou pour l'autre,
+pour choisir son \gls{cp} et une ComboBox pour le choix d'algorithme, dès qu'une action est réalisée pour l'un ou pour l'autre,
 l'interface se met directement à jour et affiche les nouveaux paramètres chargés dans l'App Event.
 
-Une spécificité existe pour le choix d'algorithme, certains algorithmes sont conditionnés à l'activation ou non
-de "features", des fonctionnalités qu'on choisit d'activer ou non lors du lancement de l'interface, on peut voir
+Une spécificité existe pour le choix d'algorithme, certains algorithmes sont conditionnés à l'activation
+de "features", des fonctionnalités que nous choisissons d'activer ou non lors du lancement de l'interface, nous pouvons voir
 dans le code que la ComboBox s'adapte aux choix de features choisies lors de la compilation.
 
 \begin{figure}[h]
@@ -246,7 +246,7 @@ dans le code que la ComboBox s'adapte aux choix de features choisies lors de la 
     \includegraphics[width=0.49\textwidth]{DT_Algos.png}
     \hfill  
     \includegraphics[width=0.49\textwidth]{DT_Changes.png}
-    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptative (droite) d'un terminal DT Chat}
+    \caption{Onglet App Event mis à jour (gauche) et ComboBox adaptative (droite) d'un terminal DTChat}
     \label{fig:dt_changes}
 \end{figure}
 
@@ -265,7 +265,7 @@ ou l'envoi de message, il s'agit surtout ici de préparer de possible futur ajou
     \label{fig:dt_cp_ion_format}
 \end{figure}
 
-Ci-dessus, on a le format classique de \gls{cp} que l'interface comprend correctement :
+Ci-dessus, nous avons le format classique de \gls{cp} que l'interface comprend correctement :
 
 Ce \gls{cp} au format ION, format de référence de la NASA, définit un réseau de 6 nœuds avec une topologie linéaire 1→2→3→4→5→6. 
 Chaque lien est actif entre t=+60s et t=+7260s.
@@ -277,7 +277,7 @@ et ainsi de suite jusqu'à 30 000 octets/s pour 5→6.
 Les lignes range définissent le délai de propagation physique du signal sur chaque lien
  — 10 secondes entre les nœuds 1 et 2, 15 entre 2 et 3, jusqu'à 30 secondes pour 5→6,
   simulant des distances croissantes entre les nœuds
- comme on pourrait en trouver en situation réelle.\\
+ comme nous pourrions en trouver en situation réelle.\\
 
 \subsection[Pipeline]{Pipeline CI/CD}
 \subsubsection{Outils de qualité logicielle}
@@ -295,7 +295,7 @@ Dans le cadre de nos pipelines, nous utilisons d'autres commandes de \texttt{Car
     \item \texttt{cargo fmt --check}: au lancement de cette commande, une vérification de format est lancée pour vérifier si le code respecte les standards de style de la communauté.
     L'ajout de \texttt{--check} impose de faire uniquement une vérification sans modifier le code.
     \item \texttt{cargo clippy -D warnings}: cet outil est le "linter" de Rust, il permet de trouver des erreurs de logique ou des mauvaises pratiques de programmation comme une fonction possédant trop de paramètres.
-    En ajoutant \texttt{-D warnings}, on permet de rendre les avertissements bloquants.
+    En ajoutant \texttt{-D warnings}, nous permettons de rendre les avertissements bloquants.
     \item \texttt{cargo test}: grâce à cette commande, l'ensemble des tests du projet sont lancés. Les tests unitaires précédés du module \mintinline{rust}|#[cfg(test)]| et les tests d'intégration contenus dans le dossier \texttt{/tests}
 \end{itemize}
 \subsubsection{Intégration continue (CI)}
@@ -309,14 +309,14 @@ Cet outil se base sur 3 choses essentielles:
 
 Afin de rendre notre travail moins permissif à différents types d'erreurs, nous avons couplé les outils de GitHub Actions avec un autre principe, celui des pre-commit.
 Nous mettons en place un outil qui nous permet de faire des vérifications avant la création du commit donc en local. Ce qui rend ce principe très utile est sa possibilité d'annuler un commit s'il ne respecte pas 
-les règles dictées par le fichier \texttt{.pre-commit-config.yaml}. Si un développeur tente de commit des fichiers contenant des mauvaises pratiques de programmation (erreur clippy),
-au moment de taper la commande \texttt{git commit}, l'outil pre-commit annulera la commande.
+les règles dictées par le fichier \texttt{.pre-commit-config.yaml}. Si, par exemple, un développeur tente de commit des fichiers contenant des mauvaises pratiques de programmation (erreur clippy),
+au moment de taper \texttt{git commit}, l'outil pre-commit annulera la commande.
 
 Pour enrichir notre travail, nous utilisons des \texttt{hooks} qui sont des outils téléchargeables nous permettant de mettre en place de nouvelles vérifications et modifications utiles au projet:
 \begin{itemize}
     \item \texttt{trailing-whitespace}: retire les espaces en trop dans le code.
     \item \texttt{end-of-file-fixer}: rajoute un saut de ligne unique vide à la fin de chaque fichier.
-    \item  \texttt{check-yaml}: vérifie l'intégrité de nos fichiers de configuration de pipelines.
+    \item  \texttt{check-yaml}: vérifie l'intégrité de nos fichiers de configuration de pipelines(\texttt{.yml} et \texttt{.yaml}).
     \item \texttt{check-added-large-files}: bloque le commit si celui si contient des fichiers trop lourds.
 \end{itemize}
 
@@ -324,7 +324,7 @@ Quand tout cela a été mis en place, nous pouvons ajouter nos outils Rust prés
 Dans la structure décidée avec Monsieur De Jonckère, nous avons fait le choix de faire 3 vérifications avant le commit:
 les hooks précedemment cités, le format du code (\texttt{cargo fmt --check}) et les erreurs de logique et pratiques (\texttt{cargo clippy -D warnings}).
 Il est important de noter un détail sur ce travail de pre-commit, nous avions 2 choix pour la maintenabilité: utiliser un dépôt en ligne contenant les outils Rust ou
-utiliser les toolchains locales des développeurs. Nous avons fait le choix d'utiliser les toolchain locales en considérant que toute l'équipe mettait cargo régulièrement à jour, de plus
+utiliser les toolchains locales des développeurs. Nous avons fait le choix d'utiliser les toolchains locales en considérant que toute l'équipe mettait cargo régulièrement à jour, de plus
 il nous apparaissait plus logique d'utiliser un outil stable en local plutôt qu'un dépôt en ligne pouvant devenir déprécié.
 \begin{figure}[h]
     \centering
@@ -338,11 +338,11 @@ Pour cela, nous demandons au fichier \texttt{ci.yml} d'aller chercher les outils
 au cas où un développeur oublie d'installer pre-commit sur sa machine.
 
 Nous remarquons que l'outil \texttt{cargo test} n'a pas été utilisé dans les vérifications locales, c'est également un choix. En effet, cette commande lance les tests de l'ensemble du projet, un développeur travaillant 
-sur un module indépendant n'a pas d'intérêt à perdre du temps en lançant une vérification sur l'ensemble du projet à chaque fois qu'il fait un commit.
+sur un module indépendant n'a pas d'intérêt à perdre du temps en lançant une vérification sur l'ensemble du projet à chaque fois qu'il fait un commit, il ne va tester que ce sur quoi il travaille.
 C'est pour cette raison que les tests (et la génération du fichier de coverage) sont lancés uniquement sur le dépôt distant.
 
 
-Pour résumer, nous avons des vérifications locales relancées en distant en plus de nos tests. Tout cela a été accepté sur le dépôt d'origine et profite maintenant à l'équipe de développement.
+Pour résumer, nous avons des vérifications locales grâce au fichier \texttt{.pre-commit-config.yaml}\label{CI/CD} (Code en annexe \ref{CodeCIprecommit}) relancées en distant en plus de nos tests grâce au fichier \texttt{ci.yml}\label{CI/CD} (Code en annexe \ref{CodeCIyml}). Tout cela a été accepté sur le dépôt d'origine et profite maintenant à l'équipe de développement.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.55\textwidth]{pre-commit-exemple.png}
@@ -465,13 +465,13 @@ Enfin, des contraintes liées aux outils d’intégration continue ont été ren
 
 Ces difficultés ont permis de mieux comprendre les invariants du modèle et de renforcer la robustesse des tests implémentés.\\
 
-Toute ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})\\
+Toutes ces modifications sur la partie Segmentation ont fait l'objet de 1 Pull request acceptée de Yassine pour 300 lignes de code ajoutées (PR \texttt{\#53})\\
 \paragraph{PrioritySegmentation :}~\\\\
 Le module \texttt{PrioritySegmentation} abrégé en \texttt{pseg}, quant à lui, reprend exactement le même principe 
 que le module \texttt{Segmentation} mais ajoute une gestion de la priorité des paquets.
 Le principe central de ce module est le suivant: un paquet de plus haute priorité peut remplacer un segment occupé par un paquet
-de plus petite priorité. L'intérêt de cette approche est de pouvoir mettre en place une hiérarchie dans l'importance des paquets envoyés,
-dans le cas du routage spatial, on préfèrera faire passer un message d'urgence avant un retour d'analyse quelconque.
+de plus basse priorité. L'intérêt de cette approche est de pouvoir mettre en place une hiérarchie dans l'importance des paquets envoyés,
+dans le cas du routage spatial, nous préfèrerons faire passer un message d'urgence avant un retour d'analyse quelconque.
 
 Ci-dessous un schéma d'explication du fonctionnement de \texttt{pseg}:
 
@@ -486,7 +486,7 @@ Ci-dessous un schéma d'explication du fonctionnement de \texttt{pseg}:
 Le fonctionnement de ce module est assez similaire à celui de \texttt{Segmentation} expliqué précedemment. 
 Nous retrouvons les segments de débit et de délai pour construire l'univers dans lequel nous travaillerons. Cependant
 nous n'utilisons pas ici des intervalles libres mais des segments appelés \texttt{bookings} qui seront initialisés avec 
-une date de début et de fin, une priorité -1 pour indiquer qu'ils sont libres.
+une date de début et de fin avec une priorité -1 pour indiquer qu'ils sont libres.
 
 Nous retrouvons le modèle des deux fonctions centrales: \texttt{dry\_run\_tx} pour la simulation et \texttt{schedule\_tx}
 pour l'application effective des modifications. L'analyse algorithmique du module sera traitée dans la partie 3.
@@ -494,30 +494,30 @@ pour l'application effective des modifications. L'analyse algorithmique du modul
 Dans le cadre du projet, nous avons apporté certaines modifications au module:
 \begin{itemize}
     \item Optimisation et correction: nous avons ajouté une procédure qui fusionne les segments \texttt{bookings} adjacents de même priorité.
-    Nous avons également corrigé un bug où la fonction \texttt{dry\_run\_tx} renvoyait un échec de l'insertion du bundle à tort lorsque ce dernier devait être placé à la fin.
+    Nous avons également corrigé un bug où la fonction \texttt{dry\_run\_tx} renvoyait un échec lors de l'insertion du bundle à tort lorsque ce dernier devait être placé sur le dernier segment des \texttt{bookings}.
     \item Automatisation des tests: nous avons également ajouté de nombreux tests pour assurer la fiabilité du module.
 \end{itemize}
 
-Nous avons donc conçu une fonction centrale \texttt{start\_test} permettant de faciliter les tests de \texttt{pseg} dont voici le fonctionnement: \label{pseg} (Code en annexe \ref{CodeStartTest}).
+Nous avons conçu une fonction centrale \texttt{start\_test} permettant de faciliter les tests de \texttt{pseg} dont voici le fonctionnement: \label{pseg} (Code en annexe \ref{CodeStartTest}).
 \begin{description}
     \item[Paramètres d'entrée: ] La fonction prend 3 arguments:
     \begin{itemize}
-        \item \texttt{input}: une liste d'objets \texttt{InputSeg} pour créer l'environnement (segments de délai, de débit et potentiels \texttt{bookings} existants).
+        \item \texttt{input}: une liste d'objets \texttt{InputSeg} pour créer l'environnement (segments de délai, de débit et potentiels \texttt{bookings} préexistants).
         \item \texttt{output}: une liste d'objets \texttt{OutputSeg} contenant les \texttt{bookings} attendus en sortie.
-        \item \texttt{requests}: une liste de tuples contenant: le paquet à insérer (\texttt{Bundle}), le moment de l'insertion (\texttt{at\_time}) et \texttt{true} si on s'attend à une réussite de l'insertion, \texttt{false} sinon.
+        \item \texttt{requests}: une liste de tuples contenant: le paquet à insérer (\texttt{Bundle}), le moment de l'insertion (\texttt{at\_time}) et \texttt{true} si nous nous attendons à une réussite de l'insertion, \texttt{false} sinon.
     \end{itemize} 
     \item[Construction de l'environnement: ] la fonction va interpréter les valeurs de \texttt{input}. Par exemple, la commande \mintinline{rust}{let input = vec![InputSeg::Delay(0.0, 200.0, 4.0), InputSeg::Rate(0.0, 200.0, 100.0)];} génère un segment de délai (de 0 à 200, délai de 4) et un segment de débit (de 0 à 200, débit de 100). Si aucun \texttt{booking} initial n'est donné, l'environnement démarre vide.
     \item[Vérifications: ] la fonction vérifie ces 3 choses:
     \begin{itemize}
         \item L'égalité des valeurs de retour des fonctions \texttt{dry\_run\_tx} et \texttt{schedule\_tx}.
         \item L'état de l'insertion du bundle: si dans le champ \texttt{requests} nous nous attendions à ce que l'insertion soit un succès, la fonction vérifie que c'est bien le cas.
-        \item La cohérence entre le paramètre \texttt{output} et la sortie réellement construite: la fonction va construire ce qu'on a appelé \texttt{actual\_output} qui est la sortie réelle. On vérifie donc que cette sortie soit bien égale à celle attendue dans \texttt{output}.
+        \item La cohérence entre le paramètre \texttt{output} et la sortie réellement construite: la fonction va construire ce que nous avons appelé \texttt{actual\_output} qui est la sortie réelle.nous vérifions donc que cette sortie soit bien égale à celle attendue dans \texttt{output}.
     \end{itemize}
 \end{description}
 
 La force de cette fonction est qu'elle permet de faire 3 tests communs en un seul appel pour différents scénarios. 
 De plus, si des collaborateurs souhaitent écrire de nouveaux tests, ils n'auront besoin que de construire les valeurs attendues
-sans avoir à réecrire à chaque fois les mêmes principes de tests que les précédents.
+sans avoir à réecrire à chaque fois les mêmes principes de tests.
 
 
 
@@ -536,7 +536,7 @@ soit \textbf{\gls{sabr}} qui minimise le temps d'arrivée.
 
 La fonction parcourt chaque contact fourni en entrée à partir d'un \texttt{first\_contact\_index}, ce qui permet un \textit{lazy pruning} : les contacts déjà dépassés par un saut précédent dans Dijkstra n'ont pas besoin d'être reconsidérés. Pour chaque contact, elle appelle \texttt{dry\_run\_tx} du Contact Manager pour simuler la transmission, puis retient le contact permettant la date d'arrivée \texttt{rx\_end} la plus rapide. Elle s'arrête dès que le début d'un contact est postérieur au meilleur \texttt{rx\_end} déjà trouvé, les contacts étant supposés triés. Si un contact est retenu, elle construit un nouveau \texttt{RouteStage} avec les métadonnées mises à jour : \texttt{hop\_count} incrémenté, \texttt{cumulative\_delay} mis à jour et \texttt{expiration} calculée comme le minimum entre la fin du contact et l'expiration propagée depuis la source.
 
-\texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. On trouve ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi.
+\texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. Nous trouvons ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi.
 
 
 
@@ -545,19 +545,19 @@ Afin de tester cette fonction, nous avons créé un \textit{mock} de \texttt{Nod
 Les tests mis en place couvrent les cas suivants :
 
 \begin{itemize}
-    \item \textbf{Cas de base} : appel avec une liste de contacts vide, un \texttt{first\_contact\_index} dépassant le slice, ou un bundle trop volumineux pour un contact donné. On vérifie que la fonction renvoie bien \texttt{None} dans ces cas.
+    \item \textbf{Cas de base} : appel avec une liste de contacts vide, un \texttt{first\_contact\_index} dépassant le slice, ou un bundle trop volumineux pour un contact donné. Nous vérifions que la fonction renvoie bien \texttt{None} dans ces cas.
 
-    \item \textbf{Transmission valide} : test avec un seul contact compatible. On vérifie que \texttt{Some} est bien retourné.
+    \item \textbf{Transmission valide} : test avec un seul contact compatible. Nous vérifions que \texttt{Some} est bien retourné.
 
-    \item \textbf{Lazy pruning} : test avec \texttt{first\_contact\_index=1} qui saute un contact valide. On vérifie que le résultat correspond bien au second contact et non au premier.
+    \item \textbf{Lazy pruning} : test avec \texttt{first\_contact\_index=1} qui saute un contact valide. Nous vérifions que le résultat correspond bien au second contact et non au premier.
 
     \item \textbf{Feature \texttt{contact\_suppression}} : si tous les contacts sont supprimés, la fonction doit renvoyer \texttt{None}. Si un seul contact parmi deux est supprimé, le second doit bien être choisi.
 
-    \item \textbf{Mock NodeManager (\texttt{node\_tx}, \texttt{node\_rx}, \texttt{node\_proc})} : ces trois tests ne peuvent pas utiliser \texttt{HopContext} car ils nécessitent des managers différents sur \texttt{tx} et \texttt{rx}. On vérifie qu'un nœud refusant l'émission ou la réception bloque le saut, et qu'un délai de traitement décale correctement le \texttt{sending\_time} et donc le \texttt{at\_time} dans le résultat.
+    \item \textbf{Mock NodeManager (\texttt{node\_tx}, \texttt{node\_rx}, \texttt{node\_proc})} : ces trois tests ne peuvent pas utiliser \texttt{HopContext} car ils nécessitent des managers différents sur \texttt{tx} et \texttt{rx}. Nous vérifions qu'un nœud refusant l'émission ou la réception bloque le saut, et qu'un délai de traitement décale correctement le \texttt{sending\_time} et donc le \texttt{at\_time} dans le résultat.
 
-    \item \textbf{Sélection du meilleur contact} : test avec 4 contacts dont certains sont élagués par le lazy pruning. On vérifie que le contact avec le \texttt{rx\_end} minimal est bien choisi et que les métadonnées finales sont correctes.
+    \item \textbf{Sélection du meilleur contact} : test avec 4 contacts dont certains sont élagués par le lazy pruning. Nous vérifions que le contact avec le \texttt{rx\_end} minimal est bien choisi et que les métadonnées finales sont correctes.
 
-    \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. On vérifie que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
+    \item \textbf{Test sur 2 sauts} : le résultat du premier saut est utilisé comme source pour le second. Nous vérifions que \texttt{expiration} et \texttt{cumulative\_delay} se sont bien propagés et que le meilleur contact est toujours sélectionné avec les bonnes métadonnées.
 \end{itemize}
 
 \paragraph{Contact, Hybrid et Node parenting}
@@ -681,50 +681,50 @@ Cette approche a permis de rendre la partie émission fonctionnelle dans l’env
 \section{Algorithmes et Structures de Données}
 \subsection{PrioritySegmentation}
 Dans cette partie, nous allons détailler le fonctionnement algorithmique du module \texttt{PrioritySegmentation (pseg)}.
-\subsubsection*{Algorithme \texttt{dry\_run\_tx}}
+\subsubsection*{Algorithme \texttt{dry\_run\_tx} \label{CodeDRpseg} (Code en annexe \ref{PsegDR})}
 \begin{description}
     \item[Les paramètres d'entrée :] La fonction prend 4 paramètres :
     \begin{itemize}
-        \item \mintinline{rust}{&self} : la référence vers l'instance du \texttt{PSegmentationManager} contenant toute la logique. Un détail a son importance ici : comme la fonction ne fait qu'une simulation, on limite l'attribut à une lecture seule en ne mettant pas le mot-clé \mintinline{rust}{mut}, indiquant à Rust que cette variable n'est pas mutable.
+        \item \mintinline{rust}{&self} : la référence vers l'instance du \texttt{PSegmentationManager} contenant toute la logique. Un détail a son importance ici : comme la fonction ne fait qu'une simulation, nsou limitons l'attribut à une lecture seule en ne mettant pas le mot-clé \mintinline{rust}{mut}, indiquant à Rust que cette variable n'est pas mutable.
         \item \mintinline{rust}{contact_data: &ContactInfo} : c'est une structure contenant des attributs \texttt{source} et \texttt{dest} de type \texttt{NodeID}, et deux attributs \texttt{start} et \texttt{end} de type \texttt{Date}. Cette structure représente les limitations physiques : \texttt{source} et \texttt{dest} sont les nœuds concernés par le contact, et \texttt{start} et \texttt{end} représentent la fenêtre temporelle du contact.
         \item \mintinline{rust}{at_time: Date} : c'est l'instant t à partir duquel nous souhaitons insérer le paquet.
-        \item \mintinline{rust}{bundle: &Bundle} : la référence vers le paquet que l'on souhaite transmettre.
+        \item \mintinline{rust}{bundle: &Bundle} : la référence vers le paquet que nous souhaitons transmettre.
     \end{itemize}
     \item[La valeur renvoyée :] la fonction renvoie un objet de type \texttt{Option<ContactManagerTxData>} donc deux valeurs sont possibles:
     \begin{itemize}
         \item Le cas d'échec \texttt{None}: la transmission est impossible.
-        \item Le cas de succès \texttt{Some(ContactManagerTxData)}: un créneau utilisable a été trouvé par la fonction. On renvoie donc un objet de type \texttt{struct ContactManagerTxData}
+        \item Le cas de succès \texttt{Some(ContactManagerTxData)}: un créneau utilisable a été trouvé par la fonction. Nous renvoyons donc un objet de type \texttt{struct ContactManagerTxData}
         qui comprend toutes les informations du paquet inséré: les heures de début et de fin d'émission représentés par \texttt{tx\_start} et \texttt{tx\_end}, les heures de réception prenant en compte le délai de propagation représentés par \texttt{rx\_start} et \texttt{rx\_end}
         et la date d'expiration du paquet représenté par le champ \texttt{expiration}.
     \end{itemize}
     \item[Le fonctionnement algorithmique :] détaillons les étapes de fonctionnement:
     \begin{itemize}
         \item Les valeurs à initialiser: deux variables: \texttt{tx\_start} initialisée à \texttt{at\_time}
-        et \texttt{tx\_end\_opt} représentant l'état de la recherche, \texttt{None} si on cherche un point de départ et \texttt{Some(date)} sinon.
+        et \texttt{tx\_end\_opt} représentant l'état de la recherche, \texttt{None} si nous cherchons un point de départ et \texttt{Some(date)} sinon.
         \item La boucle: la fonction utilise une boucle \texttt{for} qui va parcourir l'ensemble des N segments.
-        \item Les vérifications préalables: avec la ligne \mintinline{rust}{if seg.end <= at_time { continue; }} on ignore les segments qui se trouvent avant du paramètre \texttt{at\_time}.
-        Grâce à la ligne \mintinline{rust}{if bundle.priority <= seg.val} \mintinline{rust}{tx_end_opt = None; continue;}, on ignore également les segments dont la priorité est supérieur à celle du paquet à insérer.
+        \item Les vérifications préalables: avec la ligne \mintinline{rust}{if seg.end <= at_time { continue; }} nous ignorons les segments qui se trouvent avant du paramètre \texttt{at\_time}.
+        Grâce à la ligne \mintinline{rust}{if bundle.priority <= seg.val} \mintinline{rust}{tx_end_opt = None; continue;}, nous ignorons également les segments dont la priorité est supérieur à celle du paquet à insérer.
         \item Le calcul: la valeur de \texttt{tx\_end\_opt} nous indique dans quel cas nous sommes:
         \begin{itemize}
-            \item Cas \texttt{None}: un espace libre a été trouvé, on fixe \texttt{tx\_start} à \texttt{at\_time} et on calcule les besoins du paquet.
-            Si tout rentre dans le segment en cours, on peut renvoyer le résultat, sinon on passe dans l'état \texttt{Some(tx\_end)} pour aller chercher de l'espace dans le ou les segments suivants.
-            \item Cas \texttt{Some(tx\_end)}: on cherchait déjà à insérer dans le segment précédent donc on cherche de l'espace supplémentaire dans ce segment. Si \texttt{tx\_end} tombe dans ce segment, on renvoie le résultat sinon on répète l'opération.
+            \item Cas \texttt{None}: un espace libre a été trouvé, nous fixons \texttt{tx\_start} à \texttt{at\_time} et nous calculons les besoins du paquet.
+            Si tout rentre dans le segment en cours, nous pouvons renvoyer le résultat, sinon nous passons dans l'état \texttt{Some(tx\_end)} pour aller chercher de l'espace dans le ou les segments suivants.
+            \item Cas \texttt{Some(tx\_end)}: nous cherchions déjà à insérer dans le segment précédent donc nous cherchons de l'espace supplémentaire dans ce segment. Si \texttt{tx\_end} tombe dans ce segment, nous renvoyons le résultat sinon nous répètons l'opération.
         \end{itemize}
     \end{itemize}
     \item[La complexité en temps :]
-    Dans le pire des cas, on a une complexité de l'ordre de \texttt{O(N * r)} avec N le nombres de segments \texttt{booking} er r le nombre de segments de débit.
+    Dans le pire des cas, nous avons une complexité de l'ordre de \texttt{O(N * r)} avec N le nombres de segments \texttt{booking} er r le nombre de segments de débit.
     En effet, à chaque fois qu'un créneau potentiellement libre est trouvé, le calcul de la fin de transmission est relancé par \mintinline{rust}|super::get_tx_end|, cette fonction doit reparcourir les r intervalles de débit.
     Donc dans le pire cas, cette sous-recherche est lancée à chaque nouveau segment libre soit une complexité \texttt{O(N * r)}.
 
-    Cependant, il est intéressant de noter que physiquement le délai est une valeur qui reste fixe dans la plupart des cas, il sera donc représenté dans la majorité des cas par un segment unique.
-    Donc la plupart du temps, on aura plutôt une compelexité de l'ordre de \texttt{O(N)}.
+    Cependant, il est intéressant de noter que physiquement le délai est une valeur qui reste souvent fixe, il sera donc représenté dans la majorité des cas par un segment unique.
+    Donc la plupart du temps, nous aurons plutôt une compelexité de l'ordre de \texttt{O(N)}.
     
 \end{description}
 
-\subsubsection*{Algorithme \texttt{schedule\_tx}}
+\subsubsection*{Algorithme \texttt{schedule\_tx} \label{CodeSCpseg} (Code en annexe \ref{PsegSC})}
 \begin{description}
     \item[Les paramètres d'entrée :]
-    Ce sont les mêmes que \texttt{dry\_run\_tx} mais à une différence près: on utilise \mintinline{rust}|&mut self| à la place de \mintinline{rust}|&self|,
+    Ce sont les mêmes que \texttt{dry\_run\_tx} mais à une différence près: nous utilisons \mintinline{rust}|&mut self| à la place de \mintinline{rust}|&self|,
     car cette fois-ci nous voulons rendre la variable mutable pour la modifier.
     \item[La sortie de la fonction :] 
     Ici aussi, nous renvoyons un objet de type \texttt{Option<ContactManagerTxData>} comme précédemment. De plus, la fonction modifie le \texttt{manager pseg} dans \texttt{self}
@@ -732,21 +732,21 @@ Dans cette partie, nous allons détailler le fonctionnement algorithmique du mod
     \item[Le fonctionnement algorithmique :] détaillons les étapes de fonctionnement:
     \begin{itemize}
         \item Récupération de la simulation: avec \mintinline{rust}{let out = self.dry_run_tx} \mintinline{rust}{(contact_data, at_time, bundle)?;}, 
-        on met dans une variable le résultat de la simulation à suivre.
-        \item La boucle: on utilise ici une boucle \texttt{while} pour parcourir tous les segments en ignorant ceux qui ne sont pas dans la fenêtre temporelle
+        nous mettons dans une variable le résultat de la simulation à suivre.
+        \item La boucle: nous utilisons ici une boucle \texttt{while} pour parcourir tous les segments en ignorant ceux qui ne sont pas dans la fenêtre temporelle
         \texttt{tx\_start -- tx\_end}.
         \item Les opérations: sur ces segments, il est possible de faire ces 3 choses:
         \begin{itemize}
             \item La coupe à gauche avec \mintinline{rust}{seg.start < tx_start}: si le segment commence avant le début de la fenêtre, il est scindé en deux parties.
-            On insère un "nouveau" segment gauche intact grâce à \mintinline{rust}{insert(i)} et on repousse le début du segment actuel à \texttt{tx\_start}.
+            Nous insèrons un "nouveau" segment gauche intact grâce à \mintinline{rust}{insert(i)} et nous repoussons le début du segment actuel à \texttt{tx\_start}.
             \item La coupe à droite avec \mintinline{rust}{seg.end > tx_end}: le principe est très similaire au cas précédent mais avec le côté droit. Si le segment s'arrête après la fin de notre fenêtre,
-            on crée un "nouveau" segment droit et on raccourci la fin du segment à \texttt{tx\_end}.
-            \item L'écrasement: maintenant que l'on possède un segment qui rentre dans notre fenêtre, on peut simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \mintinline{rust}{self.booking[i].val = bundle.priority}
+            nous créeons un "nouveau" segment droit et nous raccourcissons la fin du segment à \texttt{tx\_end}.
+            \item L'écrasement: maintenant que nous possèdons un segment qui rentre dans notre fenêtre, nous pouvons simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \mintinline{rust}{self.booking[i].val = bundle.priority}
         \end{itemize}
-        \item L'agrégat des segments: après le travail de segmentation, on parcourt les segments crées par paire (i,j), on les fusionne s'ils ont la même priorité et si i se termine quand j commence.
+        \item L'agrégat des segments: après le travail de segmentation, nous parcourons les segments crées par paire (i,j), nous les fusionnons s'ils ont la même priorité et si i se termine quand j commence.
     \end{itemize}
     \item[La complexité en temps: ] le temps de recherche est de l'ordre de \texttt{O(n)}. Les modifications faites pendant cette recherche comme \mintinline{rust}|Vec::insert()| et \mintinline{rust}|Vec::remove()| ont aussi un coût \texttt{O(n)}.
-On a donc dans le pire des cas, une complexité \texttt{O(n²)} pour \texttt{schedule\_tx}.
+Nous avons donc dans le pire des cas, une complexité \texttt{O(n²)} pour \texttt{schedule\_tx}.
 \end{description}
 
 \subsection{HybridParenting}
@@ -792,35 +792,35 @@ Le \mintinline{rust}{Option} vaut \mintinline{rust}{Some(route)} si la propositi
 la réussite (\mintinline{rust}{Ok(T)}) ou l'échec (\mintinline{rust}{Err(E)}), ici utilisée pour
 propager les erreurs d'emprunt (\texttt{ASABRError}).
 
-Passons au corps de l'algorithme. On commence par récupérer la liste des routes connues pour le nœud
+Passons au corps de l'algorithme. Nous commençons par récupérer la liste des routes connues pour le nœud
 destination de la proposition~: \mintinline{rust}{let routes_for_rx_node = &mut tree.by_destination[proposition.to_node as usize]}.
-On initialise également deux variables~: \texttt{insert\_index} à la taille de la liste (cas d'insertion
+Nous initialisons également deux variables~: \texttt{insert\_index} à la taille de la liste (cas d'insertion
 en fin de liste) et \texttt{insert} à \mintinline{rust}{false}.
 
-Si la liste est vide, on insère directement la proposition et on retourne. Sinon, on parcourt les routes
+Si la liste est vide, nous insèrons directement la proposition et nous retournons. Sinon, nous parcourons les routes
 existantes avec une boucle \texttt{for} selon trois cas via \mintinline{rust}{match D::cmp(&proposition, &route_borrowed)}~:
 \begin{itemize}
     \item \mintinline{rust}{Ordering::Less}~: la proposition est strictement meilleure sur le critère
-    principal (par exemple, temps d'arrivée plus court). On fixe \texttt{insert\_index = idx} et
-    \texttt{insert = true} et on sort de la boucle.
-    \item \mintinline{rust}{Ordering::Equal}~: doublon détecté, on pose \texttt{insert = false}
-    et on sort.
+    principal (par exemple, temps d'arrivée plus court). Nous fixons \texttt{insert\_index = idx} et
+    \texttt{insert = true} et nous sortons de la boucle.
+    \item \mintinline{rust}{Ordering::Equal}~: doublon détecté, nous posons \texttt{insert = false}
+    et nous sortons.
     \item \mintinline{rust}{Ordering::Greater}~: la proposition est moins bonne sur le critère principal.
-    On appelle alors \mintinline{rust}{D::can_retain(&proposition, &route_borrowed)}~: si vrai,
-    la proposition peut malgré tout être utile (critère lexicographique secondaire) et on continue
-    l'itération~; sinon, \texttt{insert = false} et on sort.
+    Nous appelons alors \mintinline{rust}{D::can_retain(&proposition, &route_borrowed)}~: si vrai,
+    la proposition peut malgré tout être utile (critère lexicographique secondaire) et nous continuons
+    l'itération~; sinon, \texttt{insert = false} et nous sortons.
 \end{itemize}
 
-Si \texttt{insert} est vrai, on procède en trois étapes~:
+Si \texttt{insert} est vrai, nous procèdons en trois étapes~:
 \begin{enumerate}
-    \item \textbf{Détection des routes à éliminer}~: on cherche le premier indice \texttt{truncate\_index}
+    \item \textbf{Détection des routes à éliminer}~: nous cherchons le premier indice \texttt{truncate\_index}
     à partir de \texttt{insert\_index} où \mintinline{rust}{D::must_prune(&proposition, route)} est vrai,
     ce qui délimite les routes que la nouvelle proposition rend obsolètes.
     \item \textbf{Désactivation}~: les routes à partir de \texttt{truncate\_index} sont marquées
     \mintinline{rust}{is_disabled = true} via leur référence partagée \texttt{Rc<RefCell<...>>},
     ce qui permet de les ignorer si elles se trouvent encore dans la file de priorité.
-    \item \textbf{Troncature et insertion}~: on tronque la liste avec \mintinline{rust}{truncate()}
-    puis on insère la proposition à \texttt{insert\_index} avec \mintinline{rust}{Vec::insert()}.
+    \item \textbf{Troncature et insertion}~: nous tronquons la liste avec \mintinline{rust}{truncate()}
+    puis nous insèrons la proposition à \texttt{insert\_index} avec \mintinline{rust}{Vec::insert()}.
 \end{enumerate}
 
 Concernant la complexité de \texttt{try\_insert}~: le parcours de la liste est en \texttt{O(k)}
@@ -840,17 +840,17 @@ est identique à celle du trait \texttt{Pathfinding<NM, CM>} et prend quatre par
     \item \texttt{excluded\_nodes\_sorted: \&[NodeID]}~: liste triée des nœuds à exclure.
 \end{itemize}
 
-L'algorithme débute par l'initialisation~: on crée un \texttt{HybridParentingWorkArea} et une
+L'algorithme débute par l'initialisation~: nous créeons un \texttt{HybridParentingWorkArea} et une
 \mintinline{rust}{BinaryHeap<Reverse<DistanceWrapper>>} servant de file de priorité min-heap.
 Le nœud source est ajouté à la fois dans \texttt{tree.by\_destination} et dans la file.
 
 La boucle principale \mintinline{rust}{while let Some(Reverse(DistanceWrapper(from_route, _))) = priority_queue.pop()}
-extrait la meilleure route courante. Si celle-ci est marquée \mintinline{rust}{is_disabled}, on la
-saute~: c'est le mécanisme de \textit{lazy deletion} évitant de retirer explicitement des éléments
+extrait la meilleure route courante. Si celle-ci est marquée \mintinline{rust}{is_disabled}, nous la
+sautons~: c'est le mécanisme de \textit{lazy deletion} évitant de retirer explicitement des éléments
 de la file. Si le mode \textit{path} (non-tree) est activé et que le nœud extrait est la destination,
-on s'arrête immédiatement.
+nous nous arrêtons immédiatement.
 
-Pour chaque nœud \texttt{receiver} accessible depuis \texttt{from\_route}, on enchaîne trois
+Pour chaque nœud \texttt{receiver} accessible depuis \texttt{from\_route}, nous enchaînons trois
 appels en \textit{let-chain}~:
 \begin{enumerate}
     \item \mintinline{rust}{receiver.lazy_prune_and_get_first_idx(current_time)}~: obtient le premier
@@ -862,8 +862,8 @@ appels en \textit{let-chain}~:
 \end{enumerate}
 Si les trois réussissent, la nouvelle route est ajoutée à la file de priorité.
 
-En fin de boucle, on tronque chaque liste de \texttt{by\_destination} à un seul élément~:
-\mintinline{rust}{v.truncate(1)}, puis on convertit la zone de travail en \texttt{PathFindingOutput}
+En fin de boucle, nous tronquons chaque liste de \texttt{by\_destination} à un seul élément~:
+\mintinline{rust}{v.truncate(1)}, puis nous convertissons la zone de travail en \texttt{PathFindingOutput}
 via \texttt{into\_pathfinding\_output()}.
 
 Concernant la complexité de \texttt{get\_next}~: le Dijkstra classique sur $V$ nœuds et $E$ arêtes
@@ -1177,20 +1177,20 @@ Quant à notre manière de travailler, il était prévu de suivre la structure b
 
 \subsection{Organisation réelle du travail}
 Après avoir débuté notre travail, nous avons rapidement compris que les choix
-d'organisation que nous avons fait allaient devoir rapidement être adaptés afin 
+d'organisation que nous avons fait allaient devoir être adaptés afin 
 d'être plus efficace. 
 \\[1pt]
 
 Pour commencer, nous voulions suivre une structure Gitflow, donc travailler dans des branches feature/
 puis mettre en commun dans la branche develop pour ensuite envoyer une version stable vers notre main puis
 vers le dépôt de Monsieur De Jonckère. Mais en commençant notamment nos tests, nous nous sommes vite rendus
-compte que la mise en commun dans develop n'était pas nécessaire puisque nos tâches ne dépendaient pas de la réussite des autres
+compte que la mise en commun dans develop n'était pas nécessaire puisque nos tâches ne dépendaient pas de la réussite des autres.
 Cette approche était même plus compliquée à manipuler pour notre encadrant: à chaque Pull Request de notre main
 vers le sien, il aurait dû vérifier un très grand nombre de modifications en une seule fois.
 \\[0.5pt]
 
-La solution trouvée a donc été la suivante: notre main suivra toujours la branche main du dépôt d'origine,
-à chaque nouvel ajout nous créeons une branche depuis le main, sur cette branche on effectue un \texttt{git rebase main}
+La solution trouvée a donc été la suivante: notre main suivra toujours la branche main du dépôt d'origine par synchronisation automatique,
+à chaque nouvel ajout nous créeons une branche depuis le main, sur cette branche nous effectuons un \texttt{git rebase main}
 pour récupérer le travail le plus récent et nous commençons à travailler. Quand le travail est jugé satisfaisant,
 nous ouvrons une Pull Request vers le main du dépôt d'origine afin d'avoir des retours. Après la prise en compte des suggestions,
 la Pull Request est acceptée et notre travail est merge dans le dépôt d'origine.
@@ -1211,7 +1211,6 @@ le début de travail déjà fait pourrait amener à quelque chose de plus élabo
 nouvelles contributions en dehors du cadre de projet de programmation.
 \\[1pt]
 
-Pour conclure, ce projet a été des plus formateurs pour nos qualités de gestion de projet.
 Nous avons dû confronter nos connaissances académiques à celles du monde professionnel afin d'en tirer les conclusions
 qui ont le mieux fonctionné pour nous. Même si une petite sensation de désordre s'est fait ressentir en début de parcours, 
 elle nous a permis de devenir par la suite plus performants avec les outils Git et de faire preuve d'une meilleure flexibilité
@@ -1227,7 +1226,7 @@ Un premier axe concerne le module \texttt{routing}. Des premiers tests ont été
 
 Un deuxième axe concerne la couverture de tests globale d’A-SABR. Les tests ajoutés pendant le projet ont permis de sécuriser plusieurs modules importants, notamment les Contact Managers, la segmentation et le pathfinding. Cependant, certains modules restent encore peu couverts, comme \texttt{routing/}, \texttt{route\_storage/}, \texttt{contact\_plan/} ou \texttt{utils/}. Une poursuite logique du projet consisterait donc à étendre progressivement la couverture de tests à ces parties de la bibliothèque.
 
-Le travail sur DT Chat pourrait également être prolongé. L’onglet Options permet désormais de changer dynamiquement d’algorithme ou de Contact Plan, mais l’application ne prend pas encore correctement en charge tous les formats de Contact Plan supportés par A-SABR. Une amélioration future consisterait à rendre le chargement plus robuste, en adaptant le parsing au format du fichier fourni ou en signalant plus clairement les erreurs à l’utilisateur.
+Le travail sur DTChat pourrait également être prolongé. L’onglet Options permet désormais de changer dynamiquement d’algorithme ou de Contact Plan, mais l’application ne prend pas encore correctement en charge tous les formats de Contact Plan supportés par A-SABR. Une amélioration future consisterait à rendre le chargement plus robuste, en adaptant le parsing au format du fichier fourni ou en signalant plus clairement les erreurs à l’utilisateur.
 
 Enfin, BP-Socket constitue une autre piste importante. Le remplacement du module kernel par une solution fondée sur \texttt{LD\_PRELOAD} a permis de rendre la partie émission fonctionnelle dans l’environnement testé. La réception des bundles reste cependant à finaliser, notamment pour gérer correctement la lecture des messages et la libération des ressources associées. Ces travaux ne sont toutefois pas perdus : ils seront transmis à un collègue de Monsieur de Jonckère, qui reprend le sujet afin de poursuivre activement le développement de cette solution.
 \subsection{Conclusion}
@@ -1240,7 +1239,7 @@ Voir nos noms apparaître parmi les contributeurs d’un projet open source comm
 
 Nous continuerons à suivre l’évolution d’A-SABR et de l’écosystème DTN-MTP avec intérêt. Les travaux réalisés pendant ce projet nous donnent désormais une meilleure compréhension de la bibliothèque, et il n’est pas exclu que nous puissions proposer de nouvelles contributions à l’avenir, notamment sur les tests, le routage ou l’intégration avec les autres outils de l’écosystème.
 
-Nous tenons enfin à remercier Monsieur Olivier de Jonckère pour son encadrement, sa disponibilité et ses retours tout au long du projet. Nous remercions également Théo et Nathanael, qui participent eux aussi au développement du projet, pour leurs échanges, leurs retours techniques et leur aide lors de notre prise en main de l’écosystème DTN-MTP.
+Nous tenons enfin à remercier Monsieur Olivier de Jonckère pour son encadrement, sa disponibilité et ses retours tout au long du projet. Nous remercions également Théo et Nathael, qui participent eux aussi au développement du projet, pour leurs échanges, leurs retours techniques et leur aide lors de notre prise en main de l’écosystème DTN-MTP.
 \vfill
 \begin{thebibliography}{3} 
 
@@ -1496,125 +1495,6 @@ impl OptionsView{
         }
     }
 }
-\end{minted}
-\newpage
-\phantomsection
-\label{CodeCIv1}
-\ref{CI/CD} (Cliquer sur le chapitre pour revenir au texte correspondant)
-
-Code complet de la première version de notre fichier ci.yml:
-\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
-    name: CI
-
-on:
-  push:
-    branches: ["develop","main","feature/*"]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    container:
-      image: rust:slim
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: swatinem/rust-cache@v2
-
-      - run: cargo fmt --all -- --check
-        continue-on-error: true
-      - run: cargo clippy
-      - run: cargo test --lib --bins --tests
-\end{minted}
-
-\newpage
-\phantomsection
-\label{CodeCIv2}
-\ref{CI/CD} (Cliquer sur le chapitre pour revenir au texte correspondant)
-
-Code complet de la seconde version de notre fichier ci.yml:
-\begin{minted}[frame=lines, framesep=2mm, linenos]{yaml}
-name: A-SABR CI
-
-on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  fmt:
-    name: Check formatting with Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-
-      
-      - run: cargo fmt --all -- --check
-  
-  clippy:
-    name: Linting with Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      
-      - uses: swatinem/rust-cache@v2
-      - run: cargo clippy --all-targets --all-features -- -D warnings
-
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - uses: swatinem/rust-cache@v2
-      - run: cargo test --lib --bins --tests --verbose
-  
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: tests
-    steps:
-        - uses: actions/checkout@v4
-        - uses: dtolnay/rust-toolchain@stable
-        - uses: swatinem/rust-cache@v2
-        
-        - name: Install tarpaulin
-          if: ${{ !env.ACT }}
-          uses: taiki-e/install-action@cargo-tarpaulin
-
-        - name: Generate coverage report
-          if: ${{ !env.ACT }}
-          run: cargo tarpaulin --ignore-tests --out Html --out Xml
-
-        - name: Upload report
-          if: ${{ !env.ACT }}
-          uses: actions/upload-artifact@v4
-          with:
-            name: code-coverage-report
-            path: tarpaulin-report.html
-            retention-days: 7
 \end{minted}
 
 \newpage
@@ -1930,7 +1810,158 @@ ssize_t sendto(int sockfd, const void* buf, size_t len, int flags,
 }
 \end{minted}
 
+\newpage
+\phantomsection
+\label{PsegDR}
+\ref{CodeDRpseg}
+Code de la fonction dry\_run\_tx de pseg
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+    fn dry_run_tx(
+        &self,
+        contact_data: &ContactInfo,
+        at_time: Date,
+        bundle: &Bundle,
+    ) -> Option<ContactManagerTxData> {
+        let mut tx_start = at_time;
+        let mut tx_end_opt: Option<Date> = None;
 
+        for seg in &self.booking {
+            // Allows to advance to the first valid segment
+            if seg.end <= at_time {
+                continue;
+            }
+
+            // Segment is not valid, we need to reset the building process with the next segment
+            if bundle.priority <= seg.val {
+                tx_end_opt = None;
+                continue;
+            }
+            // Start building or pursue ?
+            match tx_end_opt {
+                // Try to pursue the build process
+                Some(tx_end) => {
+                    // the seg is valid, check if this is the last one to consider
+                    if tx_end <= seg.end {
+                        let (d_start, d_end) =
+                            super::get_delays(tx_start, tx_end, &self.delay_intervals);
+                        return Some(ContactManagerTxData {
+                            tx_start,
+                            tx_end,
+                            expiration: seg.end,
+                            rx_start: tx_start + d_start,
+                            rx_end: tx_end + d_end,
+                        });
+                    }
+                    // if we reach this point, the seg is valid, but transmission didn't reach terminaison, check next
+                }
+                // (re)-start the build process
+                None => {
+                    tx_start = Date::max(seg.start, at_time);
+                    // In most cases, there should be a single rate seg
+                    if let Some(tx_end) = super::get_tx_end(
+                        &self.rate_intervals,
+                        tx_start,
+                        bundle.size,
+                        contact_data.end,
+                    ) {
+                        if tx_end <= seg.end {
+                            let (d_start, d_end) =
+                                super::get_delays(tx_start, tx_end, &self.delay_intervals);
+                            return Some(ContactManagerTxData {
+                                tx_start,
+                                tx_end,
+                                expiration: seg.end,
+                                rx_start: tx_start + d_start,
+                                rx_end: tx_end + d_end,
+                            });
+                        }
+                        tx_end_opt = Some(tx_end);
+                    };
+                }
+            }
+        }
+        None
+    }
+\end{minted}
+
+
+\newpage
+\phantomsection
+\label{PsegSC}
+\ref{CodeSCpseg}
+Code de la fonction schedule\_tx de pseg
+\begin{minted}[frame=lines, framesep=2mm, linenos]{rust}
+    fn schedule_tx(
+        &mut self,
+        contact_data: &ContactInfo,
+        at_time: Date,
+        bundle: &Bundle,
+    ) -> Option<ContactManagerTxData> {
+        let out = self.dry_run_tx(contact_data, at_time, bundle)?;
+        let tx_start = out.tx_start;
+        let tx_end = out.tx_end;
+
+        let mut i = 0;
+        while i < self.booking.len() {
+            let seg = &self.booking[i];
+
+            // Segment completely before tx window
+            if seg.end <= tx_start {
+                i += 1;
+                continue;
+            }
+
+            // Segment completely after tx window
+            if seg.start >= tx_end {
+                break;
+            }
+
+            let old_prio = seg.val;
+
+            // Cut before
+            if seg.start < tx_start {
+                let left = Segment {
+                    start: seg.start,
+                    end: tx_start,
+                    val: old_prio,
+                };
+                self.booking.insert(i, left);
+                self.booking[i + 1].start = tx_start;
+                i += 1;
+            }
+
+            // Cut after
+            if self.booking[i].end > tx_end {
+                let right = Segment {
+                    start: tx_end,
+                    end: self.booking[i].end,
+                    val: old_prio,
+                };
+                self.booking.insert(i + 1, right);
+                self.booking[i].end = tx_end;
+            }
+
+            // Assign TX priority
+            self.booking[i].val = bundle.priority;
+            i += 1;
+        }
+
+        //Checking if  same priority segments can be fused
+        let mut j = 0;
+        while j < self.booking.len() - 1 {
+            if self.booking[j].val == self.booking[j + 1].val
+                && self.booking[j].end == self.booking[j + 1].start
+            {
+                self.booking[j].end = self.booking[j + 1].end;
+                self.booking.remove(j + 1);
+            } else {
+                j += 1;
+            }
+        }
+
+        Some(out)
+    }
+\end{minted}
 
 
 \end{document}
