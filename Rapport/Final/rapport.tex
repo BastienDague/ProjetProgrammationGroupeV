@@ -529,14 +529,13 @@ pour forcer la découverte de routes alternatives.
 
 Chaque variante est instanciée avec une métrique de distance, soit \textbf{Hop} qui minimise le nombre de saut, 
 soit \textbf{\gls{sabr}} qui minimise le temps d'arrivée.
-\paragraph{Try\_make\_hop :}~\\\\
+\paragraph{Try\_make\_hop :}~\\
 
 \texttt{try\_make\_hop} est la fonction centrale du module de pathfinding. Son rôle est de déterminer, depuis un nœud source à un instant donné, le meilleur contact disponible pour acheminer un bundle vers un nœud voisin en un seul saut. Elle prend en entrée un \texttt{RouteStage} source qui représente l'état courant du routage (temps d'arrivée au nœud, délai cumulé, expiration), une liste de contacts triés par ordre de début, ainsi que les nœuds émetteur et récepteur. Elle retourne soit le meilleur saut trouvé, soit \texttt{None} si aucun contact ne permet la transmission.
 
 La fonction parcourt chaque contact fourni en entrée à partir d'un \texttt{first\_contact\_index}, ce qui permet un \textit{lazy pruning} : les contacts déjà dépassés par un saut précédent dans Dijkstra n'ont pas besoin d'être reconsidérés. Pour chaque contact, elle appelle \texttt{dry\_run\_tx} du Contact Manager pour simuler la transmission, puis retient le contact permettant la date d'arrivée \texttt{rx\_end} la plus rapide. Elle s'arrête dès que le début d'un contact est postérieur au meilleur \texttt{rx\_end} déjà trouvé, les contacts étant supposés triés. Si un contact est retenu, elle construit un nouveau \texttt{RouteStage} avec les métadonnées mises à jour : \texttt{hop\_count} incrémenté, \texttt{cumulative\_delay} mis à jour et \texttt{expiration} calculée comme le minimum entre la fin du contact et l'expiration propagée depuis la source.
 
-\texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. Nous trouvons ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi.
-
+\texttt{try\_make\_hop} intègre également des \textit{features}, c'est-à-dire des portions de code activées uniquement si la feature est spécifiée au lancement. Nous trouvons ainsi \texttt{contact\_suppression}, \texttt{node\_tx} et \texttt{node\_rx} qui permettent de faire échouer le \texttt{dry\_run} et donc de renvoyer \texttt{None}, ainsi que \texttt{node\_proc} qui permet le traitement du bundle avant l'émission, pouvant décaler le temps d'envoi. \\
 
 
 Afin de tester cette fonction, nous avons créé un \textit{mock} de \texttt{NodeManager} dans le fichier \texttt{test\_helpers} du dossier pathfinding. En effet, nos tests doivent contrôler le comportement des nœuds émetteurs et récepteurs avec les features \texttt{node\_tx} et \texttt{node\_rx}, contrairement aux autres fichiers qui n'ont besoin que de \texttt{NoManagement}. Ce mock permet d'implémenter et de contrôler un \texttt{NodeManager} avec quatre fonctions : \texttt{accepting()} qui accepte toujours, \texttt{refusing\_rx()} et \texttt{refusing\_tx()} qui rejettent la transmission d'un côté, et \texttt{processing(delay)} qui simule un délai de traitement du bundle. Les fonctions helpers telles que \texttt{make\_node}, \texttt{make\_contact}, \texttt{make\_source} et \texttt{make\_bundle} ont été rendues génériques sur \texttt{NM} pour pouvoir être partagées entre les deux types de manager.
@@ -744,7 +743,7 @@ Dans cette partie, nous allons détailler le fonctionnement algorithmique du mod
             Nous insèrons un "nouveau" segment gauche intact grâce à \mintinline{rust}{insert(i)} et nous repoussons le début du segment actuel à \texttt{tx\_start}.
             \item La coupe à droite avec \mintinline{rust}{seg.end > tx_end}: le principe est très similaire au cas précédent mais avec le côté droit. Si le segment s'arrête après la fin de notre fenêtre,
             nous créeons un "nouveau" segment droit et nous raccourcissons la fin du segment à \texttt{tx\_end}.
-            \item L'écrasement: maintenant que nous possèdons un segment qui rentre dans notre fenêtre, nous pouvons simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \mintinline{rust}{self.booking[i].val = bundle.priority}
+            \item L'écrasement: maintenant que nous possèdons un segment qui rentre dans notre fenêtre, nous pouvons simplement remplacer sa valeur de priorité par celle du paquet à insérer grâce à \\ \mintinline{rust}{self.booking[i].val = bundle.priority}
         \end{itemize}
         \item L'agrégat des segments: après le travail de segmentation, nous parcourons les segments crées par paire (i,j), nous les fusionnons s'ils ont la même priorité et si i se termine quand j commence.
     \end{itemize}
@@ -772,7 +771,7 @@ Le module repose sur le trait \texttt{HybridParentingOrd<NM, CM>}, qui impose de
 
 La structure centrale est \texttt{HybridParentingWorkArea<NM, CM>}, qui sert de zone de travail pendant
 le calcul des routes. Contrairement au \texttt{PathFindingOutput} classique qui ne stocke qu'une seule
-route par destination via un \mintinline{rust}{Vec<Option<SharedRouteStage>>},
+route par destination via un \\ \mintinline{rust}{Vec<Option<SharedRouteStage>>},
 la zone de travail maintient un \mintinline{rust}{Vec<Vec<SharedRouteStage>>}~: un vecteur de routes
 ordonné par préférence pour chaque destination. Cela permet de suivre plusieurs chemins candidats
 simultanément par nœud, ce qui est le principe du MPT. La méthode
@@ -809,7 +808,7 @@ existantes avec une boucle \texttt{for} selon trois cas via \mintinline{rust}{ma
     \item \mintinline{rust}{Ordering::Equal}~: doublon détecté, nous posons \texttt{insert = false}
     et nous sortons.
     \item \mintinline{rust}{Ordering::Greater}~: la proposition est moins bonne sur le critère principal.
-    Nous appelons alors \mintinline{rust}{D::can_retain(&proposition, &route_borrowed)}~: si vrai,
+    Nous appelons alors \\ \mintinline{rust}{D::can_retain(&proposition, &route_borrowed)}~: si vrai,
     la proposition peut malgré tout être utile (critère lexicographique secondaire) et nous continuons
     l'itération~; sinon, \texttt{insert = false} et nous sortons.
 \end{itemize}
@@ -844,7 +843,7 @@ est identique à celle du trait \texttt{Pathfinding<NM, CM>} et prend quatre par
 \end{itemize}
 
 L'algorithme débute par l'initialisation~: nous créeons un \texttt{HybridParentingWorkArea} et une
-\mintinline{rust}{BinaryHeap<Reverse<DistanceWrapper>>} servant de file de priorité min-heap.
+\\ \mintinline{rust}{BinaryHeap<Reverse<DistanceWrapper>>} servant de file de priorité min-heap.
 Le nœud source est ajouté à la fois dans \texttt{tree.by\_destination} et dans la file.
 
 La boucle principale \mintinline{rust}{while let Some(Reverse(DistanceWrapper(from_route, _))) = priority_queue.pop()}
