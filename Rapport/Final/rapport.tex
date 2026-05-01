@@ -381,12 +381,10 @@ Le sous-module contient trois implémentations : EVL, QD et ETO. Ces implémenta
     \item \texttt{\$auto\_update} : indique si la queue est mise à jour automatiquement après un \texttt{schedule\_tx} ou manuellement
     \item \texttt{\$prio\_count} : donne le nombre de niveaux de priorités
     \item \texttt{\$with\_budget} : indique si des budgets sont appliqués lorsque des priorités sont présentes
-\end{itemize}
-
+\end{itemize}~\\
 EVL, QD et ETO se distinguent par leurs valeurs de ces paramètres. EVL est le manager le plus simple : il se contente de consommer le volume d'un bundle à chaque \texttt{schedule\_tx} sur un contact. La queue est mise à jour automatiquement et il n'y a pas de délai. QD est similaire à EVL, à la différence que \texttt{tx\_start} est décalé depuis le début du contact en fonction du volume déjà réservé. Enfin, ETO est le plus complexe des trois : le décalage de la queue doit être géré manuellement et débute à \texttt{at\_time}, soit le temps courant.
 
-Chacun de ces fichiers instancie la macro pour générer trois variantes : un manager de base sans priorités, un avec priorités, et un autre avec priorités et budgets, un budget étant la quantité maximale de données qu'un bundle peut réserver sur un contact.\\\\
-
+Chacun de ces fichiers instancie la macro pour générer trois variantes : un manager de base sans priorités, un avec priorités, et un autre avec priorités et budgets, un budget étant la quantité maximale de données qu'un bundle peut réserver sur un contact.\\
 
 
 Pour tester ces implémentations, et sachant qu'elles partagent une base de tests en commun, nous avons mis en place des macros de tests dans un fichier \texttt{test\_helpers.rs} afin d'éviter la duplication de code. Quatre macros ont été définies :
